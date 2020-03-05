@@ -1,0 +1,30 @@
+{
+  "name": "epubkit",
+  "version": "1.0.0",
+  "description": "A Node library for parsing and editing epubs.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "jest": {
+    "verbose": true,
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    }
+  },
+  "dependencies": {
+    "adm-zip": "^0.4.14",
+    "css": "^2.2.4",
+    "xml2js": "^0.4.23"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.8.6",
+    "babel-jest": "^25.1.0",
+    "jest": "^25.1.0"
+  }
+}
