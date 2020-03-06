@@ -10,14 +10,14 @@ test("can open epub directory", () => {
 test("can find opf", async () => {
   const epubPath = path.resolve("./test/fixtures/a_dogs_tale");
   const epubKit = new EpubKit(epubPath);
-  await epubKit.loadMetaFiles();
+  await epubKit.load();
   expect(epubKit.opfFilePath).toBe(`${epubPath}/3174/content.opf`);
 });
 
 test("can read toc.ncx", async () => {
   const epubPath = path.resolve("./test/fixtures/a_dogs_tale");
   const epubKit = new EpubKit(epubPath);
-  await epubKit.loadMetaFiles();
+  await epubKit.load();
   const ncx = epubKit.ncx;
   console.log("ncx", ncx);
   expect(epubKit.pathToSource).toBe(epubPath);

@@ -15,7 +15,9 @@
       "disableOptimisticBPs": true,
       "windows": {
         "program": "${workspaceFolder}/node_modules/jest/bin/jest"
-      }
+      },
+      "sourceMaps": true,
+      "smartStep": true
     },
     {
       "type": "node",

@@ -47,6 +47,20 @@ class FileManager {
     }
     return results;
   }
+
+  async fileExists(path) {
+    try {
+      const stats = await fs.stat(path);
+      if (stats.isFile()) {
+        return true;
+      }
+    } catch (err) {
+      console.warn("Could not detect file", path);
+      return false;
+    }
+
+    return false;
+  }
 }
 
 export default FileManager;

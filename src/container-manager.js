@@ -2,7 +2,11 @@ import util from "util";
 import xml2js from "xml2js";
 import FileManager from "./file-manager";
 
-class NcxManager {
+/**
+ * Manager for the container.xml file
+ * https://www.w3.org/publishing/epub32/epub-ocf.html
+ */
+class ContainerManager {
   constructor(path) {
     this._path = path;
     this._content = undefined;
@@ -24,12 +28,22 @@ class NcxManager {
       // const parser = new xml2js.Parser();
       result = await util.promisify(xml2js.parseString)(data);
     } catch (err) {
-      console.warn("Error parsing ncx file:", err);
+      console.warn("Error parsing container.xml file:", err);
       return;
     }
 
     this._content = result;
     return result;
+  }
+
+  get rootFilePath() {
+    if (!this._content) {
+      return;
+    }
+    const rootPath = this._content?.container?.rootfiles[0].rootfile[0]?.$[
+      "full-path"
+    ];
+    return rootPath;
   }
 
   get path() {
@@ -41,4 +55,4 @@ class NcxManager {
   }
 }
 
-export default NcxManager;
+export default ContainerManager;
