@@ -2,10 +2,23 @@ import EpubKit from "../src/epub-kit";
 import OpfManager from "../src/opf-manager";
 
 import path from "path";
+const opfPath = path.resolve("./test/fixtures/alice/OPS/package.opf");
+
+test("can get empty spine toc attribute without crashing", async () => {
+  const opfManager = new OpfManager(opfPath);
+  await opfManager.loadFile();
+  expect(opfManager.spineToc).toBe(undefined);
+});
+
+test("can set spine TOC attribute", async () => {
+  const opfManager = new OpfManager(opfPath);
+  await opfManager.loadFile();
+  opfManager.spineToc = "toc";
+  expect(opfManager.spineToc).toBe("toc");
+});
 
 test("can add item to manifest", async () => {
-  const epubPath = path.resolve("./test/fixtures/a_dogs_tale/3174/content.opf");
-  const opfManager = new OpfManager(epubPath);
+  const opfManager = new OpfManager(opfPath);
   await opfManager.loadFile();
   const originalLength = opfManager.manifestItems.length;
 
@@ -22,8 +35,7 @@ test("can add item to manifest", async () => {
 });
 
 test("can sort manifest", async () => {
-  const epubPath = path.resolve("./test/fixtures/a_dogs_tale/3174/content.opf");
-  const opfManager = new OpfManager(epubPath);
+  const opfManager = new OpfManager(opfPath);
   await opfManager.loadFile();
   const newManifest = opfManager.addManifestItem(
     "hreftest.xhtml",
@@ -38,15 +50,11 @@ test("can sort manifest", async () => {
 });
 
 test("can find manifest item with id", async () => {
-  const epubPath = path.resolve("./test/fixtures/a_dogs_tale/3174/content.opf");
-  const opfManager = new OpfManager(epubPath);
+  const opfManager = new OpfManager(opfPath);
   await opfManager.loadFile();
 
-  const item = opfManager.findManifestItemWithId("coverpage");
+  const item = opfManager.findManifestItemWithId("cover");
 
-  const manifestItems = opfManager.manifestItems;
-  expect(item.id).toBe("coverpage");
-  expect(item.href).toBe(
-    "@public@vhost@g@gutenberg@html@files@3174@3174-h@images@cover.jpg"
-  );
+  expect(item.id).toBe("cover");
+  expect(item.href).toBe("cover.xhtml");
 });

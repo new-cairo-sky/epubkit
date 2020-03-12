@@ -3,7 +3,10 @@ import path from "path";
 
 /**
  * This class acts as an abstraction layer over native node file system libraries
- * so that it will be easier to adopt for use in client side applications later
+ * so that it will be easier to adopt for use in client side applications later.
+ * see also:
+ * https://github.com/jvilk/BrowserFS
+ * https://github.com/browserify/path-browserify
  */
 class FileManager {
   async readFile(location) {

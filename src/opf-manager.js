@@ -58,15 +58,53 @@ class OpfManager {
   }
 
   /**
-   * Get's the tocx attribute of hte spine tag
+   * Get's the toc attribute of the spine tag
    * The toc attribute value is the id of the toc item in the manifest
    */
   get spineToc() {
-    return this._content.package.spine.$.toc;
+    return this?._content?.package?.spine?.$?.toc;
   }
 
   set spineToc(toc) {
-    this._content.package.spine.$.toc = toc;
+    if (!this._content.package.spine.$) {
+      this._content.package.spine.$ = { toc: toc };
+    } else {
+      this._content.package.spine.$.toc = toc;
+    }
+  }
+
+  /**
+   * Try to find the href of the nav
+   * and match that to an item in the manifest.
+   * Order of search is: OPF Spine toc, manifest item with nav "properties", ncx path
+   */
+  findTocHref() {
+    const tocId = this.spineToc;
+
+    if (tocId) {
+      const manifestItem = this.findManifestItemWithId(tocId);
+      if (manifestItem) {
+        const href = manifestItem.href;
+        return href;
+      }
+    } else {
+      // the spine's toc attribute is not defined.
+      // look for a manifest item with the nav property
+      const item = this.findManifestItemWithProperties("nav");
+      if (item) {
+        return item.href;
+      } else {
+        // no nav item found - look for an ncx file
+        const ncxItems = this.findManifestItemsWithMediaType(
+          "application/x-dtbncx+xml"
+        );
+        if (ncxItem.length > 0) {
+          return ncxItems[0].href;
+        }
+      }
+    }
+
+    return;
   }
 
   /**
@@ -133,16 +171,63 @@ class OpfManager {
     return sortedManifest;
   }
 
+  /**
+   * Find the first manifest item with the given "properties" attribute value
+   * @param {string} prop
+   */
+  findManifestItemWithProperties(prop) {
+    const item = this._content.package.manifest[0].item.find(item => {
+      return item?.$?.properties === prop;
+    });
+
+    if (item) {
+      return {
+        id: item.$.id,
+        href: item.$.href,
+        mediaType: item.$["media-type"],
+        properties: item.$?.properties
+      };
+    }
+  }
+
+  /**
+   * Find the manifest items with the given media-type attribute
+   * @param {string} mediaType
+   */
+  findManifestItemsWithMediaType(mediaType) {
+    const items = this._content.package.manifest[0].item
+      .filter(item => {
+        return item?.$["media-type"] === mediaType;
+      })
+      .map(item => {
+        return {
+          id: item.$.id,
+          href: item.$.href,
+          mediaType: item.$["media-type"],
+          properties: item.$?.properties
+        };
+      });
+
+    return items;
+  }
+
+  /**
+   * Find a manifest item with the given id value
+   * @param {string} id
+   */
   findManifestItemWithId(id) {
     const item = this._content.package.manifest[0].item.find(item => {
       return item.$.id === id;
     });
 
-    return {
-      id: item.$.id,
-      href: item.$.href,
-      mediaType: item.$["media-type"]
-    };
+    if (item) {
+      return {
+        id: item.$.id,
+        href: item.$.href,
+        mediaType: item.$["media-type"],
+        properties: item.$?.properties
+      };
+    }
   }
 
   findManifestItemIdSpinePosition(id) {

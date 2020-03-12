@@ -12,6 +12,8 @@ class EpubKit {
     this.pathToSource = path.resolve(pathToEpub);
     this.pathToEpubDir = undefined;
 
+    this._loaded = false;
+
     /* paths to epub's internal files */
     this._containerPath = undefined;
     this._opfFilePath = undefined;
@@ -73,6 +75,8 @@ class EpubKit {
     }
 
     await this._ncxManager.loadFile(tmpPath);
+
+    this._loaded = true;
   }
 
   get ncx() {
@@ -81,6 +85,17 @@ class EpubKit {
 
   get opfFilePath() {
     return this._opfFilePath;
+  }
+
+  findNavFile() {
+    if (!this._loaded) {
+      return;
+    }
+
+    let tocHref = this._opfManager.findTocHref;
+    if (!tocHref) {
+      // toc property may be missing from OPF
+    }
   }
 }
 
