@@ -7,6 +7,9 @@ import path from "path";
  * see also:
  * https://github.com/jvilk/BrowserFS
  * https://github.com/browserify/path-browserify
+ * https://github.com/isomorphic-git/lightning-fs
+ * https://github.com/filerjs/filer
+ *
  */
 class FileManager {
   async readFile(location) {

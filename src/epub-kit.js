@@ -14,6 +14,14 @@ class EpubKit {
 
     this._loaded = false;
 
+    // fs.readdir("/", (err, files) => {
+    //   if (err) {
+    //     console.log(err.toString());
+    //   } else {
+    //     console.log("dir:", files.join(", "));
+    //   }
+    // });
+
     /* paths to epub's internal files */
     this._containerPath = undefined;
     this._opfFilePath = undefined;
@@ -94,7 +102,7 @@ class EpubKit {
 
     let tocHref = this._opfManager.findTocHref;
     if (!tocHref) {
-      // toc property may be missing from OPF
+      // toc property may be missing from OPF - look for the ncx
     }
   }
 }

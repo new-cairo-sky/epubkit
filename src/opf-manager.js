@@ -1,20 +1,23 @@
 import util from "util";
 import xml2js from "xml2js";
 import FileManager from "./file-manager";
+import path from "path";
 
 /**
- * Manager for the container.xml file
+ * Manager for the opf file
  * http://idpf.org/epub/20/spec/OPF_2.0.1_draft.htm
  */
 class OpfManager {
-  constructor(path) {
-    this._path = path;
+  constructor(filePath) {
+    this._path = filePath;
+    this._dir = filePath ? path.dirname(filePath) : undefined;
     this._content = undefined;
   }
 
   async loadFile(newPath) {
     let result;
     this._path = newPath ? newPath : this._path;
+    this._dir = path.dirname(this._path);
 
     const fileManager = new FileManager();
     const data = await fileManager.readFile(this._path);
@@ -36,8 +39,9 @@ class OpfManager {
   }
 
   /**
-   * Public API Getters ans Setters
+   * Public API Getters and Setters
    */
+
   get path() {
     return this._path;
   }
@@ -65,6 +69,10 @@ class OpfManager {
     return this?._content?.package?.spine?.$?.toc;
   }
 
+  /**
+   * Set the spine's TOC attribute
+   * @param {string} toc
+   */
   set spineToc(toc) {
     if (!this._content.package.spine.$) {
       this._content.package.spine.$ = { toc: toc };
@@ -104,6 +112,15 @@ class OpfManager {
       }
     }
 
+    return;
+  }
+
+  findTocPath() {
+    const href = this.findTocHref();
+    if (href) {
+      const tocPath = path.resolve(this._path, href);
+      return tocPath;
+    }
     return;
   }
 
