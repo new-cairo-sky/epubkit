@@ -24,6 +24,7 @@
     "adm-zip": "^0.4.14",
     "browserfs": "git+https://github.com/jvilk/BrowserFS.git",
     "css": "^2.2.4",
+    "es6-promisify": "^6.1.0",
     "helmet": "^3.22.0",
     "xml2js": "^0.4.23"
   },

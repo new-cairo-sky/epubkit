@@ -106,7 +106,7 @@ class OpfManager {
         const ncxItems = this.findManifestItemsWithMediaType(
           "application/x-dtbncx+xml"
         );
-        if (ncxItem.length > 0) {
+        if (ncxItems.length > 0) {
           return ncxItems[0].href;
         }
       }
@@ -118,7 +118,7 @@ class OpfManager {
   findTocPath() {
     const href = this.findTocHref();
     if (href) {
-      const tocPath = path.resolve(this._path, href);
+      const tocPath = path.resolve(path.dirname(this._path), href);
       return tocPath;
     }
     return;

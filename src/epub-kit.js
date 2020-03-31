@@ -1,6 +1,6 @@
-import fs from "fs";
+//import fs from "fs";
 import path from "path";
-import os from "os";
+//import os from "os";
 
 import ContainerManager from "./container-manager";
 import OpfManager from "./opf-manager";
@@ -14,14 +14,6 @@ class EpubKit {
 
     this._loaded = false;
 
-    // fs.readdir("/", (err, files) => {
-    //   if (err) {
-    //     console.log(err.toString());
-    //   } else {
-    //     console.log("dir:", files.join(", "));
-    //   }
-    // });
-
     /* paths to epub's internal files */
     this._containerPath = undefined;
     this._opfFilePath = undefined;
@@ -31,23 +23,24 @@ class EpubKit {
     this._containerManager = new ContainerManager();
     this._opfManager = new OpfManager();
     this._ncxManager = new NcxManager();
-
-    // check if epub is an archive or a directory.
-    const stats = fs.statSync(this.pathToSource);
-    if (stats.isFile()) {
-      const tmpDir = os.tmpdir();
-      const tmpPath = path.resolve(tmpDir, path.basename(this.pathToSource));
-      const AdmZip = new AdmZip(this.pathToSource);
-      AdmZip.extractAllTo(tmpPath, true);
-      this.pathToEpubDir = tmpPath;
-    } else {
-      this.pathToEpubDir = this.pathToSource;
-    }
   }
 
   async load() {
-    const tmpPath = path.resolve(this.pathToEpubDir, "./3174/toc.ncx");
+    // check if epub is an archive or a directory.
     const fileManager = new FileManager();
+    console.log("pathToSource", this.pathToSource);
+
+    if (fileManager.isEpubArchive(this.pathToSource)) {
+      this.pathToEpubDir = await fileManager.prepareEpubArchive(
+        this.pathToSource
+      );
+      console.log("pathToEpub", this.pathToEpubDir);
+      if (!this.pathToEpubDir) {
+        return;
+      }
+    } else {
+      this.pathToEpubDir = this.pathToSource;
+    }
 
     const containerFilePath = path.resolve(
       this.pathToEpubDir,
@@ -82,7 +75,12 @@ class EpubKit {
       await this._opfManager.loadFile(this._opfFilePath);
     }
 
-    await this._ncxManager.loadFile(tmpPath);
+    if (this._opfManager) {
+      const tocPath = this._opfManager.findTocPath();
+      if (tocPath && path.extname(tocPath) === ".ncx") {
+        await this._ncxManager.loadFile(tocPath);
+      }
+    }
 
     this._loaded = true;
   }

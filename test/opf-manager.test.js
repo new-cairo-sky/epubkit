@@ -76,5 +76,5 @@ test("can find epub3 Toc path", async () => {
   const opfManager = new OpfManager(epub3OpfPath);
   await opfManager.loadFile();
   const href = opfManager.findTocPath();
-  expect(href).toBe(`${testPath}/fixtures/alice/OPS/package.opf/toc.xhtml`);
+  expect(href).toBe(`${testPath}/fixtures/alice/OPS/toc.xhtml`);
 });
