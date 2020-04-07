@@ -38,12 +38,14 @@ class EpubKit {
       this._pathToEpubDir = await fileManager.prepareEpubArchive(
         this._pathToSource
       );
-      console.log("pathToEpub", this._pathToEpubDir);
-      if (!this._pathToEpubDir) {
-        return;
-      }
     } else {
-      this._pathToEpubDir = this._pathToSource;
+      this._pathToEpubDir = await fileManager.prepareEpubDir(
+        this._pathToSource
+      );
+    }
+    console.log("pathToEpub", this._pathToEpubDir);
+    if (!this._pathToEpubDir) {
+      return;
     }
 
     // find the container.xml file.

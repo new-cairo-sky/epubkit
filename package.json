@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "jest": {
+    "preset": "jest-puppeteer",
     "verbose": true,
     "transform": {
       "^.+\\.jsx?$": "babel-jest"
@@ -46,6 +47,8 @@
     "eslint-plugin-import": "^2.20.2",
     "express": "^4.17.1",
     "jest": "^25.1.0",
+    "jest-puppeteer": "^4.4.0",
+    "puppeteer": "^2.1.1",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11",
     "webpack-dev-middleware": "^3.7.2",

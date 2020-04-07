@@ -6,9 +6,14 @@ const BrowserFS = require("browserfs");
 BrowserFS.install(window);
 
 async function test() {
-  const TestEpubKit = new EpubKit("/assets/alice.epub");
-  await TestEpubKit.load();
+  const TestEpubKit = new EpubKit();
+  const epubPath = window.epubPath ? window.epubPath : "/assets/alice";
+  await TestEpubKit.load(epubPath);
   console.log("opf file", TestEpubKit.opfFilePath);
+  document.getElementById("epubpath").innerText = epubPath;
+  const el = document.getElementById("result");
+  el.innerText = TestEpubKit.opfFilePath;
 }
-
-test();
+window.onload = () => {
+  test();
+};

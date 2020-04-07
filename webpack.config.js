@@ -44,6 +44,7 @@ module.exports = {
           {
             loader: "babel-loader",
             options: {
+              sourceMap: "both",
               presets: [
                 [
                   "@babel/preset-env",

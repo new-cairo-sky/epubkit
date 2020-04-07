@@ -2,18 +2,34 @@ import util from "util";
 import xml2js from "xml2js";
 import FileManager from "./file-manager";
 import path from "path";
-import e from "express";
 
 /**
  * Manager for the opf file
  * http://idpf.org/epub/20/spec/OPF_2.0.1_draft.htm
  */
 class OpfManager {
-  constructor(filePath) {
+  constructor() {
     this._path = undefined;
     this._dir = undefined;
     this._content = undefined;
     this._loaded = false;
+  }
+
+  async loadData(data) {
+    let result;
+    try {
+      result = await util.promisify(xml2js.parseString)(data, {
+        attrkey: "attr",
+        charkey: "val",
+        trim: true,
+      });
+    } catch (err) {
+      console.warn("Error parsing container.xml file:", err);
+      throw err;
+    }
+    this._content = result;
+    this._loaded = true;
+    return result;
   }
 
   async loadFile(newPath) {
@@ -33,7 +49,7 @@ class OpfManager {
       result = await util.promisify(xml2js.parseString)(data, {
         attrkey: "attr",
         charkey: "val",
-        trim: true
+        trim: true,
       });
     } catch (err) {
       console.warn("Error parsing container.xml file:", err);
@@ -58,11 +74,11 @@ class OpfManager {
   }
 
   get manifestItems() {
-    const items = this._content.package.manifest[0].item.map(item => {
+    const items = this._content.package.manifest[0].item.map((item) => {
       return {
         id: item.attr.id,
         href: item.attr.href,
-        mediaType: item.attr["media-type"]
+        mediaType: item.attr["media-type"],
       };
     });
     return items;
@@ -106,7 +122,7 @@ class OpfManager {
     if (attributes.length > 0) {
       const item = {
         val: value,
-        attr: attributes
+        attr: attributes,
       };
       this._content.package.metadata[0][key].push(item);
     } else {
@@ -131,7 +147,7 @@ class OpfManager {
     if (this._content.package.metadata[0][key]) {
       const value = this._content.package.metadata[0][key];
       if (Array.isArray(value)) {
-        value.forEach(item => {
+        value.forEach((item) => {
           if (typeof item === "object" && item !== null) {
             const newMetadata = {};
             for (let [itemKey, itemValue] of Object.entries(item)) {
@@ -307,8 +323,8 @@ class OpfManager {
       attr: {
         href: href,
         id: id,
-        "media-type": mediaType
-      }
+        "media-type": mediaType,
+      },
     });
     this.sortManifest();
     return this._content.package.manifest;
@@ -356,7 +372,7 @@ class OpfManager {
       console.error("Opf not loaded.");
       throw "Opf not loaded.";
     }
-    const item = this._content.package.manifest[0].item.find(item => {
+    const item = this._content.package.manifest[0].item.find((item) => {
       return item?.attr?.properties === prop;
     });
 
@@ -365,7 +381,7 @@ class OpfManager {
         id: item.attr.id,
         href: item.attr.href,
         mediaType: item.attr["media-type"],
-        properties: item.attr?.properties
+        properties: item.attr?.properties,
       };
     }
   }
@@ -380,15 +396,15 @@ class OpfManager {
       throw "Opf not loaded.";
     }
     const items = this._content.package.manifest[0].item
-      .filter(item => {
+      .filter((item) => {
         return item?.attr["media-type"] === mediaType;
       })
-      .map(item => {
+      .map((item) => {
         return {
           id: item.attr.id,
           href: item.attr.href,
           mediaType: item.attr["media-type"],
-          properties: item.attr?.properties
+          properties: item.attr?.properties,
         };
       });
 
@@ -404,7 +420,7 @@ class OpfManager {
       console.error("Opf not loaded.");
       throw "Opf not loaded.";
     }
-    const item = this._content.package.manifest[0].item.find(item => {
+    const item = this._content.package.manifest[0].item.find((item) => {
       return item.attr.id === id;
     });
 
@@ -413,7 +429,7 @@ class OpfManager {
         id: item.attr.id,
         href: item.attr.href,
         mediaType: item.attr["media-type"],
-        properties: item.attr?.properties
+        properties: item.attr?.properties,
       };
     }
   }
@@ -428,9 +444,11 @@ class OpfManager {
       throw "Opf not loaded.";
     }
 
-    const index = this._content.package.spine[0].itemref.findIndex(itemref => {
-      return itemref.attr.idref === id;
-    });
+    const index = this._content.package.spine[0].itemref.findIndex(
+      (itemref) => {
+        return itemref.attr.idref === id;
+      }
+    );
 
     return index;
   }
@@ -453,10 +471,10 @@ class OpfManager {
       throw "Opf not loaded.";
     }
 
-    const items = this._content.package.spine[0].item.map(item => {
+    const items = this._content.package.spine[0].item.map((item) => {
       return {
         idref: item.attr.idref,
-        linear: item.attr.linear || true
+        linear: item.attr.linear || true,
       };
     });
     return items;
@@ -477,8 +495,8 @@ class OpfManager {
     this._content.package.spine[0].itemref.splice(position, 0, {
       attr: {
         idref: idref,
-        linear: linear ? "yes" : "no"
-      }
+        linear: linear ? "yes" : "no",
+      },
     });
     return this._content.package.spine;
   }

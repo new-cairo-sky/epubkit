@@ -8,6 +8,17 @@ test("can open epub directory", async () => {
   expect(epubKit.pathToSource).toBe(epubPath);
 });
 
+test("can open epub directory in browser", async () => {
+  await page.goto("http://localhost:3000");
+  await page.once("load", () => {
+    console.log("loaded");
+    document.getElementById("result").textContent;
+  });
+  await expect(page).toMatch("/epubkit/zip/OPS/package.opf");
+  // page.evaluate(() => )
+  // expect(result).toBe("/epubkit/zip/OPS/package.opf");
+});
+
 test("can find opf", async () => {
   const epubPath = path.resolve("./test/fixtures/a_dogs_tale");
   const epubKit = new EpubKit();
