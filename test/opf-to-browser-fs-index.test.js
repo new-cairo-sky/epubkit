@@ -2,7 +2,7 @@ import path from "path";
 import OpfManager from "../src/opf-manager";
 import {
   pathToObject,
-  opfManifestToBrowserFsIndex
+  opfManifestToBrowserFsIndex,
 } from "../src/utils/opf-to-browser-fs-index";
 
 const epub3OpfPath = path.resolve("./test/fixtures/alice/OPS/package.opf");
@@ -20,6 +20,7 @@ test("can convert manifest to BrowserFS index object", async () => {
   const manifestItems = opfManager.manifestItems;
   const result = opfManifestToBrowserFsIndex(
     manifestItems,
+    "/test/fixtures/alice/",
     "/test/fixtures/alice/OPS/package.opf"
   );
   console.log("result", result);

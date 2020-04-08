@@ -14,7 +14,7 @@ test("can open epub directory in browser", async () => {
     console.log("loaded");
     document.getElementById("result").textContent;
   });
-  await expect(page).toMatch("/epubkit/zip/OPS/package.opf");
+  await expect(page).toMatch("/epubkit/overlay/assets/alice/OPS/package.opf");
   // page.evaluate(() => )
   // expect(result).toBe("/epubkit/zip/OPS/package.opf");
 });
@@ -23,7 +23,7 @@ test("can find opf", async () => {
   const epubPath = path.resolve("./test/fixtures/a_dogs_tale");
   const epubKit = new EpubKit();
   await epubKit.load(epubPath);
-  expect(epubKit.opfFilePath).toBe(`${epubPath}/3174/content.opf`);
+  expect(epubKit.opfFilePath?.split(path.sep).pop()).toBe(`content.opf`);
 });
 
 test("can read toc.ncx", async () => {
@@ -31,7 +31,6 @@ test("can read toc.ncx", async () => {
   const epubKit = new EpubKit();
   await epubKit.load(epubPath);
   const ncx = epubKit.ncx;
-  console.log("ncx", ncx);
   expect(epubKit.pathToSource).toBe(epubPath);
   expect(ncx.content).toBeTruthy();
   expect(ncx.content.ncx).toBeTruthy();

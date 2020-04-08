@@ -1,4 +1,5 @@
 import fs from "fs";
+import os from "os";
 import path from "path";
 // NOTE: we cannot use the native fs promises because BrowserFS does not support them yet.
 import { promisify } from "es6-promisify";
@@ -147,20 +148,56 @@ class FileManager {
                 },
               },
             },
+            "/tmp": { fs: "InMemory" },
           },
         });
       } catch (err) {
         console.error("Error configuring BrowserFS:", err.message);
         return;
       }
-      fs.readdir("./epubkit/overlay/assets/alice/META-INF", (err, files) => {
-        files.forEach((file) => {
-          console.log(":", file);
-        });
-      });
+      // fs.readdir("./epubkit/overlay/assets/alice/META-INF", (err, files) => {
+      //   files.forEach((file) => {
+      //     console.log(":", file);
+      //   });
+      // });
 
       // return the virtual path to the epub root
       return `${this._virtualPath}/overlay/${location}/`;
+    } else {
+      // when running in Node, copys epub dir to tmp directory.
+
+      let tmpDir;
+      try {
+        tmpDir = await this.getTempDir();
+      } catch (err) {
+        throw err;
+      }
+
+      const epubDirName = location.split(path.sep).pop();
+
+      const tmpPath = path.resolve(tmpDir, `${epubDirName}_${Date.now()}`);
+      if (await this.dirExists(tmpPath)) {
+        try {
+          await promisify(fs.rmdir)(tmpPath, {
+            recursive: true,
+            maxRetries: 3,
+          });
+        } catch (err) {
+          console.log("Could not remove dir", tmpPath, err.message);
+          throw "Could not prepare directory. Tmp director already exists and could not be removed.";
+        }
+      }
+      try {
+        await this.copyDir(location, tmpPath);
+      } catch (err) {
+        console.error(
+          "prepareEpubDir Error: Could not copy dir to",
+          tmpPath,
+          err.message
+        );
+        return;
+      }
+      return tmpPath;
     }
   }
 
@@ -189,11 +226,19 @@ class FileManager {
       const result = await promisify(BrowserFS.configure)({
         fs: "MountableFileSystem",
         options: {
-          [`${this._virtualPath}/zip`]: {
-            fs: "ZipFS",
+          [`${this._virtualPath}/overlay`]: {
+            fs: "OverlayFS",
             options: {
-              // Wrap as Buffer object.
-              zipData: Buffer.from(zipData),
+              readable: {
+                fs: "ZipFS",
+                options: {
+                  // Wrap as Buffer object.
+                  zipData: Buffer.from(zipData),
+                },
+              },
+              writable: {
+                fs: "LocalStorage",
+              },
             },
           },
           "/tmp": { fs: "InMemory" },
@@ -205,10 +250,7 @@ class FileManager {
         console.warn("Error at BrowserFS.configure", result.message);
         throw result;
       }
-
-      // const files = await promisify(fs.readdir)("/zip");
-      // console.log("epub contents", files);
-      return `${this._virtualPath}/zip`;
+      return `${this._virtualPath}/overlay`;
     } else {
       // when running in Node, decompress epub to tmp directory.
       const tmpDir = os.tmpdir();
@@ -289,8 +331,52 @@ class FileManager {
     return false;
   }
 
+  async dirExists(path) {
+    try {
+      const stats = await promisify(fs.stat)(path);
+      if (stats.isDirectory()) {
+        return true;
+      }
+    } catch (err) {
+      console.warn("Could not detect dir", path, err.message);
+      return false;
+    }
+
+    return false;
+  }
+
   get isClient() {
     return this._isClient;
+  }
+
+  async copyDir(src, dest) {
+    const entries = await promisify(fs.readdir)(src, { withFileTypes: true });
+    try {
+      await promisify(fs.mkdir)(dest);
+    } catch (err) {
+      console.error("copyDir Error: Could not mkdir", dest, err.message);
+      throw err;
+    }
+
+    for (let entry of entries) {
+      const srcPath = path.join(src, entry.name);
+      const destPath = path.join(dest, entry.name);
+      if (entry.isDirectory()) {
+        await this.copyDir(srcPath, destPath);
+      } else {
+        await promisify(fs.copyFile)(srcPath, destPath);
+      }
+    }
+  }
+
+  async getTempDir() {
+    try {
+      const tmpDir = await promisify(fs.realpath)(os.tmpdir);
+      return tmpDir;
+    } catch (err) {
+      console.error("Error in getTempDir", err.message);
+      throw err;
+    }
   }
 }
 
