@@ -8,18 +8,18 @@ module.exports = {
   target: "web",
   entry: {
     main: isProd
-      ? ["./src/client.js"]
+      ? ["./src/index.js"]
       : [
           "webpack-hot-middleware/client?path=/__webpack_hmr&timeout=20000",
-          "./src/client.js"
-        ]
+          "./test/client.js",
+        ],
   },
   output: {
     filename: `bundle.[name]${isProd ? ".[chunkhash]" : ""}.js`,
-    path: path.resolve(__dirname, "public/assets/"),
+    path: path.resolve(__dirname, "dist/assets/"),
     publicPath: "/assets/",
     hotUpdateChunkFilename: "hot/[id].[hash].hot-update.js",
-    hotUpdateMainFilename: "hot/[hash].hot-update.json"
+    hotUpdateMainFilename: "hot/[hash].hot-update.json",
   },
   devtool: isProd ? undefined : "cheap-module-eval-source-map",
   resolve: {
@@ -30,8 +30,8 @@ module.exports = {
       path: "browserfs/dist/shims/path.js",
       processGlobal: "browserfs/dist/shims/process.js",
       bufferGlobal: "browserfs/dist/shims/bufferGlobal.js",
-      bfsGlobal: require.resolve("browserfs")
-    }
+      bfsGlobal: require.resolve("browserfs"),
+    },
   },
   // REQUIRED to avoid issue "Uncaught TypeError: BrowserFS.BFSRequire is not a function"
   // See: https://github.com/jvilk/BrowserFS/issues/201
@@ -49,21 +49,21 @@ module.exports = {
                 [
                   "@babel/preset-env",
                   {
-                    targets: "> 0.25%, not dead"
-                  }
-                ]
+                    targets: "> 0.25%, not dead",
+                  },
+                ],
               ],
               plugins: [
                 "@babel/plugin-syntax-dynamic-import",
                 "@babel/plugin-transform-async-to-generator",
-                "@babel/plugin-proposal-class-properties"
-              ]
-            }
-          }
+                "@babel/plugin-proposal-class-properties",
+              ],
+            },
+          },
         ],
-        exclude: /node_modules/
-      }
-    ]
+        exclude: /node_modules/,
+      },
+    ],
   },
   plugins: [
     // Expose BrowserFS, process, and Buffer globals.
@@ -72,19 +72,19 @@ module.exports = {
     new webpack.ProvidePlugin({
       BrowserFS: "bfsGlobal",
       process: "processGlobal",
-      Buffer: "bufferGlobal"
+      Buffer: "bufferGlobal",
     }),
     isProd ? null : new webpack.HotModuleReplacementPlugin(),
     new AssetsPlugin({
       filename: "bundle-manifest.json",
       fullPath: false,
-      path: path.resolve(__dirname, "public/assets/"),
-      prettyPrint: true
-    })
+      path: path.resolve(__dirname, "dist/assets/"),
+      prettyPrint: true,
+    }),
   ].filter(Boolean),
   // DISABLE Webpack's built-in process and Buffer polyfills!
   node: {
     process: false,
-    Buffer: false
-  }
+    Buffer: false,
+  },
 };

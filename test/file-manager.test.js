@@ -4,7 +4,7 @@ import FileManager from "../src/file-manager";
 test("can prepare epub directory in browser", async () => {
   const fileManager = new FileManager();
 
-  const epubPath = "/assets/alice";
+  const epubPath = "/fixtures/alice";
 
   // see: https://github.com/puppeteer/puppeteer/issues/2138
   page.evaluateOnNewDocument(`
@@ -24,5 +24,5 @@ test("can prepare epub directory in browser", async () => {
   //   content: `window.epubPath = "testtest";`
   // });
   await expect(page).toMatch(epubPath);
-  await expect(page).toMatch("/epubkit/overlay/assets/alice");
+  await expect(page).toMatch("/epubkit/overlay/fixtures/alice");
 });

@@ -1,13 +1,13 @@
 import "core-js/stable";
 import "regenerator-runtime/runtime";
-import EpubKit from "./epub-kit";
+import EpubKit from "../src/epub-kit";
 const BrowserFS = require("browserfs");
 
 BrowserFS.install(window);
 
 async function test() {
   const TestEpubKit = new EpubKit();
-  const epubPath = window.epubPath ? window.epubPath : "/assets/alice";
+  const epubPath = window.epubPath ? window.epubPath : "/fixtures/alice";
   await TestEpubKit.load(epubPath);
   console.log("opf file", TestEpubKit.opfFilePath);
   document.getElementById("epubpath").innerText = epubPath;

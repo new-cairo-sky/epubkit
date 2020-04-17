@@ -2,7 +2,7 @@
   "name": "epubkit",
   "version": "1.0.0",
   "description": "A Node library for parsing and editing epubs.",
-  "main": "index.js",
+  "main": "dist/main.js",
   "directories": {
     "test": "test"
   },
@@ -10,7 +10,7 @@
     "test": "jest",
     "build": "npm run build:client",
     "build:client": "webpack --progress --mode=production",
-    "start": "babel-node ./src/dev-server.js"
+    "start": "babel-node ./test/dev-server.js"
   },
   "author": "",
   "license": "ISC",

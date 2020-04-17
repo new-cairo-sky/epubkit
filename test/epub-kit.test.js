@@ -14,7 +14,7 @@ test("can open epub directory in browser", async () => {
     console.log("loaded");
     document.getElementById("result").textContent;
   });
-  await expect(page).toMatch("/epubkit/overlay/assets/alice/OPS/package.opf");
+  await expect(page).toMatch("/epubkit/overlay/fixtures/alice/OPS/package.opf");
   // page.evaluate(() => )
   // expect(result).toBe("/epubkit/zip/OPS/package.opf");
 });

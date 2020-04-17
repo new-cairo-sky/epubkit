@@ -178,7 +178,7 @@ class FileManager {
       // });
 
       // return the virtual path to the epub root
-      return `${this._virtualPath}/overlay/${location}/`;
+      return path.normalize(`${this._virtualPath}/overlay/${location}/`);
     } else {
       // when running in Node, copy the epub dir to tmp directory.
       let tmpDir;
@@ -212,7 +212,7 @@ class FileManager {
         );
         return;
       }
-      return tmpPath;
+      return path.normalize(tmpPath);
     }
   }
 
