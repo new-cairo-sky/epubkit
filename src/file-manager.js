@@ -180,8 +180,7 @@ class FileManager {
       // return the virtual path to the epub root
       return `${this._virtualPath}/overlay/${location}/`;
     } else {
-      // when running in Node, copys epub dir to tmp directory.
-
+      // when running in Node, copy the epub dir to tmp directory.
       let tmpDir;
       try {
         tmpDir = await this.getTmpDir();
@@ -303,7 +302,7 @@ class FileManager {
   }
 
   /**
-   * Read json file and parse it using xml2js
+   * Read a XML file and parse it into a json object using xml2js
    * @param {string} - location
    * @returns {object} - a json object
    */
@@ -325,7 +324,7 @@ class FileManager {
   }
 
   /**
-   * Recursively search directory and returns flat list of all files
+   * Recursively searches a directory and returns a flat array of all files
    *
    * @param {string} directoryName - the base directory to search
    * @param {array} _results - private. holds _results for recursive search
@@ -375,7 +374,7 @@ class FileManager {
   }
 
   /**
-   * Checks if a file already exists at location
+   * Checks if a file already exists at the given location
    *
    * @param {string} path - file path to test
    * @returns {boolean}
@@ -395,7 +394,7 @@ class FileManager {
   }
 
   /**
-   * Checks if a directory already exists
+   * Checks if a directory already exists at the given location
    * @param {string} path - dir to test
    * @returns {boolean}
    */

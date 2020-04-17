@@ -1,6 +1,3 @@
-import { promisify } from "es6-promisify";
-import xml2js from "xml2js";
-import FileManager from "./file-manager";
 import path from "path";
 
 /**
@@ -9,8 +6,6 @@ import path from "path";
  */
 class OpfManager {
   constructor() {
-    this._path = undefined;
-    this._dir = undefined;
     this._content = undefined;
     this._loaded = false;
   }
@@ -21,59 +16,9 @@ class OpfManager {
     return data;
   }
 
-  async oldloadData(data) {
-    let result;
-    try {
-      result = await promisify(xml2js.parseString)(data, {
-        attrkey: "attr",
-        charkey: "val",
-        trim: true,
-      });
-    } catch (err) {
-      console.warn("Error parsing container.xml file:", err);
-      throw err;
-    }
-    this._content = result;
-    this._loaded = true;
-    return result;
-  }
-
-  async oldloadFile(newPath) {
-    let result;
-    this._path = newPath;
-    this._dir = path.dirname(this._path);
-
-    const fileManager = new FileManager();
-    const data = await fileManager.readFile(this._path);
-
-    if (!data) {
-      console.warn("Error reading file", this._path);
-      return;
-    }
-
-    try {
-      result = await promisify(xml2js.parseString)(data, {
-        attrkey: "attr",
-        charkey: "val",
-        trim: true,
-      });
-    } catch (err) {
-      console.warn("Error parsing container.xml file:", err);
-      throw err;
-    }
-
-    this._content = result;
-    this._loaded = true;
-    return result;
-  }
-
   /**
    * Public API Getters and Setters
    */
-
-  get path() {
-    return this._path;
-  }
 
   get content() {
     return this._content;
@@ -222,8 +167,8 @@ class OpfManager {
   }
 
   /**
-   * Try to find the href of the nav
-   * and match that to an item in the manifest.
+   * Try to find the href of the nav file.
+   * Looks for nav attribute and matches that to item id in the manifest.
    * Order of search is: OPF Spine toc, manifest item with nav "properties", ncx path
    */
   findTocHref() {
@@ -295,7 +240,7 @@ class OpfManager {
   /**
    * Find the path to the ncx file, if any.
    */
-  findNcxPath() {
+  findNcxPath(relativeTo) {
     if (!this._loaded) {
       console.error("Opf not loaded.");
       throw "Opf not loaded.";
@@ -309,7 +254,7 @@ class OpfManager {
       if (!!href) {
         throw "Ncx found in manifest, but href is empty.";
       }
-      const ncxPath = path.resolve(path.dirname(this._path), href);
+      const ncxPath = path.resolve(path.dirname(relativeTo), href);
       return ncxPath;
     } else {
       throw "No ncx found in manifest.";

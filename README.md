@@ -16,14 +16,12 @@ npm install git+https://github.com/new-cairo-sky/epubkit.git
 
 ## Testing
 
-Tests are made with jest. The server must be running for testing the module in the browser. 
+Tests are made with jest. The server must be running for testing in the browser. 
 ``` 
 npm start
-```
-```
-npm run test
+npm test
 ```
 or
 ```
-npm run test [test-file-name].test
+npm test -- [test-file-name].test.js
 ```
