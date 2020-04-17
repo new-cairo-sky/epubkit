@@ -1,4 +1,3 @@
-import util from "util";
 import { promisify } from "es6-promisify";
 import xml2js from "xml2js";
 import FileManager from "./file-manager";

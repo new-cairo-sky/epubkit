@@ -76,6 +76,7 @@ class FileManager {
   /**
    * When loading an Epub directory in a browser client, the files
    * are fetched lazily by BrowserFS and saved to localStorage.
+   *
    * @param {string} location
    */
   async prepareEpubDir(location) {
@@ -117,8 +118,23 @@ class FileManager {
       const opfLocation = path.resolve(location, manifestPath);
       const opfFetchResponse = await fetch(opfLocation, this._fetchOptions);
       const opfData = await opfFetchResponse.text();
+
+      let opfJsonData;
+      if (opfData) {
+        try {
+          opfJsonData = await promisify(xml2js.parseString)(opfData, {
+            attrkey: "attr",
+            charkey: "val",
+            trim: true,
+          });
+        } catch (err) {
+          console.warn("Error parsing container.xml file:", err);
+          return;
+        }
+      }
+
       const opfManager = new OpfManager();
-      await opfManager.loadData(opfData);
+      await opfManager.init(opfJsonData);
       const manifestItems = opfManager.manifestItems;
 
       const fsManifestPath = path.join(location, manifestPath);
@@ -168,7 +184,7 @@ class FileManager {
 
       let tmpDir;
       try {
-        tmpDir = await this.getTempDir();
+        tmpDir = await this.getTmpDir();
       } catch (err) {
         throw err;
       }
@@ -271,6 +287,10 @@ class FileManager {
     return false;
   }
 
+  /**
+   * Read a file and return the data
+   * @param {string} location
+   */
   async readFile(location) {
     let data;
     try {
@@ -282,22 +302,59 @@ class FileManager {
     return data;
   }
 
-  async walk(directoryName, results = []) {
+  /**
+   * Read json file and parse it using xml2js
+   * @param {string} - location
+   * @returns {object} - a json object
+   */
+  async readXmlFile(location) {
+    const data = await this.readFile(location);
+    let result;
+    if (data) {
+      try {
+        result = await promisify(xml2js.parseString)(data, {
+          attrkey: "attr",
+          charkey: "val",
+          trim: true,
+        });
+      } catch (err) {
+        console.warn("Error parsing container.xml file:", err);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Recursively search directory and returns flat list of all files
+   *
+   * @param {string} directoryName - the base directory to search
+   * @param {array} _results - private. holds _results for recursive search
+   * @returns {array} - an array of file path strings
+   */
+  async walk(directoryName, _results = []) {
     let files = await promisify(fs.readdir)(directoryName, {
       withFileTypes: true,
     });
     for (let f of files) {
       let fullPath = path.join(directoryName, f.name);
       if (f.isDirectory()) {
-        await this.walk(fullPath, results);
+        await this.walk(fullPath, _results);
       } else {
-        results.push(fullPath);
+        _results.push(fullPath);
       }
     }
-    return results;
+    return _results;
   }
 
-  async findFilesWithExt(directoryName, findExt, results = []) {
+  /**
+   * Recursively search directory for files with the given extension
+   *
+   * @param {string} directoryName - the dir to start search in
+   * @param {string} findExt - the file extension to search for
+   * @param {array} _results - private. holds results for recursive search
+   * @returns {array} - an array of file path strings
+   */
+  async findFilesWithExt(directoryName, findExt, _results = []) {
     let files = await promisify(fs.readdir)(directoryName, {
       withFileTypes: true,
     });
@@ -307,16 +364,22 @@ class FileManager {
     for (let f of files) {
       let fullPath = path.join(directoryName, f.name);
       if (f.isDirectory()) {
-        await this.findFilesWithExt(fullPath, findExt, results);
+        await this.findFilesWithExt(fullPath, findExt, _results);
       } else {
         if (path.extname(fullPath) === ext) {
-          results.push(fullPath);
+          _results.push(fullPath);
         }
       }
     }
-    return results;
+    return _results;
   }
 
+  /**
+   * Checks if a file already exists at location
+   *
+   * @param {string} path - file path to test
+   * @returns {boolean}
+   */
   async fileExists(path) {
     try {
       const stats = await promisify(fs.stat)(path);
@@ -331,6 +394,11 @@ class FileManager {
     return false;
   }
 
+  /**
+   * Checks if a directory already exists
+   * @param {string} path - dir to test
+   * @returns {boolean}
+   */
   async dirExists(path) {
     try {
       const stats = await promisify(fs.stat)(path);
@@ -338,17 +406,27 @@ class FileManager {
         return true;
       }
     } catch (err) {
-      console.warn("Could not detect dir", path, err.message);
+      // console.warn("Could not detect dir", path, err.message);
       return false;
     }
 
     return false;
   }
 
+  /**
+   * Public class property isClient.
+   * isClient indicates if we are running in a browser or not.
+   * @returns {bool} - true if running in browser client, false if node.js
+   */
   get isClient() {
     return this._isClient;
   }
 
+  /**
+   * Recursive directory copy
+   * @param {string} src - path to the directory to copy
+   * @param {string} dest - path to the copy destination
+   */
   async copyDir(src, dest) {
     const entries = await promisify(fs.readdir)(src, { withFileTypes: true });
     try {
@@ -369,12 +447,16 @@ class FileManager {
     }
   }
 
-  async getTempDir() {
+  /**
+   * A wrapper for os.tmpdir that resolves symlinks
+   * see: https://github.com/nodejs/node/issues/11422
+   */
+  async getTmpDir() {
     try {
       const tmpDir = await promisify(fs.realpath)(os.tmpdir);
       return tmpDir;
     } catch (err) {
-      console.error("Error in getTempDir", err.message);
+      console.error("Error in getTmpDir", err.message);
       throw err;
     }
   }

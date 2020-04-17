@@ -1,4 +1,4 @@
-import util from "util";
+import { promisify } from "es6-promisify";
 import xml2js from "xml2js";
 import FileManager from "./file-manager";
 import path from "path";
@@ -15,10 +15,16 @@ class OpfManager {
     this._loaded = false;
   }
 
-  async loadData(data) {
+  init(data) {
+    this._content = data;
+    this._loaded = true;
+    return data;
+  }
+
+  async oldloadData(data) {
     let result;
     try {
-      result = await util.promisify(xml2js.parseString)(data, {
+      result = await promisify(xml2js.parseString)(data, {
         attrkey: "attr",
         charkey: "val",
         trim: true,
@@ -32,7 +38,7 @@ class OpfManager {
     return result;
   }
 
-  async loadFile(newPath) {
+  async oldloadFile(newPath) {
     let result;
     this._path = newPath;
     this._dir = path.dirname(this._path);
@@ -46,7 +52,7 @@ class OpfManager {
     }
 
     try {
-      result = await util.promisify(xml2js.parseString)(data, {
+      result = await promisify(xml2js.parseString)(data, {
         attrkey: "attr",
         charkey: "val",
         trim: true,
@@ -271,15 +277,16 @@ class OpfManager {
 
   /**
    * Find the relative TOC file path.
+   * @param {string} relativeTo - return path relative to this directory
    */
-  findTocPath() {
+  findTocPath(relativeTo = "/") {
     if (!this._loaded) {
       console.error("Opf not loaded.");
       throw "Opf not loaded.";
     }
     const href = this.findTocHref();
     if (href) {
-      const tocPath = path.resolve(path.dirname(this._path), href);
+      const tocPath = path.resolve(path.dirname(relativeTo), href);
       return tocPath;
     }
     return;

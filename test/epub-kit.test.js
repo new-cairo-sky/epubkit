@@ -32,6 +32,6 @@ test("can read toc.ncx", async () => {
   await epubKit.load(epubPath);
   const ncx = epubKit.ncx;
   expect(epubKit.pathToSource).toBe(epubPath);
-  expect(ncx.content).toBeTruthy();
-  expect(ncx.content.ncx).toBeTruthy();
+  expect(ncx?.content).toBeTruthy();
+  expect(ncx?.content.ncx).toBeTruthy();
 });
