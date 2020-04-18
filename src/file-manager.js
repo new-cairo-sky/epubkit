@@ -171,14 +171,14 @@ class FileManager {
         console.error("Error configuring BrowserFS:", err.message);
         return;
       }
-      // fs.readdir("./epubkit/overlay/assets/alice/META-INF", (err, files) => {
+      // fs.readdir("./epubkit/overlay/test/alice/META-INF", (err, files) => {
       //   files.forEach((file) => {
       //     console.log(":", file);
       //   });
       // });
 
       // return the virtual path to the epub root
-      return path.normalize(`${this._virtualPath}/overlay/${location}/`);
+      return path.normalize(`${this._virtualPath}/overlay/${location}`);
     } else {
       // when running in Node, copy the epub dir to tmp directory.
       let tmpDir;
@@ -237,11 +237,11 @@ class FileManager {
       const response = await fetch(location, this._fetchOptions);
       const zipData = await response.arrayBuffer();
       const Buffer = BrowserFS.BFSRequire("buffer").Buffer;
-
+      const workingDir = path.parse(location).name;
       const result = await promisify(BrowserFS.configure)({
         fs: "MountableFileSystem",
         options: {
-          [`${this._virtualPath}/overlay`]: {
+          [`${this._virtualPath}/overlay/${workingDir}`]: {
             fs: "OverlayFS",
             options: {
               readable: {
@@ -265,7 +265,11 @@ class FileManager {
         console.warn("Error at BrowserFS.configure", result.message);
         throw result;
       }
-      return `${this._virtualPath}/overlay`;
+      fs.readdir("./epubkit/overlay", (err, files) => {
+        console.log("files", files);
+      });
+      // return the virtual path to the epub root
+      return path.normalize(`${this._virtualPath}/overlay/${workingDir}`);
     } else {
       // when running in Node, decompress epub to tmp directory.
       const tmpDir = os.tmpdir();

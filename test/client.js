@@ -7,12 +7,12 @@ BrowserFS.install(window);
 
 async function test() {
   const TestEpubKit = new EpubKit();
-  const epubPath = window.epubPath ? window.epubPath : "/fixtures/alice";
-  await TestEpubKit.load(epubPath);
+  const srcEpubPath = window.epubPath ? window.epubPath : "/fixtures/alice";
+  await TestEpubKit.load(srcEpubPath);
   console.log("opf file", TestEpubKit.opfFilePath);
-  document.getElementById("epubpath").innerText = epubPath;
-  const el = document.getElementById("result");
-  el.innerText = TestEpubKit.opfFilePath;
+  document.getElementById("src-epub-path").innerText = srcEpubPath;
+  document.getElementById("working-path").innerText = TestEpubKit.pathToEpubDir;
+  document.getElementById("opf-path").innerText = TestEpubKit.opfFilePath;
 }
 window.onload = () => {
   test();

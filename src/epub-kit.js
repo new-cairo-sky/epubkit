@@ -63,7 +63,15 @@ class EpubKit {
       return;
     }
 
-    await this._containerManager.loadFile(containerFilePath);
+    const containerData = await this._fileManager.readXmlFile(
+      containerFilePath
+    );
+    if (containerData) {
+      this._containerManager.init(containerData);
+    } else {
+      console.error("Error reading container.xml file.");
+      return;
+    }
 
     const rootPath = this._containerManager.rootFilePath;
 
