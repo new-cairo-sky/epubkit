@@ -1,9 +1,13 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
+import FileSaver from "file-saver";
 // NOTE: we cannot use the native fs promises because BrowserFS does not support them yet.
 import { promisify } from "es6-promisify";
 import xml2js from "xml2js";
+// import AdmZip from "adm-zip";
+import JSZip from "jszip";
+
 import OpfManager from "./opf-manager";
 
 import { opfManifestToBrowserFsIndex } from "./utils/opf-to-browser-fs-index";
@@ -31,6 +35,73 @@ class FileManager {
     } else {
     }
   }
+
+  async saveEpubArchive(location, compress = false) {
+    // This method relies on JSZip for ziping the archive in both client and node
+    // TODO: if testing shows that JSZip is not best for node, consider using
+    // archiver: https://github.com/archiverjs/node-archiver
+    // epub zip spec: https://www.w3.org/publishing/epub3/epub-ocf.html#sec-zip-container-zipreqs
+    const pathInfo = path.parse(location);
+    const epubName = pathInfo.name;
+
+    const zip = new JSZip();
+    const filePaths = await this.findAllFiles(this._workingPath);
+
+    // mimetime must be first file in the zip;
+    const mimeTypeContent = await this.readFile(
+      path.resolve(this._workingPath, "mimetype")
+    );
+    zip.file("mimetype", mimeTypeContent);
+
+    // to run in parallel see: https://stackoverflow.com/a/50874507/7943589
+    for (const filePath of filePaths) {
+      const contents = await this.readFile(filePath);
+      // convert the absolute path to the internal epub path
+      const relativePath = filePath.substring(
+        `${path.normalize(this._workingPath)}/`.length
+      );
+      if (relativePath !== "mimetype") {
+        if (contents) {
+          zip.file(`${relativePath}`, contents);
+        } else {
+          console.error("Could not read contents of file", filePath);
+          return;
+        }
+      }
+    }
+
+    const zipContent = await zip.generateAsync({
+      type: this._isClient ? "blob" : "nodebuffer",
+      compression: compress ? "DEFLATE" : "STORE",
+      compressionOptions: {
+        level: compress
+          ? 8
+          : 0 /* only levels 0 or 8 are allowed in epub spec */,
+      },
+    });
+    if (zipContent) {
+      // TODO- FileSaver is currently bugged in chrome:
+      // see: https://github.com/eligrey/FileSaver.js/issues/624
+      if (this._isClient) {
+        try {
+          FileSaver.saveAs(zipContent, pathInfo.base);
+        } catch (err) {
+          console.error("Error saving epub", err);
+          return;
+        }
+      } else {
+        try {
+          await promisify(fs.writeFile)(location, zipContent);
+        } catch (err) {
+          console.log("Error writing zip file:", err);
+          return;
+        }
+      }
+    } else {
+      console.error("Error generating zip file.");
+    }
+  }
+
   /**
    * When running in a browser client, fetch is used to load files.
    * fetchOptions are passed to the fetch options parameter.
@@ -43,6 +114,15 @@ class FileManager {
 
   get fetchOptions() {
     return this._fetchOptions;
+  }
+
+  set workingPath(location) {
+    // TODO make sure this effects the prepareEpubDir and prepareEpubArchive
+    this._workingPath = location;
+  }
+
+  get workingPath() {
+    return this._workingPath;
   }
 
   async getStats(location) {
@@ -178,7 +258,10 @@ class FileManager {
       // });
 
       // return the virtual path to the epub root
-      return path.normalize(`${this._virtualPath}/overlay/${location}`);
+      this._workingPath = path.normalize(
+        `${this._virtualPath}/overlay/${location}`
+      );
+      return this._workingPath;
     } else {
       // when running in Node, copy the epub dir to tmp directory.
       let tmpDir;
@@ -212,7 +295,9 @@ class FileManager {
         );
         return;
       }
-      return path.normalize(tmpPath);
+
+      this._workingPath = path.normalize(tmpPath);
+      return this._workingPath;
     }
   }
 
@@ -269,14 +354,18 @@ class FileManager {
         console.log("files", files);
       });
       // return the virtual path to the epub root
-      return path.normalize(`${this._virtualPath}/overlay/${workingDir}`);
+      this._workingPath = path.normalize(
+        `${this._virtualPath}/overlay/${workingDir}`
+      );
+      return this._workingPath;
     } else {
       // when running in Node, decompress epub to tmp directory.
       const tmpDir = os.tmpdir();
       const tmpPath = path.resolve(tmpDir, path.basename(location));
       const AdmZip = new AdmZip(location);
       AdmZip.extractAllTo(tmpPath, true);
-      return tmpPath;
+      this._workingPath = tmpPath;
+      return this._workingPath;
     }
   }
 
@@ -334,19 +423,42 @@ class FileManager {
    * @param {array} _results - private. holds _results for recursive search
    * @returns {array} - an array of file path strings
    */
-  async walk(directoryName, _results = []) {
-    let files = await promisify(fs.readdir)(directoryName, {
-      withFileTypes: true,
-    });
-    for (let f of files) {
-      let fullPath = path.join(directoryName, f.name);
-      if (f.isDirectory()) {
-        await this.walk(fullPath, _results);
+  async findAllFiles(directoryName, _results = []) {
+    let files;
+    try {
+      files = await this.readDir(directoryName);
+      // fs.readdir(directoryName, (err, content) => {
+      //   console.log("readdir result", err, content);
+      // });
+      // files = await promisify(fs.readdir)(directoryName, {
+      //   withFileTypes: true,
+      // });
+    } catch (err) {
+      console.error("Erorr reading directory", directoryName, err);
+      return _results;
+    }
+
+    for (let file of files) {
+      const fullPath = path.join(directoryName, file);
+      if (await this.isDir(fullPath)) {
+        await this.findAllFiles(fullPath, _results);
       } else {
         _results.push(fullPath);
       }
     }
     return _results;
+  }
+
+  async readDir(directory) {
+    return new Promise((resolve, reject) => {
+      fs.readdir(directory, (err, content) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(content);
+        }
+      });
+    });
   }
 
   /**

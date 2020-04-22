@@ -13,6 +13,10 @@ async function test() {
   document.getElementById("src-epub-path").innerText = srcEpubPath;
   document.getElementById("working-path").innerText = TestEpubKit.pathToEpubDir;
   document.getElementById("opf-path").innerText = TestEpubKit.opfFilePath;
+  document.getElementById("save-epub").onclick = () => {
+    console.log("save");
+    TestEpubKit.saveAs("test.zip");
+  };
 }
 window.onload = () => {
   test();

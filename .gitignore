@@ -4,3 +4,4 @@ node_modules/
 dist/
 public/assets/
 node_modules/
+test/output/

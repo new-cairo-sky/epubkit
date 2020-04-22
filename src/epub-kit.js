@@ -141,6 +141,10 @@ class EpubKit {
     this._loaded = true;
   }
 
+  saveAs(location) {
+    this._fileManager.saveEpubArchive(location);
+  }
+
   /**
    * Public Getters and Setters
    */
