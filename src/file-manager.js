@@ -1,19 +1,19 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
-import FileSaver from "file-saver";
+import FileSaver from "../node_modules/file-saver/src/FileSaver.js";
 // NOTE: we cannot use the native fs promises because BrowserFS does not support them yet.
 import { promisify } from "es6-promisify";
 import xml2js from "xml2js";
-// import AdmZip from "adm-zip";
 import JSZip from "jszip";
 
 import OpfManager from "./opf-manager";
 
 import { opfManifestToBrowserFsIndex } from "./utils/opf-to-browser-fs-index";
 /**
- * This class acts as an abstraction layer over the node file system libraries.
- * For browser clients the BroswerFS module is used to emulate Node FS.
+ * This class wraps a lot of the node fs file system library methods.
+ * For browser clients the BroswerFS module is used to emulate Node FS and
+ * FileSaver is used to enable client's to download documents for saving.
  * Most of the nasty details in managing the different environments is contained in here.
  *
  * see also:
@@ -22,8 +22,13 @@ import { opfManifestToBrowserFsIndex } from "./utils/opf-to-browser-fs-index";
  *
  */
 class FileManager {
-  constructor() {
-    this._isClient = typeof window != "undefined" && window.document;
+  constructor(environment = "auto") {
+    if (environment === "auto") {
+      console.log("window?", typeof window !== "undefined");
+      this._environment = typeof window === "undefined" ? "node" : "browser";
+    } else {
+      this._environment = environment;
+    }
     this._fetchOptions = {};
     this._virtualPath = "/epubkit";
     this._workingPath = undefined;
@@ -36,11 +41,18 @@ class FileManager {
     }
   }
 
+  /**
+   * Saves the epub archive to the given location. In the browser,
+   * the user will be prompted to set the file download location.
+   * This method relies on JSZip for ziping the archive in both client and node
+   * TODO: if testing shows that JSZip is not best for node, consider using
+   * archiver: https://github.com/archiverjs/node-archiver
+   * epub zip spec: https://www.w3.org/publishing/epub3/epub-ocf.html#sec-zip-container-zipreqs
+   * @param {string} location - destination path to save epub to
+   * @param {boolean} compress - flag to enable archive compression
+   */
   async saveEpubArchive(location, compress = false) {
-    // This method relies on JSZip for ziping the archive in both client and node
-    // TODO: if testing shows that JSZip is not best for node, consider using
-    // archiver: https://github.com/archiverjs/node-archiver
-    // epub zip spec: https://www.w3.org/publishing/epub3/epub-ocf.html#sec-zip-container-zipreqs
+    console.log("saveEpubArchive", location, this._environment, window);
     const pathInfo = path.parse(location);
     const epubName = pathInfo.name;
 
@@ -70,25 +82,37 @@ class FileManager {
       }
     }
 
-    const zipContent = await zip.generateAsync({
-      type: this._isClient ? "blob" : "nodebuffer",
-      compression: compress ? "DEFLATE" : "STORE",
-      compressionOptions: {
-        level: compress
-          ? 8
-          : 0 /* only levels 0 or 8 are allowed in epub spec */,
-      },
-    });
+    let zipContent;
+
+    try {
+      zipContent = await zip.generateAsync({
+        type: this._environment === "browser" ? "blob" : "nodebuffer",
+        compression: compress ? "DEFLATE" : "STORE",
+        compressionOptions: {
+          level: compress
+            ? 8
+            : 0 /* only levels 0 or 8 are allowed in epub spec */,
+        },
+      });
+    } catch (err) {
+      console.log("Error at zip.generateAsync ", err);
+    }
+
+    console.log("zipCOntent", !!zipContent);
+
     if (zipContent) {
       // TODO- FileSaver is currently bugged in chrome:
       // see: https://github.com/eligrey/FileSaver.js/issues/624
-      if (this._isClient) {
+      if (this._environment === "browser") {
+        console.log("before try");
         try {
-          FileSaver.saveAs(zipContent, pathInfo.base);
+          const result = FileSaver.saveAs(zipContent, pathInfo.base);
+          console.log("result", result);
         } catch (err) {
           console.error("Error saving epub", err);
           return;
         }
+        console.log("FileSaver.saveAs() finished");
       } else {
         try {
           await promisify(fs.writeFile)(location, zipContent);
@@ -160,7 +184,7 @@ class FileManager {
    * @param {string} location
    */
   async prepareEpubDir(location) {
-    if (this._isClient) {
+    if (this._environment === "browser") {
       /*
       For the browser we need to build a file index for BrowserFS 
       That index is derived from the OPF file so we must find the opf
@@ -316,7 +340,7 @@ class FileManager {
       return;
     }
 
-    if (this._isClient) {
+    if (this._environment === "browser") {
       // if running in client, use BrowserFS to mount Zip as file system in memory
       console.log("Mounting epub archive with BrowserFS", location);
       const response = await fetch(location, this._fetchOptions);
@@ -388,7 +412,7 @@ class FileManager {
     try {
       data = await promisify(fs.readFile)(location /*, "utf8"*/);
     } catch (err) {
-      console.warn("Could not readFile", err);
+      console.warn("Could not readFile", location, err);
       return;
     }
     return data;
@@ -410,7 +434,7 @@ class FileManager {
           trim: true,
         });
       } catch (err) {
-        console.warn("Error parsing container.xml file:", err);
+        console.warn("Error parsing container.xml file:", location, err);
       }
     }
     return result;
@@ -427,14 +451,8 @@ class FileManager {
     let files;
     try {
       files = await this.readDir(directoryName);
-      // fs.readdir(directoryName, (err, content) => {
-      //   console.log("readdir result", err, content);
-      // });
-      // files = await promisify(fs.readdir)(directoryName, {
-      //   withFileTypes: true,
-      // });
     } catch (err) {
-      console.error("Erorr reading directory", directoryName, err);
+      console.error("Error reading directory", directoryName, err);
       return _results;
     }
 
@@ -534,7 +552,7 @@ class FileManager {
    * @returns {bool} - true if running in browser client, false if node.js
    */
   get isClient() {
-    return this._isClient;
+    return this._environment === "browser";
   }
 
   /**

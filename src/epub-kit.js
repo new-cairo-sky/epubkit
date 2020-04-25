@@ -5,7 +5,13 @@ import NcxManager from "./ncx-manager";
 import FileManager from "./file-manager";
 
 class EpubKit {
-  constructor() {
+  constructor(environment = "auto") {
+    if (environment === "auto") {
+      this._environment = typeof window === "undefined" ? "node" : "browser";
+    } else {
+      this._environment = environment;
+    }
+
     this._pathToSource = undefined;
     this._pathToEpubDir = undefined;
 
@@ -18,11 +24,15 @@ class EpubKit {
     this._navPath = undefined;
 
     /* managers */
-    this._fileManager = new FileManager();
+    this._fileManager = new FileManager(this._environment);
 
     this._containerManager = new ContainerManager();
     this._opfManager = new OpfManager();
     this._ncxManager = new NcxManager();
+  }
+
+  get fileManager() {
+    return this._fileManager;
   }
 
   /**
@@ -141,8 +151,8 @@ class EpubKit {
     this._loaded = true;
   }
 
-  saveAs(location) {
-    this._fileManager.saveEpubArchive(location);
+  async saveAs(location) {
+    await this._fileManager.saveEpubArchive(location);
   }
 
   /**

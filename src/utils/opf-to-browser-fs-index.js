@@ -20,6 +20,8 @@ import path from "path";
 export function opfManifestToBrowserFsIndex(manifest, epubPath, manifestPath) {
   // the opf file itself is not in the manifest - add that frist
   const fileIndex = pathToObject(path.normalize(manifestPath));
+  const mimetypePath = path.join(epubPath, "mimetype");
+  pathToObject(mimetypePath, fileIndex);
   const containerPath = path.join(epubPath, "/META-INF/container.xml");
   pathToObject(containerPath, fileIndex);
 
