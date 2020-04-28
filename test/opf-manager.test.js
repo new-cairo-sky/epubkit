@@ -1,6 +1,5 @@
 import path from "path";
 
-import EpubKit from "../src/epub-kit";
 import OpfManager from "../src/opf-manager";
 import FileManager from "../src/file-manager";
 

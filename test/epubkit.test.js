@@ -1,11 +1,11 @@
-import EpubKit from "../src/epub-kit";
+import Epubkit from "../src/epubkit";
 import path from "path";
 
-test("can open epub directory", async () => {
+test("can open epub directory in node", async () => {
   const epubPath = path.resolve("./test/fixtures/a_dogs_tale");
-  const epubKit = new EpubKit();
-  await epubKit.load(epubPath);
-  expect(epubKit.pathToSource).toBe(epubPath);
+  const epubkit = new Epubkit("node");
+  await epubkit.load(epubPath);
+  expect(epubkit.pathToSource).toBe(epubPath);
 });
 
 test("can open epub directory in browser", async () => {
@@ -21,17 +21,17 @@ test("can open epub directory in browser", async () => {
 
 test("can find opf", async () => {
   const epubPath = path.resolve("./test/fixtures/a_dogs_tale");
-  const epubKit = new EpubKit();
-  await epubKit.load(epubPath);
-  expect(epubKit.opfFilePath?.split(path.sep).pop()).toBe(`content.opf`);
+  const epubkit = new Epubkit("node");
+  await epubkit.load(epubPath);
+  expect(epubkit.opfFilePath?.split(path.sep).pop()).toBe(`content.opf`);
 });
 
 test("can read toc.ncx", async () => {
   const epubPath = path.resolve("./test/fixtures/a_dogs_tale");
-  const epubKit = new EpubKit();
-  await epubKit.load(epubPath);
-  const ncx = epubKit.ncx;
-  expect(epubKit.pathToSource).toBe(epubPath);
+  const epubkit = new Epubkit("node");
+  await epubkit.load(epubPath);
+  const ncx = epubkit.ncx;
+  expect(epubkit.pathToSource).toBe(epubPath);
   expect(ncx?.content).toBeTruthy();
   expect(ncx?.content.ncx).toBeTruthy();
 });

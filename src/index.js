@@ -1,2 +1,2 @@
-import EpubKit from "./epub-kit";
-export default EpubKit;
+import Epubkit from "./epubkit";
+export default Epubkit;

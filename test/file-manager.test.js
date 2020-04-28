@@ -6,7 +6,7 @@ import os from "os";
 import path from "path";
 import { promisify } from "es6-promisify";
 import FileManager from "../src/file-manager";
-import epubCheck from "@bhdirect/epub-check";
+import epubkitCheck from "epubkit-check";
 
 import FileSaver from "file-saver";
 
@@ -45,7 +45,7 @@ beforeEach(async () => {
 });
 
 test("can find All Files in directory in node.js", async () => {
-  const fileManager = new FileManager();
+  const fileManager = new FileManager("node");
   const epubPath = "./test/fixtures/alice";
   const fileList = await fileManager.findAllFiles(epubPath);
   expect(fileList.length).toBe(45);
@@ -61,7 +61,6 @@ test("can find All Files in directory in node.js", async () => {
 
 test("can prepare epub directory in browser", async () => {
   await jestPuppeteer.resetPage();
-  const fileManager = new FileManager();
 
   const epubPath = "/fixtures/alice";
 
@@ -109,7 +108,7 @@ test("can prepare epub archive in browser", async () => {
 
 test("can save epub dir to new archive with node.js fs", async () => {
   const epubPath = path.resolve("./test/fixtures/a_dogs_tale");
-  const fileManager = new FileManager();
+  const fileManager = new FileManager("node");
   const workingPath = await fileManager.prepareEpubDir(epubPath);
 
   // check working path
@@ -132,7 +131,7 @@ test("can save epub dir to new archive with node.js fs", async () => {
  * https://github.com/puppeteer/puppeteer/issues/3463
  * https://github.com/puppeteer/puppeteer/issues/3722
  */
-test.only("can save epub dir to new archive in a browser", async () => {
+test("can save epub dir to new archive in a browser", async () => {
   await jestPuppeteer.resetPage();
   jest.setTimeout(10000);
   const epubPath = "/fixtures/alice";
@@ -194,17 +193,13 @@ test.only("can save epub dir to new archive in a browser", async () => {
     });
   });
 
-  //await expect(newEpubPath).toBe("./test/output/file-saver-data.epub");
-
-  //await expect(fs.existsSync(newEpubPath)).toBe(true);
-
   /**
    * Test that FileSaver produces an Epub file.
    * Unfortunetaly, headless chrome does not seem seem to download the actual file.
    */
   await page.evaluate(() => {
     /**
-     * FileSaver module uses createElement but does not insert it into the DOM
+     * In Chrome, FileSaver module uses createElement but does not insert it into the DOM
      * and therefore cannot be captured with a jest expect.
      * In order to capture the event, the document.createElement instance is modified
      * and an onClick handler is added to the a element to capture the FileSaver click event.
@@ -258,7 +253,9 @@ test.only("can save epub dir to new archive in a browser", async () => {
 
   await expect(page).toMatch("Download Complete");
 
-  // const epubCheckResult = await epubCheck("./test/output/file-saver-data.epub");
+  const epubCheckResult = await epubkitCheck(
+    "./test/output/file-saver-data.epub"
+  );
 
-  // console.log("epubCheckResult", epubCheckResult);
+  await expect(epubCheckResult.pass).toBe(true);
 });
