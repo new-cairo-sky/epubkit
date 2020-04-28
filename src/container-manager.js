@@ -1,10 +1,9 @@
 /**
  * Manager for the container.xml file
- * https://www.w3.org/publishing/epub32/epub-ocf.html
+ * https://www.w3.org/publishing/epub32/epub-ocf.html#sec-container-metainf-container.xml
  */
 class ContainerManager {
   constructor(path) {
-    this._path = path;
     this._content = undefined;
   }
 
@@ -20,10 +19,6 @@ class ContainerManager {
       "full-path"
     ];
     return rootPath;
-  }
-
-  get path() {
-    return this._path;
   }
 
   get content() {

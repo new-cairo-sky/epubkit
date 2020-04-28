@@ -4,13 +4,10 @@ const readdir = util.promisify(fs.readdir);
 const unlink = util.promisify(fs.unlink);
 import os from "os";
 import path from "path";
+
 import { promisify } from "es6-promisify";
 import FileManager from "../src/file-manager";
 import epubkitCheck from "epubkit-check";
-
-import FileSaver from "file-saver";
-
-jest.mock("file-saver", () => ({ saveAs: jest.fn() }));
 
 // beforeAll(async () => {
 //   // clear out output directory
