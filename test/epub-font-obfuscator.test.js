@@ -1,37 +1,142 @@
 import { promises as fs } from "fs";
 import path from "path";
-import epubFontObfuscator from "../src/epub-font-obfuscator";
+import epubFontObfuscator, {
+  idpfFontObfuscation,
+  adobeFontObfuscation,
+} from "../src/epub-font-obfuscator";
 
-/**
- * Note: The test fonts were taken from https://github.com/dita4publishers/epub-font-obfuscator
- * and the key is the key used in producing the test fonts.
- */
-const obfuscatedFontPath = path.resolve(
-  "./test/fixtures/font-file-obfuscated.ttf"
+const referenceFontPath = path.resolve("./test/fixtures/Roboto-Regular.ttf");
+
+const adobeObfFontId = "urn:uuid:1b629981-2821-4db3-8634-9574a9bf8296";
+const adobeObfFontPath = path.resolve(
+  "./test/fixtures/Roboto-Regular--adobe-obf.ttf"
 );
-const plainFontPath = path.resolve("./test/fixtures/font-file-plain.ttf");
-const key = "PXxxxxxxxx-XXX-X";
+const idpfObfFontId = "urn:uuid:9a3f56cd-bf94-4baa-bf82-e9cd1fe4d30a";
+const idpfObfFontPath = path.resolve(
+  "./test/fixtures/Roboto-Regular--idpf-obf.ttf"
+);
 
-test("can obfuscate font", async () => {
+test("can idpf obfuscate font", async () => {
   let expectedFontData, sourceFontData;
   try {
-    expectedFontData = await fs.readFile(obfuscatedFontPath);
-    sourceFontData = await fs.readFile(plainFontPath);
+    expectedFontData = await fs.readFile(idpfObfFontPath);
+    sourceFontData = await fs.readFile(referenceFontPath);
   } catch (err) {
     console.error(err);
     return;
   }
-  console.log("type of", sourceFontData);
-  const obfuscatedFontData = epubFontObfuscator(sourceFontData, key);
+  //const unobfuscatedFontData = epubFontObfuscator(sourceFontData, key);
+  const obfuscatedFontData = idpfFontObfuscation(sourceFontData, idpfObfFontId);
 
-  for (let i = 0; i < 80; i++) {
-    console.log(
-      "compare",
-      sourceFontData[i],
-      expectedFontData[i],
-      obfuscatedFontData[i]
+  try {
+    await fs.writeFile(
+      path.resolve("./test/output/roboto-idpf-obfuscation-test.ttf"),
+      obfuscatedFontData
     );
+  } catch (err) {
+    console.error(err);
   }
 
+  // uncomment for manual debugging:
+  //   console.log("src: ", sourceFontData.slice(0, 40));
+  //   console.log("sig: ", expectedFontData.slice(0, 40));
+  //   console.log("kit: ", Buffer.from(obfuscatedFontData).slice(0, 40));
+
   expect(Buffer.compare(expectedFontData, obfuscatedFontData)).toBe(0);
+});
+
+test("can idpf unobfuscate font", async () => {
+  let expectedFontData, sourceFontData;
+  try {
+    expectedFontData = await fs.readFile(referenceFontPath);
+    sourceFontData = await fs.readFile(idpfObfFontPath);
+  } catch (err) {
+    console.error(err);
+    return;
+  }
+
+  const unobfuscatedFontData = idpfFontObfuscation(
+    sourceFontData,
+    idpfObfFontId
+  );
+
+  try {
+    await fs.writeFile(
+      path.resolve("./test/output/roboto-idpf-unobfuscation-test.ttf"),
+      unobfuscatedFontData
+    );
+  } catch (err) {
+    console.error(err);
+  }
+
+  // uncomment for manual debugging:
+  //   console.log("src: ", sourceFontData.slice(0, 40));
+  //   console.log("sig: ", expectedFontData.slice(0, 40));
+  //   console.log("kit: ", Buffer.from(obfuscatedFontData).slice(0, 40));
+
+  expect(Buffer.compare(expectedFontData, unobfuscatedFontData)).toBe(0);
+});
+
+test("can adobe obfuscate font", async () => {
+  let expectedFontData, sourceFontData;
+  try {
+    expectedFontData = await fs.readFile(adobeObfFontPath);
+    sourceFontData = await fs.readFile(referenceFontPath);
+  } catch (err) {
+    console.error(err);
+    return;
+  }
+  //const unobfuscatedFontData = epubFontObfuscator(sourceFontData, key);
+  const obfuscatedFontData = adobeFontObfuscation(
+    sourceFontData,
+    adobeObfFontId
+  );
+
+  try {
+    await fs.writeFile(
+      path.resolve("./test/output/roboto-adobe-obfuscation-test.ttf"),
+      obfuscatedFontData
+    );
+  } catch (err) {
+    console.error(err);
+  }
+
+  // uncomment for manual debugging:
+  //   console.log("src: ", sourceFontData.slice(0, 40));
+  //   console.log("sig: ", expectedFontData.slice(0, 40));
+  //   console.log("kit: ", Buffer.from(obfuscatedFontData).slice(0, 40));
+
+  expect(Buffer.compare(expectedFontData, obfuscatedFontData)).toBe(0);
+});
+
+test("can adobe unobfuscate font", async () => {
+  let expectedFontData, sourceFontData;
+  try {
+    expectedFontData = await fs.readFile(referenceFontPath);
+    sourceFontData = await fs.readFile(adobeObfFontPath);
+  } catch (err) {
+    console.error(err);
+    return;
+  }
+  //const unobfuscatedFontData = epubFontObfuscator(sourceFontData, key);
+  const unobfuscatedFontData = adobeFontObfuscation(
+    sourceFontData,
+    adobeObfFontId
+  );
+
+  try {
+    await fs.writeFile(
+      path.resolve("./test/output/roboto-adobe-obfuscation-test.ttf"),
+      unobfuscatedFontData
+    );
+  } catch (err) {
+    console.error(err);
+  }
+
+  // uncomment for manual debugging:
+  //   console.log("src: ", sourceFontData.slice(0, 40));
+  //   console.log("sig: ", expectedFontData.slice(0, 40));
+  //   console.log("kit: ", Buffer.from(obfuscatedFontData).slice(0, 40));
+
+  expect(Buffer.compare(expectedFontData, unobfuscatedFontData)).toBe(0);
 });
