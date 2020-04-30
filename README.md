@@ -2,11 +2,20 @@
     :construction: Work in Progress! :construction:
 </p>
 
-# EpubKit
+# Epubkit
 
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
-A Node library for parsing and editing epubs.
+A universal JS library for parsing and editing epubs in both Node.js (v8.x +) and the client.
+
+### Features
+
+- Support for both `.epub` archive files and expanded epub diretories.
+- Support for un/obfuscating epub fonts in both IDPF and Adobe format.
+- Modify and save epubs in the browser.
+- Lazy fetching of resources when loading pre-expanded epub directories in the browser.
+
+Epubkit relies on [BrowserFS](https://github.com/jvilk/BrowserFS) for browser support.
 
 ## Install
 
@@ -14,10 +23,22 @@ A Node library for parsing and editing epubs.
 npm install git+https://github.com/new-cairo-sky/epubkit.git
 ```
 
+## Usage
+
+```js
+import Epubkit from "epubkit";
+
+const epubkit = new Epubkit();
+await epubkit.load("/path/to/epub-dir");
+
+// get the opf metadata as an object
+const metadata = epubkit.opf.metadata;
+```
+
 ## Testing
 
-Tests are made with jest. The server must be running for testing in the browser.
-We are using Jest Puppeteer with JSDom for browser testing. see: https://github.com/zaqqaz/jest-environment-puppeteer-jsdom. Also see the package.json Jest config for details. The puppeteer standard preset is not in use in order to enable jsdom on imports that require the DOM.
+Tests are made with jest. The server must be running for browser-based tests.
+Jest Puppeteer is configured with JSDom to enable DOM support during browser testing with es6 imports; see: https://github.com/zaqqaz/jest-environment-puppeteer-jsdom. Also see the package.json Jest config for details.
 
 ```
 npm start

@@ -10,12 +10,32 @@ const epub3OpfPath = path.resolve("./test/fixtures/alice/OPS/package.opf");
 const testPath = path.resolve("./test/");
 console.log("testPath", testPath);
 
+test("can get epub3 unique identifier", async () => {
+  const opfManager = new OpfManager();
+  const fileManager = new FileManager();
+  const data = await fileManager.readXmlFile(epub3OpfPath);
+  opfManager.init(data);
+  const uid = opfManager.uniqueIdentifier;
+  expect(opfManager.unqiueIdentifier).toBe(
+    "edu.nyu.itp.future-of-publishing.alice-in-wonderland"
+  );
+});
+
 test("can get epub3 metadata", async () => {
   const opfManager = new OpfManager();
   const fileManager = new FileManager();
   const data = await fileManager.readXmlFile(epub3OpfPath);
   opfManager.init(data);
   expect(opfManager.metadata).toHaveProperty("meta");
+});
+
+test("can find epub3 metadata with attribute key", async () => {
+  const opfManager = new OpfManager();
+  const fileManager = new FileManager();
+  const data = await fileManager.readXmlFile(epub3OpfPath);
+  opfManager.init(data);
+  const foundId = opfManager.findMetadataValueWithAttribute("id", "pub-id");
+  expect(foundId[0]["dc:identifier"]).toHaveProperty("attributes");
 });
 
 test("can add item to metadata", async () => {

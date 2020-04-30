@@ -2,7 +2,7 @@ import path from "path";
 
 /**
  * Manager for the opf file
- * http://idpf.org/epub/20/spec/OPF_2.0.1_draft.htm
+ * https://www.w3.org/publishing/epub32/epub-packages.html
  */
 class OpfManager {
   constructor() {
@@ -10,6 +10,10 @@ class OpfManager {
     this._loaded = false;
   }
 
+  /**
+   * Initialize the opf with provided data.
+   * @param {object} data
+   */
   init(data) {
     this._content = data;
     this._loaded = true;
@@ -20,10 +24,118 @@ class OpfManager {
    * Public API Getters and Setters
    */
 
+  /**
+   * Get the full opf content as an object
+   */
   get content() {
     return this._content;
   }
 
+  /**
+   * Public properties of the root Package element.
+   */
+
+  /**
+   * Get the package's optional language direction attribute
+   * https://www.w3.org/publishing/epub32/epub-packages.html#sec-shared-attrs
+   */
+  get dir() {
+    return this._content.package.attr?.["dir"];
+  }
+
+  /**
+   * Set the package's optional language direction attribute
+   * https://www.w3.org/publishing/epub32/epub-packages.html#sec-shared-attrs
+   */
+  set dir(dir) {
+    this._content.package.attr["dir"] = dir;
+  }
+
+  /**
+   * Get the package's optional id attribute
+   * https://www.w3.org/publishing/epub32/epub-packages.html#sec-shared-attrs
+   * @returns {string}
+   */
+  get id() {
+    return this._content.package.attr?.["id"];
+  }
+
+  /**
+   * Set the package's optional id attribute
+   * https://www.w3.org/publishing/epub32/epub-packages.html#sec-shared-attrs
+   * @param {string} id
+   */
+  set id(id) {
+    this._content.package.attr["id"] = id;
+  }
+
+  /**
+   * Get the root Package unique-identifier attribute.
+   * Note: this is NOT the UID, but the id of the metadata dc:identifier that holds the value.
+   * https://www.w3.org/publishing/epub32/epub-packages.html#attrdef-package-unique-identifier
+   * @returns {string}
+   */
+  get uniqueIdentifier() {
+    return this._content.package.attr?.["unique-identifier"];
+  }
+
+  /**
+   * Set the root Package unique-identifier attribute
+   * Note: this is NOT the UID, but the id of the metadata dc:identifier that holds the value.
+   * https://www.w3.org/publishing/epub32/epub-packages.html#attrdef-package-unique-identifier
+   * @param {string} id
+   */
+  set uniqueIdentifier(id) {
+    this._content.package.attr["unique-identifier"] = id;
+  }
+
+  /**
+   * Get the actual unique identifier value using the id provided by "unique-identifier"
+   * package element attribute
+   * https://www.w3.org/publishing/epub32/epub-packages.html#sec-opf-dcidentifier
+   */
+  get uniqueDCIdentifier() {
+    const metadataId = this._content.package.attr["unique-identifier"];
+    const metadata = this.findMetadataValueWithAttribute("id", metadataId);
+    if (!metadata.length) {
+      return;
+    }
+    const metaKey = Object.keys(metadata[0])[0];
+    const uid = metadata?.[0]?.[metaKey]?.value;
+    return uid;
+  }
+
+  /**
+   * Set the unique identifier value using the id provided by "unique-identifier"
+   * package element attribute
+   * https://www.w3.org/publishing/epub32/epub-packages.html#sec-opf-dcidentifier
+   */
+  set uniqueDCIdentifier(uid) {
+    const metadataId = this._content.package.attr["unique-identifier"];
+
+    const metadata = this.findMetadataValueWithAttribute("id", metadataId);
+    if (metadata.length > 0) {
+      // unique id is already set - need to remove it
+      this.removeMetadata("dc:identifier", metadataId);
+      if (metadata[0]["dc:identifier"] !== uid) {
+        // If the old value is different from the new one, it is still a valid piece of metadata.
+        // Add it back without the 'id' attr that marks it as the 'unique-identifier'
+        this.addMetadata("dc:identifier", metadata[0]["dc:identifier"]);
+      }
+    }
+
+    this.addMetadata("dc:identifier", uid, [{ id: metadataId }]);
+  }
+
+  /**
+   * Get array of manifest objects
+   * @returns {array} - an array of objects in the shape of
+   * [{
+   *  id: string,
+   *  href: string,
+   *  mediaType: string
+   * }]
+   */
   get manifestItems() {
     const items = this._content.package.manifest[0].item.map((item) => {
       return {
@@ -66,6 +178,12 @@ class OpfManager {
     return this._content.package.metadata[0];
   }
 
+  /**
+   *
+   * @param {string} key - key of the metadata
+   * @param {string} value - the value of the metadata
+   * @param {array} attributes - list of attribute objects: [{key: value}]
+   */
   addMetadata(key, value, attributes = []) {
     if (!this._content.package.metadata[0][key]) {
       this._content.package.metadata[0][key] = [];
@@ -80,6 +198,22 @@ class OpfManager {
       this._content.package.metadata[0][key].push(value);
     }
   }
+
+  removeMetadata(key, id = undefined) {
+    if (this._content.package.metadata[0]?.[key]) {
+      if (
+        id &&
+        this._content.package.metadata[0][key].attributes.find((attr) => {
+          return attr?.id === id;
+        })
+      ) {
+        delete this._content.package.metadata[0][key];
+      }
+    } else {
+      delete this._content.package.metadata[0][key];
+    }
+  }
+
   /**
    * Find a metadata entry with the specified key.
    *
@@ -124,6 +258,26 @@ class OpfManager {
       }
     }
     return metadata;
+  }
+
+  findMetadataValueWithAttribute(attrKey, attrValue = undefined) {
+    let foundMetadata = [];
+    Object.entries(this.metadata).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        value.forEach((meta) => {
+          if (meta?.attributes?.[attrKey]) {
+            if (attrValue) {
+              if (meta?.attributes?.[attrKey] === attrValue) {
+                foundMetadata.push({ [key]: meta });
+              }
+            } else {
+              foundMetadata.push({ [key]: meta });
+            }
+          }
+        });
+      }
+    });
+    return foundMetadata;
   }
 
   /**

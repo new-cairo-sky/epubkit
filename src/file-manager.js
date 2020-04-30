@@ -434,7 +434,7 @@ class FileManager {
           trim: true,
         });
       } catch (err) {
-        console.warn("Error parsing container.xml file:", location, err);
+        console.warn("Error parsing xml file:", location, err);
       }
     }
     return result;

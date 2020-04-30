@@ -179,6 +179,10 @@ class Epubkit {
     return this._ncxManager;
   }
 
+  get opf() {
+    return this._opfManager;
+  }
+
   get opfFilePath() {
     return this._opfFilePath;
   }
