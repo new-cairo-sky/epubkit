@@ -3,7 +3,8 @@ import PackageMetadataItem from "./package-metadata-item";
 
 export default class PackageMetadata extends PackageElement {
   constructor(items = [], attributes = {}) {
-    super("metadata");
+    super("metadata", undefined, attributes);
+
     const requiredMetadata = [
       { name: "dc:identifier", value: undefined },
       { name: "dc:title", value: "Untitled" },
@@ -27,7 +28,7 @@ export default class PackageMetadata extends PackageElement {
     });
   }
 
-  addItem(name, value = "", attributes = []) {
+  addItem(name, value = "", attributes = {}) {
     this.items.push(new PackageMetadataItem(name, value, attributes));
   }
 
@@ -57,9 +58,12 @@ export default class PackageMetadata extends PackageElement {
 
   findItemsWithAttributes(name, attributes) {
     return this.items.filter((item) => {
-      return attributes.every((attr) => {
-        return item?.[attr];
-      });
+      return (
+        item.name === name &&
+        attributes.every((attr) => {
+          return item?.[attr];
+        })
+      );
     });
   }
 }

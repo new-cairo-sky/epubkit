@@ -3,25 +3,51 @@ export default class PackageElement {
     this.sharedAttributes = {
       id: undefined,
     };
-    this.attributes = {};
+    this._attributes = {};
 
     this.addAttributes(this.sharedAttributes);
     this.addAttributes(attributes);
 
-    this.name = name;
+    this.element = name;
     this.value = value;
   }
 
+  // get attributes() {
+  //   // dont return undefined attributes
+  //   let filteredAttributes = {};
+  //   Object.entries(this._attributes).forEach(([key, value]) => {
+  //     if (value) {
+  //       filteredAttributes[key] = value;
+  //     }
+  //   });
+
+  //   return filteredAttributes;
+  // }
+
+  get attributes() {
+    return this._attributes;
+  }
+
+  removeAttribute(key) {
+    if (this._attributes[key]) {
+      delete this._attributes[key];
+      if (this.hasOwnProperty(key)) {
+        delete this[key];
+      }
+    }
+  }
+
   addAttributes(attributes) {
-    Object.assign(this.attributes, attributes);
-    Object.entries(this.attributes).forEach(([key, value]) => {
+    Object.assign(this._attributes, attributes);
+    Object.entries(this._attributes).forEach(([key, value]) => {
+      this._attributes[key] = value;
       if (!this.hasOwnProperty(key)) {
         Object.defineProperty(this, key, {
           get() {
-            return this.attributes[key];
+            return this._attributes[key];
           },
           set(val) {
-            this.attributes[key] = val;
+            this._attributes[key] = val;
           },
         });
       }

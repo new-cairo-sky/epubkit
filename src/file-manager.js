@@ -1,7 +1,7 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
-import FileSaver from "../node_modules/file-saver/src/FileSaver.js";
+import FileSaver from "file-saver"; //"../node_modules/file-saver/src/FileSaver.js";
 // NOTE: we cannot use the native fs promises because BrowserFS does not support them yet.
 import { promisify } from "es6-promisify";
 import xml2js from "xml2js";
@@ -52,7 +52,7 @@ class FileManager {
    * @param {boolean} compress - flag to enable archive compression
    */
   async saveEpubArchive(location, compress = false) {
-    console.log("saveEpubArchive", location, this._environment, window);
+    // console.log("saveEpubArchive", location, this._environment, window);
     const pathInfo = path.parse(location);
     const epubName = pathInfo.name;
 
@@ -98,21 +98,18 @@ class FileManager {
       console.log("Error at zip.generateAsync ", err);
     }
 
-    console.log("zipCOntent", !!zipContent);
+    // console.log("zipCOntent", !!zipContent);
 
     if (zipContent) {
       // TODO- FileSaver is currently bugged in chrome:
       // see: https://github.com/eligrey/FileSaver.js/issues/624
       if (this._environment === "browser") {
-        console.log("before try");
         try {
           const result = FileSaver.saveAs(zipContent, pathInfo.base);
-          console.log("result", result);
         } catch (err) {
           console.error("Error saving epub", err);
           return;
         }
-        console.log("FileSaver.saveAs() finished");
       } else {
         try {
           await promisify(fs.writeFile)(location, zipContent);
@@ -155,7 +152,7 @@ class FileManager {
     try {
       stats = await promisify(fs.stat)(location);
     } catch (err) {
-      console.warn("Could not get stat", err.message);
+      console.warn("Could not get stat", err);
       return;
     }
     return stats;
