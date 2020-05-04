@@ -11,11 +11,20 @@ export default class DataElement {
     return this._attributes;
   }
 
-  removeAttribute(key) {
+  removeAttribute(key, value = undefined) {
     if (this._attributes[key]) {
-      delete this._attributes[key];
+      if (value && this._attributes[key] === value) {
+        delete this._attributes[key];
+      } else if (!value) {
+        delete this._attributes[key];
+      }
+
       if (this.hasOwnProperty(key)) {
-        delete this[key];
+        if (value && this[key] === value) {
+          delete this[key];
+        } else if (!value) {
+          delete this[key];
+        }
       }
     }
   }
