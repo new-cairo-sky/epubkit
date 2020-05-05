@@ -6,64 +6,74 @@ export default class PackageMetadata extends PackageElement {
     super("metadata", undefined, attributes);
 
     const requiredMetadata = [
-      { name: "dc:identifier", value: undefined },
-      { name: "dc:title", value: "Untitled" },
-      { name: "dc:language", value: "en-US" },
+      { element: "dc:identifier", value: undefined },
+      { element: "dc:title", value: "Untitled" },
+      { element: "dc:language", value: "en-US" },
     ];
 
     const neededMetadata = requiredMetadata.filter((requiredItem) => {
       return (
         items.findIndex((item) => {
-          return item.name === requiredItem.name;
+          return item.element === requiredItem.element;
         }) === -1
       );
     });
 
     this.items = items.concat(neededMetadata).map((itemData) => {
       return new PackageMetadataItem(
-        itemData.name,
+        itemData.element,
         itemData.value,
         itemData?.attributes
       );
     });
   }
 
-  addItem(name, value = "", attributes = {}) {
-    this.items.push(new PackageMetadataItem(name, value, attributes));
+  addItem(element, value = "", attributes = {}) {
+    this.items.push(new PackageMetadataItem(element, value, attributes));
   }
 
-  removeItemsWithName(name) {
+  removeItemsWithName(element) {
     this.items = this.items.filter((item) => {
-      item.name !== name;
+      item.element !== element;
     });
   }
 
-  findItemsWithName(name) {
+  findItemsWithName(element) {
     return this.items.filter((item) => {
-      return item.name === name;
+      return item.element === element;
     });
   }
 
-  findItemWithId(name, id) {
+  findItemWithId(element, id) {
     return this.items.find((item) => {
-      return item.name === name && item.id === id;
+      return item.element === element && item.id === id;
     });
   }
 
-  removeItemWithId(name, id) {
+  removeItemWithId(element, id) {
     this.items = this.items.filter((item) => {
-      item.name !== name && item.id !== id;
+      item.element !== element && item.id !== id;
     });
   }
 
-  findItemsWithAttributes(name, attributes) {
+  /**
+   * Finds items that have all of the attributes listed in the provided object.
+   * If the onject attribute's value is undefined, then only the attribute name
+   * is matched.
+   * @param {object} attributes
+   */
+  findItemsWithAttributes(attributes) {
     return this.items.filter((item) => {
-      return (
-        item.name === name &&
-        attributes.every((attr) => {
-          return item?.[attr];
-        })
-      );
+      return Object.keys(attributes).every((key) => {
+        if (item.hasOwnProperty(key)) {
+          if (attributes[key] !== undefined) {
+            return item[key] === attributes[key];
+          } else {
+            return true;
+          }
+        }
+        return false;
+      });
     });
   }
 }

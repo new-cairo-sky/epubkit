@@ -60,10 +60,23 @@ export default class PackageSpine extends PackageElement {
     });
   }
 
+  /**
+   * Finds items that have all of the attributes listed in the provided object.
+   * If the onject attribute's value is undefined, then only the attribute name
+   * is matched.
+   * @param {object} attributes
+   */
   findItemsWithAttributes(attributes) {
     return this.items.filter((item) => {
-      return attributes.every((attr) => {
-        return item?.[attr];
+      return Object.keys(attributes).every((key) => {
+        if (item.hasOwnProperty(key)) {
+          if (attributes[key] !== undefined) {
+            return item[key] === attributes[key];
+          } else {
+            return true;
+          }
+        }
+        return false;
       });
     });
   }

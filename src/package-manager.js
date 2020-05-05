@@ -6,11 +6,59 @@ import { parseXml } from "./utils/xml";
 
 export default class PackageManager extends PackageElement {
   constructor() {
-    super("package");
+    super("package", {
+      xmlns: "http://www.idpf.org/2007/opf",
+      dir: undefined,
+      id: undefined,
+      prefix: undefined,
+      "xml:lang": undefined,
+      "unique-identifier": undefined,
+      version: undefined,
+    });
     this.metadata = undefined;
     this.manifest = undefined;
     this.spine = undefined;
     this.rawData = undefined;
+  }
+
+  findUniqueIdentifier() {
+    const metadataId = this.attributes["unique-identifier"];
+    if (metadataId) {
+      const uidMetadata = this.metadata.findItemWithId(
+        "dc:identifier",
+        metadataId
+      );
+      if (uidMetadata) {
+        return uidMetadata.value;
+      }
+    }
+  }
+
+  /**
+   * Legacy Epub 2.0 specification states that a spine element with the 'toc' attribute
+   * identifies the idref of the NCX file in the manifest
+   */
+  findNcxFilePath() {
+    const tocId = this.spine.toc;
+    if (tocId) {
+      const ncxItem = this.manifest.findItemWithId(tocId);
+      if (ncxItem) {
+        return ncxItem.href;
+      }
+    }
+    return;
+  }
+
+  /**
+   * Find the href of the manifest item with properties="nav" attribute
+   * https://www.w3.org/publishing/epub32/epub-packages.html#sec-package-nav
+   */
+  findNavigationFilePath() {
+    const spineItem = this.manifest.findNav();
+    if (spineItem) {
+      return spineItem.href;
+    }
+    return;
   }
 
   async loadXml(data) {
@@ -30,7 +78,11 @@ export default class PackageManager extends PackageElement {
           if (key === "attr") return [];
           if (Array.isArray(value)) {
             return value.flatMap((entry) => {
-              return { name: key, value: entry?.val, attributes: entry?.attr };
+              return {
+                element: key,
+                value: entry?.val,
+                attributes: entry?.attr,
+              };
             });
           }
         }

@@ -263,5 +263,5 @@ test("can find items with multiple attributes", () => {
     extraAttr: "extra-attr",
   });
   expect(id2Href2.length).toBe(1);
-  expect(id2Href2[0]["media-type"]).toBe("media-type-2");
+  expect(id2Href2[0]["media-type"]).toBe("media-type");
 });
