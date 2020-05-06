@@ -161,7 +161,7 @@ class Epubkit {
   }
 
   async saveAs(location) {
-    await this._fileManager.saveEpubArchive(location);
+    await FileManager.saveEpubArchive(this._pathToEpubDir, location);
   }
 
   /**

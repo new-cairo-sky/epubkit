@@ -41,6 +41,11 @@ beforeEach(async () => {
   }
 });
 
+test("can detect not running in client in node.js", () => {
+  process.env.MOCK_ENV = "node";
+  expect(FileManager.environment).toBe("node");
+});
+
 test("can find All Files in directory in node.js", async () => {
   const epubPath = "./test/fixtures/alice";
   const fileList = await FileManager.findAllFiles(epubPath);
@@ -56,6 +61,7 @@ test("can find All Files in directory in node.js", async () => {
 // });
 
 test("can prepare epub directory in browser", async () => {
+  process.env.MOCK_ENV = "browser";
   await jestPuppeteer.resetPage();
 
   const epubPath = "/fixtures/alice";
@@ -80,6 +86,7 @@ test("can prepare epub directory in browser", async () => {
 });
 
 test("can prepare epub archive in browser", async () => {
+  process.env.MOCK_ENV = "browser";
   await jestPuppeteer.resetPage();
 
   const epubPath = "/fixtures/alice.epub";
@@ -103,6 +110,7 @@ test("can prepare epub archive in browser", async () => {
 });
 
 test("can save epub dir to new archive with node.js fs", async () => {
+  process.env.MOCK_ENV = "node";
   const epubPath = path.resolve("./test/fixtures/a_dogs_tale");
   const fileManager = new FileManager("node");
   const workingPath = await fileManager.prepareEpubDir(epubPath);
@@ -113,7 +121,7 @@ test("can save epub dir to new archive with node.js fs", async () => {
 
   const outputPath = path.resolve("./test/output/a_dogs_tale.epub");
   console.log("attempting to save to ", outputPath);
-  await fileManager.saveEpubArchive(outputPath);
+  await FileManager.saveEpubArchive(workingPath, outputPath);
   const stats = await promisify(fs.stat)(outputPath);
   expect(stats.isFile()).toBe(true);
 });
@@ -128,6 +136,7 @@ test("can save epub dir to new archive with node.js fs", async () => {
  * https://github.com/puppeteer/puppeteer/issues/3722
  */
 test("can save epub dir to new archive in a browser", async () => {
+  process.env.MOCK_ENV = "browser";
   await jestPuppeteer.resetPage();
   jest.setTimeout(10000);
   const epubPath = "/fixtures/alice";

@@ -7,9 +7,9 @@ import { promisify } from "es6-promisify";
 import xml2js from "xml2js";
 import JSZip from "jszip";
 
-import OpfManager from "./opf-manager";
-
+import PackageManager from "./package-manager";
 import { opfManifestToBrowserFsIndex } from "./utils/opf-to-browser-fs-index";
+
 /**
  * This class wraps a lot of the node fs file system library methods.
  * For browser clients the BroswerFS module is used to emulate Node FS and
@@ -23,14 +23,22 @@ import { opfManifestToBrowserFsIndex } from "./utils/opf-to-browser-fs-index";
  */
 class FileManager {
   constructor(environment = "auto") {
-    if (environment === "auto") {
-      this._environment = typeof window === "undefined" ? "node" : "browser";
-    } else {
-      this._environment = environment;
-    }
     this._fetchOptions = {};
     this._virtualPath = "/epubkit";
     this._workingPath = undefined;
+  }
+
+  /**
+   * Public class property environment.
+   * environment indicates if we are running in a browser or not.
+   * @returns {string} - one of "browser" or "node"
+   */
+  static get environment() {
+    // for testing in jest we sometimes need to force the env node_env
+    if (process?.env?.MOCK_ENV) {
+      return process.env.MOCK_ENV;
+    }
+    return typeof window === "undefined" ? "node" : "browser";
   }
 
   async loadEpub(location) {
@@ -51,17 +59,16 @@ class FileManager {
    * @param {string} location - destination path to save epub to
    * @param {boolean} compress - flag to enable archive compression
    */
-  async saveEpubArchive(location, compress = false) {
-    // console.log("saveEpubArchive", location, this._environment, window);
-    const pathInfo = path.parse(location);
+  static async saveEpubArchive(sourceLocation, saveLocation, compress = false) {
+    const pathInfo = path.parse(saveLocation);
     const epubName = pathInfo.name;
 
     const zip = new JSZip();
-    const filePaths = await FileManager.findAllFiles(this._workingPath);
+    const filePaths = await FileManager.findAllFiles(sourceLocation);
 
     // mimetime must be first file in the zip;
     const mimeTypeContent = await FileManager.readFile(
-      path.resolve(this._workingPath, "mimetype")
+      path.resolve(sourceLocation, "mimetype")
     );
     zip.file("mimetype", mimeTypeContent);
 
@@ -70,7 +77,7 @@ class FileManager {
       const contents = await FileManager.readFile(filePath);
       // convert the absolute path to the internal epub path
       const relativePath = filePath.substring(
-        `${path.normalize(this._workingPath)}/`.length
+        `${path.normalize(sourceLocation)}/`.length
       );
       if (relativePath !== "mimetype") {
         if (contents) {
@@ -86,7 +93,7 @@ class FileManager {
 
     try {
       zipContent = await zip.generateAsync({
-        type: this._environment === "browser" ? "blob" : "nodebuffer",
+        type: FileManager.environment === "browser" ? "blob" : "nodebuffer",
         compression: compress ? "DEFLATE" : "STORE",
         compressionOptions: {
           level: compress
@@ -103,7 +110,7 @@ class FileManager {
     if (zipContent) {
       // TODO- FileSaver is currently bugged in chrome:
       // see: https://github.com/eligrey/FileSaver.js/issues/624
-      if (this._environment === "browser") {
+      if (FileManager.environment === "browser") {
         try {
           const result = FileSaver.saveAs(zipContent, pathInfo.base);
         } catch (err) {
@@ -112,7 +119,7 @@ class FileManager {
         }
       } else {
         try {
-          await promisify(fs.writeFile)(location, zipContent);
+          await promisify(fs.writeFile)(saveLocation, zipContent);
         } catch (err) {
           console.log("Error writing zip file:", err);
           return;
@@ -181,7 +188,7 @@ class FileManager {
    * @param {string} location
    */
   async prepareEpubDir(location) {
-    if (this._environment === "browser") {
+    if (FileManager.environment === "browser") {
       /*
       For the browser we need to build a file index for BrowserFS 
       That index is derived from the OPF file so we must find the opf
@@ -219,24 +226,9 @@ class FileManager {
       const opfLocation = path.resolve(location, manifestPath);
       const opfFetchResponse = await fetch(opfLocation, this._fetchOptions);
       const opfData = await opfFetchResponse.text();
-
-      let opfJsonData;
-      if (opfData) {
-        try {
-          opfJsonData = await promisify(xml2js.parseString)(opfData, {
-            attrkey: "attr",
-            charkey: "val",
-            trim: true,
-          });
-        } catch (err) {
-          console.warn("Error parsing container.xml file:", err);
-          return;
-        }
-      }
-
-      const opfManager = new OpfManager();
-      await opfManager.init(opfJsonData);
-      const manifestItems = opfManager.manifestItems;
+      const packageManager = new PackageManager();
+      await packageManager.loadXml(opfData);
+      const manifestItems = packageManager.manifest.items;
 
       const fsManifestPath = path.join(location, manifestPath);
       const fileIndex = opfManifestToBrowserFsIndex(
@@ -287,7 +279,7 @@ class FileManager {
       // when running in Node, copy the epub dir to tmp directory.
       let tmpDir;
       try {
-        tmpDir = await this.getTmpDir();
+        tmpDir = await FileManager.getTmpDir();
       } catch (err) {
         throw err;
       }
@@ -337,7 +329,7 @@ class FileManager {
       return;
     }
 
-    if (this._environment === "browser") {
+    if (FileManager.environment === "browser") {
       // if running in client, use BrowserFS to mount Zip as file system in memory
       console.log("Mounting epub archive with BrowserFS", location);
       const response = await fetch(location, this._fetchOptions);
@@ -544,15 +536,6 @@ class FileManager {
   }
 
   /**
-   * Public class property isClient.
-   * isClient indicates if we are running in a browser or not.
-   * @returns {bool} - true if running in browser client, false if node.js
-   */
-  get isClient() {
-    return this._environment === "browser";
-  }
-
-  /**
    * Recursive directory copy
    * @param {string} src - path to the directory to copy
    * @param {string} dest - path to the copy destination
@@ -581,13 +564,17 @@ class FileManager {
    * A wrapper for os.tmpdir that resolves symlinks
    * see: https://github.com/nodejs/node/issues/11422
    */
-  async getTmpDir() {
-    try {
-      const tmpDir = await promisify(fs.realpath)(os.tmpdir);
-      return tmpDir;
-    } catch (err) {
-      console.error("Error in getTmpDir", err.message);
-      throw err;
+  static async getTmpDir() {
+    if (FileManager.environment === "node") {
+      try {
+        const tmpDir = await promisify(fs.realpath)(os.tmpdir);
+        return tmpDir;
+      } catch (err) {
+        console.error("Error in getTmpDir", err.message);
+        throw err;
+      }
+    } else {
+      return "/tmp";
     }
   }
 }
