@@ -17,8 +17,7 @@ test("can convert path to nested object", () => {
 
 test("can convert manifest to BrowserFS index object", async () => {
   const opfManager = new OpfManager();
-  const fileManager = new FileManager();
-  const data = await fileManager.readXmlFile(epub3OpfPath);
+  const data = await FileManager.readXmlFile(epub3OpfPath);
   opfManager.init(data);
   const manifestItems = opfManager.manifestItems;
   const result = opfManifestToBrowserFsIndex(

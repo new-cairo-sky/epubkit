@@ -1,6 +1,7 @@
 import "core-js/stable";
 import "regenerator-runtime/runtime";
 import Epubkit from "../src/epubkit";
+import FileManager from "../src/file-manager";
 const BrowserFS = require("browserfs");
 
 BrowserFS.install(window);
@@ -19,9 +20,7 @@ async function test() {
     document.getElementById("save-epub").innerText = "Saved";
   };
 
-  const files = await TestEpubkit.fileManager.findAllFiles(
-    TestEpubkit.pathToEpubDir
-  );
+  const files = await FileManager.findAllFiles(TestEpubkit.pathToEpubDir);
   const fileList = files.map((file, i) => `<li>${i}: ${file}</li>`);
 
   document.getElementById("file-list").innerHTML = fileList.join("\r");

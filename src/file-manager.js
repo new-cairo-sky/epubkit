@@ -24,7 +24,6 @@ import { opfManifestToBrowserFsIndex } from "./utils/opf-to-browser-fs-index";
 class FileManager {
   constructor(environment = "auto") {
     if (environment === "auto") {
-      console.log("window?", typeof window !== "undefined");
       this._environment = typeof window === "undefined" ? "node" : "browser";
     } else {
       this._environment = environment;
@@ -35,9 +34,10 @@ class FileManager {
   }
 
   async loadEpub(location) {
-    if (this.isEpubArchive(location)) {
-      this._workingPath = this.prepareEpubArchive(location);
+    if (FileManager.isEpubArchive(location)) {
+      this._workingPath = await this.prepareEpubArchive(location);
     } else {
+      this._workingPath = await this.prepareEpubDir(location);
     }
   }
 
@@ -57,17 +57,17 @@ class FileManager {
     const epubName = pathInfo.name;
 
     const zip = new JSZip();
-    const filePaths = await this.findAllFiles(this._workingPath);
+    const filePaths = await FileManager.findAllFiles(this._workingPath);
 
     // mimetime must be first file in the zip;
-    const mimeTypeContent = await this.readFile(
+    const mimeTypeContent = await FileManager.readFile(
       path.resolve(this._workingPath, "mimetype")
     );
     zip.file("mimetype", mimeTypeContent);
 
     // to run in parallel see: https://stackoverflow.com/a/50874507/7943589
     for (const filePath of filePaths) {
-      const contents = await this.readFile(filePath);
+      const contents = await FileManager.readFile(filePath);
       // convert the absolute path to the internal epub path
       const relativePath = filePath.substring(
         `${path.normalize(this._workingPath)}/`.length
@@ -146,7 +146,7 @@ class FileManager {
     return this._workingPath;
   }
 
-  async getStats(location) {
+  static async getStats(location) {
     let stats;
 
     try {
@@ -158,16 +158,16 @@ class FileManager {
     return stats;
   }
 
-  async isDir(location) {
-    const stats = await this.getStats(location);
+  static async isDir(location) {
+    const stats = await FileManager.getStats(location);
     if (stats) {
       return stats.isDirectory();
     }
     return;
   }
 
-  async isFile(location) {
-    const stats = await this.getStats(location);
+  static async isFile(location) {
+    const stats = await FileManager.getStats(location);
     if (stats) {
       return stats.isFile();
     }
@@ -295,7 +295,7 @@ class FileManager {
       const epubDirName = location.split(path.sep).pop();
 
       const tmpPath = path.resolve(tmpDir, `${epubDirName}_${Date.now()}`);
-      if (await this.dirExists(tmpPath)) {
+      if (await FileManager.dirExists(tmpPath)) {
         try {
           await promisify(fs.rmdir)(tmpPath, {
             recursive: true,
@@ -307,7 +307,7 @@ class FileManager {
         }
       }
       try {
-        await this.copyDir(location, tmpPath);
+        await FileManager.copyDir(location, tmpPath);
       } catch (err) {
         console.error(
           "prepareEpubDir Error: Could not copy dir to",
@@ -330,7 +330,7 @@ class FileManager {
    * @returns {string} - the path to the tmp location
    */
   async prepareEpubArchive(location) {
-    const isEpub = this.isEpubArchive(location);
+    const isEpub = FileManager.isEpubArchive(location);
 
     if (!isEpub) {
       console.warn("File is not an epub", location);
@@ -390,7 +390,7 @@ class FileManager {
     }
   }
 
-  isEpubArchive(location) {
+  static isEpubArchive(location) {
     const ext = path.extname(location);
 
     if (ext === ".epub") {
@@ -404,7 +404,7 @@ class FileManager {
    * Read a file and return the data
    * @param {string} location
    */
-  async readFile(location) {
+  static async readFile(location) {
     let data;
     try {
       data = await promisify(fs.readFile)(location /*, "utf8"*/);
@@ -420,8 +420,8 @@ class FileManager {
    * @param {string} - location
    * @returns {object} - a json object
    */
-  async readXmlFile(location) {
-    const data = await this.readFile(location);
+  static async readXmlFile(location) {
+    const data = await FileManager.readFile(location);
     let result;
     if (data) {
       try {
@@ -444,10 +444,10 @@ class FileManager {
    * @param {array} _results - private. holds _results for recursive search
    * @returns {array} - an array of file path strings
    */
-  async findAllFiles(directoryName, _results = []) {
+  static async findAllFiles(directoryName, _results = []) {
     let files;
     try {
-      files = await this.readDir(directoryName);
+      files = await FileManager.readDir(directoryName);
     } catch (err) {
       console.error("Error reading directory", directoryName, err);
       return _results;
@@ -455,8 +455,8 @@ class FileManager {
 
     for (let file of files) {
       const fullPath = path.join(directoryName, file);
-      if (await this.isDir(fullPath)) {
-        await this.findAllFiles(fullPath, _results);
+      if (await FileManager.isDir(fullPath)) {
+        await FileManager.findAllFiles(fullPath, _results);
       } else {
         _results.push(fullPath);
       }
@@ -464,7 +464,7 @@ class FileManager {
     return _results;
   }
 
-  async readDir(directory) {
+  static async readDir(directory) {
     return new Promise((resolve, reject) => {
       fs.readdir(directory, (err, content) => {
         if (err) {
@@ -484,7 +484,7 @@ class FileManager {
    * @param {array} _results - private. holds results for recursive search
    * @returns {array} - an array of file path strings
    */
-  async findFilesWithExt(directoryName, findExt, _results = []) {
+  static async findFilesWithExt(directoryName, findExt, _results = []) {
     let files = await promisify(fs.readdir)(directoryName, {
       withFileTypes: true,
     });
@@ -494,7 +494,7 @@ class FileManager {
     for (let f of files) {
       let fullPath = path.join(directoryName, f.name);
       if (f.isDirectory()) {
-        await this.findFilesWithExt(fullPath, findExt, _results);
+        await FileManager.findFilesWithExt(fullPath, findExt, _results);
       } else {
         if (path.extname(fullPath) === ext) {
           _results.push(fullPath);
@@ -510,7 +510,7 @@ class FileManager {
    * @param {string} path - file path to test
    * @returns {boolean}
    */
-  async fileExists(path) {
+  static async fileExists(path) {
     try {
       const stats = await promisify(fs.stat)(path);
       if (stats.isFile()) {
@@ -529,7 +529,7 @@ class FileManager {
    * @param {string} path - dir to test
    * @returns {boolean}
    */
-  async dirExists(path) {
+  static async dirExists(path) {
     try {
       const stats = await promisify(fs.stat)(path);
       if (stats.isDirectory()) {
@@ -557,7 +557,7 @@ class FileManager {
    * @param {string} src - path to the directory to copy
    * @param {string} dest - path to the copy destination
    */
-  async copyDir(src, dest) {
+  static async copyDir(src, dest) {
     const entries = await promisify(fs.readdir)(src, { withFileTypes: true });
     try {
       await promisify(fs.mkdir)(dest);
@@ -570,7 +570,7 @@ class FileManager {
       const srcPath = path.join(src, entry.name);
       const destPath = path.join(dest, entry.name);
       if (entry.isDirectory()) {
-        await this.copyDir(srcPath, destPath);
+        await FileManager.copyDir(srcPath, destPath);
       } else {
         await promisify(fs.copyFile)(srcPath, destPath);
       }

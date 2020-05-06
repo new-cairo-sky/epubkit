@@ -14,8 +14,7 @@ const epub3OpfPath = path.resolve("./test/fixtures/alice/OPS/package.opf");
 
 test("can parse package.opf xml", async () => {
   const packageManager = new PackageManager();
-  const fileManager = new FileManager();
-  const data = await fileManager.readFile(epub3OpfPath);
+  const data = await FileManager.readFile(epub3OpfPath);
   await packageManager.loadXml(data);
 
   expect(packageManager.metadata).toBeInstanceOf(PackageMetadata);
@@ -25,8 +24,7 @@ test("can parse package.opf xml", async () => {
 
 test("can prepare package xml", async () => {
   const packageHandler = new PackageManager();
-  const fileManager = new FileManager();
-  const data = await fileManager.readFile(epub3OpfPath);
+  const data = await FileManager.readFile(epub3OpfPath);
 
   await packageHandler.loadXml(data);
 
@@ -39,8 +37,7 @@ test("can prepare package xml", async () => {
 
 test("can find Unique Identifier", async () => {
   const packageHandler = new PackageManager();
-  const fileManager = new FileManager();
-  const data = await fileManager.readFile(epub3OpfPath);
+  const data = await FileManager.readFile(epub3OpfPath);
 
   await packageHandler.loadXml(data);
 
@@ -51,8 +48,8 @@ test("can find Unique Identifier", async () => {
 
 test("can find ncx file path", async () => {
   const packageHandler = new PackageManager();
-  const fileManager = new FileManager();
-  const data = await fileManager.readFile(epub2OpfPath);
+
+  const data = await FileManager.readFile(epub2OpfPath);
 
   await packageHandler.loadXml(data);
 
@@ -61,8 +58,8 @@ test("can find ncx file path", async () => {
 
 test("can find navigation file path", async () => {
   const packageHandler = new PackageManager();
-  const fileManager = new FileManager();
-  const data = await fileManager.readFile(epub3OpfPath);
+
+  const data = await FileManager.readFile(epub3OpfPath);
 
   await packageHandler.loadXml(data);
 

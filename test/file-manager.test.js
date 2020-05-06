@@ -42,9 +42,8 @@ beforeEach(async () => {
 });
 
 test("can find All Files in directory in node.js", async () => {
-  const fileManager = new FileManager("node");
   const epubPath = "./test/fixtures/alice";
-  const fileList = await fileManager.findAllFiles(epubPath);
+  const fileList = await FileManager.findAllFiles(epubPath);
   expect(fileList.length).toBe(45);
 });
 
@@ -255,4 +254,4 @@ test("can save epub dir to new archive in a browser", async () => {
   );
 
   await expect(epubCheckResult.pass).toBe(true);
-});
+}, 10000);

@@ -37,6 +37,7 @@ export default class PackageManager extends PackageElement {
   /**
    * Legacy Epub 2.0 specification states that a spine element with the 'toc' attribute
    * identifies the idref of the NCX file in the manifest
+   * TODO - handle relative and absolute urls. resolve path
    */
   findNcxFilePath() {
     const tocId = this.spine.toc;
@@ -52,6 +53,7 @@ export default class PackageManager extends PackageElement {
   /**
    * Find the href of the manifest item with properties="nav" attribute
    * https://www.w3.org/publishing/epub32/epub-packages.html#sec-package-nav
+   * TODO - handle relative and absolute urls. resolve path
    */
   findNavigationFilePath() {
     const spineItem = this.manifest.findNav();

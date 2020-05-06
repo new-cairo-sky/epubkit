@@ -1,6 +1,6 @@
 import path from "path";
 import ContainerManager from "./container-manager";
-import OpfManager from "./opf-manager";
+import PackageManager from "./package-manager";
 import NcxManager from "./ncx-manager";
 import FileManager from "./file-manager";
 
@@ -20,6 +20,7 @@ class Epubkit {
     /* paths to epub's internal files */
     this._containerPath = undefined;
     this._opfFilePath = undefined;
+    this._navigationFilePath = undefined;
     this._ncxFilePath = undefined;
     this._navPath = undefined;
 
@@ -27,7 +28,7 @@ class Epubkit {
     this._fileManager = new FileManager(this._environment);
 
     this._containerManager = new ContainerManager();
-    this._opfManager = new OpfManager();
+    this._packageManager = new PackageManager();
     this._ncxManager = new NcxManager();
   }
 
@@ -45,7 +46,7 @@ class Epubkit {
     console.log("pathToSource", this._pathToSource);
 
     // check if epub is an archive or a directory.
-    if (this._fileManager.isEpubArchive(this._pathToSource)) {
+    if (FileManager.isEpubArchive(this._pathToSource)) {
       this._pathToEpubDir = await this._fileManager.prepareEpubArchive(
         this._pathToSource
       );
@@ -64,18 +65,14 @@ class Epubkit {
       this._pathToEpubDir,
       "./META-INF/container.xml"
     );
-    const containerExists = await this._fileManager.fileExists(
-      containerFilePath
-    );
+    const containerExists = await FileManager.fileExists(containerFilePath);
 
     if (!containerExists) {
       console.warn("container.xml not found at : ", containerFilePath);
       return;
     }
 
-    const containerData = await this._fileManager.readXmlFile(
-      containerFilePath
-    );
+    const containerData = await FileManager.readXmlFile(containerFilePath);
     if (containerData) {
       this._containerManager.init(containerData);
     } else {
@@ -93,7 +90,7 @@ class Epubkit {
       this._opfFilePath = path.resolve(this._pathToEpubDir, rootPath);
     } else {
       // if containerXml is missing or is missing the rootFile, do a file search for the opf.
-      const opfFilePath = await this._fileManager.findFilesWithExt(
+      const opfFilePath = await FileManager.findFilesWithExt(
         this._pathToEpubDir,
         "opf"
       );
@@ -112,27 +109,39 @@ class Epubkit {
     }
 
     try {
-      const opfData = await this._fileManager.readXmlFile(this._opfFilePath);
-      await this._opfManager.init(opfData);
+      const opfData = await FileManager.readFile(this._opfFilePath);
+      await this._packageManager.loadXml(opfData);
     } catch (e) {
-      this._opfManager = undefined;
+      this._packageManager = undefined;
       throw e;
     }
 
     /**
      * If ncx file exists, initialize the NCX manager
      */
-    if (this._opfManager) {
-      const tocPath = this._opfManager.findTocPath();
-      if (tocPath && path.extname(tocPath) === ".ncx") {
-        this._ncxFilePath = path.join(path.dirname(this._opfFilePath), tocPath);
+    if (this._packageManager) {
+      const tocPath = this._packageManager.findNavigationFilePath();
+      if (tocPath) {
+        this._navigationFilePath = path.join(
+          path.dirname(this._opfFilePath),
+          tocPath
+        );
+        if (path.extname(tocPath) === ".ncx") {
+          this._ncxFilePath = this._navigationFilePath;
+        }
       }
     }
 
     // ncx is not listed in the TOC in the opf. look for ncx specifically.
     if (!this._ncxFilePath) {
       try {
-        this._ncxFilePath = this._opfManager.findNcxPath();
+        this._ncxFilePath = this._packageManager.findNcxFilePath();
+        if (this._ncxFilePath) {
+          this._ncxFilePath = path.join(
+            path.dirname(this._opfFilePath),
+            this._ncxFilePath
+          );
+        }
       } catch (e) {
         // epub may not have an ncx file.
         this._ncxFilePath = undefined;
@@ -140,7 +149,7 @@ class Epubkit {
     }
 
     if (this._ncxFilePath) {
-      const ncxData = await this._fileManager.readXmlFile(this._ncxFilePath);
+      const ncxData = await FileManager.readXmlFile(this._ncxFilePath);
       if (ncxData) {
         this._ncxManager.init(ncxData);
       } else {
@@ -180,7 +189,7 @@ class Epubkit {
   }
 
   get opf() {
-    return this._opfManager;
+    return this._packageManager;
   }
 
   get opfFilePath() {
