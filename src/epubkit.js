@@ -25,15 +25,9 @@ class Epubkit {
     this._navPath = undefined;
 
     /* managers */
-    this._fileManager = new FileManager(this._environment);
-
     this._containerManager = new ContainerManager();
     this._packageManager = new PackageManager();
     this._ncxManager = new NcxManager();
-  }
-
-  get fileManager() {
-    return this._fileManager;
   }
 
   /**
@@ -46,15 +40,18 @@ class Epubkit {
     console.log("pathToSource", this._pathToSource);
 
     // check if epub is an archive or a directory.
-    if (FileManager.isEpubArchive(this._pathToSource)) {
-      this._pathToEpubDir = await this._fileManager.prepareEpubArchive(
-        this._pathToSource
-      );
-    } else {
-      this._pathToEpubDir = await this._fileManager.prepareEpubDir(
-        this._pathToSource
-      );
-    }
+    // if (FileManager.isEpubArchive(this._pathToSource)) {
+    //   this._pathToEpubDir = await FileManager.prepareEpubArchive(
+    //     this._pathToSource
+    //   );
+    // } else {
+    //   this._pathToEpubDir = await FileManager.prepareEpubDir(
+    //     this._pathToSource
+    //   );
+    // }
+
+    this._pathToEpubDir = await FileManager.loadEpub(this._pathToSource);
+
     console.log("pathToEpub", this._pathToEpubDir);
     if (!this._pathToEpubDir) {
       return;

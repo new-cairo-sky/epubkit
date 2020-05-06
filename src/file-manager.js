@@ -14,7 +14,10 @@ import { opfManifestToBrowserFsIndex } from "./utils/opf-to-browser-fs-index";
  * This class wraps a lot of the node fs file system library methods.
  * For browser clients the BroswerFS module is used to emulate Node FS and
  * FileSaver is used to enable client's to download documents for saving.
- * Most of the nasty details in managing the different environments is contained in here.
+ * BrowserFS does not pollyfill the fs native promises, so many fs methods
+ * are wrapped with promisify.
+ * Most of the nasty details in managing the different environments is
+ * contained in here.
  *
  * see also:
  * https://github.com/jvilk/BrowserFS
@@ -22,12 +25,9 @@ import { opfManifestToBrowserFsIndex } from "./utils/opf-to-browser-fs-index";
  *
  */
 class FileManager {
-  constructor(environment = "auto") {
-    this._fetchOptions = {};
-    this._virtualPath = "/epubkit";
-    this._workingPath = undefined;
+  static get virtualPath() {
+    return "/epubkit";
   }
-
   /**
    * Public class property environment.
    * environment indicates if we are running in a browser or not.
@@ -41,11 +41,19 @@ class FileManager {
     return typeof window === "undefined" ? "node" : "browser";
   }
 
-  async loadEpub(location) {
+  static async loadEpub(location, fetchOptions = {}) {
     if (FileManager.isEpubArchive(location)) {
-      this._workingPath = await this.prepareEpubArchive(location);
+      const workingPath = await FileManager.prepareEpubArchive(
+        location,
+        fetchOptions
+      );
+      return workingPath;
     } else {
-      this._workingPath = await this.prepareEpubDir(location);
+      const workingPath = await FileManager.prepareEpubDir(
+        location,
+        fetchOptions
+      );
+      return workingPath;
     }
   }
 
@@ -105,8 +113,6 @@ class FileManager {
       console.log("Error at zip.generateAsync ", err);
     }
 
-    // console.log("zipCOntent", !!zipContent);
-
     if (zipContent) {
       // TODO- FileSaver is currently bugged in chrome:
       // see: https://github.com/eligrey/FileSaver.js/issues/624
@@ -131,63 +137,12 @@ class FileManager {
   }
 
   /**
-   * When running in a browser client, fetch is used to load files.
-   * fetchOptions are passed to the fetch options parameter.
-   *
-   * @param {object} options - a fetch options object
-   */
-  set fetchOptions(options) {
-    this._fetchOptions = options;
-  }
-
-  get fetchOptions() {
-    return this._fetchOptions;
-  }
-
-  set workingPath(location) {
-    // TODO make sure this effects the prepareEpubDir and prepareEpubArchive
-    this._workingPath = location;
-  }
-
-  get workingPath() {
-    return this._workingPath;
-  }
-
-  static async getStats(location) {
-    let stats;
-
-    try {
-      stats = await promisify(fs.stat)(location);
-    } catch (err) {
-      console.warn("Could not get stat", err);
-      return;
-    }
-    return stats;
-  }
-
-  static async isDir(location) {
-    const stats = await FileManager.getStats(location);
-    if (stats) {
-      return stats.isDirectory();
-    }
-    return;
-  }
-
-  static async isFile(location) {
-    const stats = await FileManager.getStats(location);
-    if (stats) {
-      return stats.isFile();
-    }
-    return;
-  }
-
-  /**
    * When loading an Epub directory in a browser client, the files
    * are fetched lazily by BrowserFS and saved to localStorage.
    *
    * @param {string} location
    */
-  async prepareEpubDir(location) {
+  static async prepareEpubDir(location, fetchOptions = {}) {
     if (FileManager.environment === "browser") {
       /*
       For the browser we need to build a file index for BrowserFS 
@@ -199,7 +154,7 @@ class FileManager {
       */
       const containerLocation = "./META-INF/container.xml";
       const containerUrl = path.resolve(location, containerLocation);
-      const response = await fetch(containerUrl, this._fetchOptions);
+      const response = await fetch(containerUrl, fetchOptions);
 
       if (!response.ok) {
         console.error("Error fetching container.xml");
@@ -224,7 +179,7 @@ class FileManager {
       }
 
       const opfLocation = path.resolve(location, manifestPath);
-      const opfFetchResponse = await fetch(opfLocation, this._fetchOptions);
+      const opfFetchResponse = await fetch(opfLocation, fetchOptions);
       const opfData = await opfFetchResponse.text();
       const packageManager = new PackageManager();
       await packageManager.loadXml(opfData);
@@ -243,7 +198,7 @@ class FileManager {
         const result = await promisify(BrowserFS.configure)({
           fs: "MountableFileSystem",
           options: {
-            [this._virtualPath + "/overlay"]: {
+            [FileManager.virtualPath + "/overlay"]: {
               fs: "OverlayFS",
               options: {
                 readable: {
@@ -271,10 +226,10 @@ class FileManager {
       // });
 
       // return the virtual path to the epub root
-      this._workingPath = path.normalize(
-        `${this._virtualPath}/overlay/${location}`
+      const workingPath = path.normalize(
+        `${FileManager.virtualPath}/overlay/${location}`
       );
-      return this._workingPath;
+      return workingPath;
     } else {
       // when running in Node, copy the epub dir to tmp directory.
       let tmpDir;
@@ -309,19 +264,19 @@ class FileManager {
         return;
       }
 
-      this._workingPath = path.normalize(tmpPath);
-      return this._workingPath;
+      const workingPath = path.normalize(tmpPath);
+      return workingPath;
     }
   }
 
   /**
    * Loads and unarchives an .epub file to a tmp working directory
-   * When in browser client, BrowserFS will unzip the archive to the virtual path `${this._virtualPath}/zip`
+   * When in browser client, BrowserFS will unzip the archive to the virtual path `${FileManager.virtualPath}/zip`
    *
    * @param {string} location - the url or path to an .epub file
    * @returns {string} - the path to the tmp location
    */
-  async prepareEpubArchive(location) {
+  static async prepareEpubArchive(location, fetchOptions = {}) {
     const isEpub = FileManager.isEpubArchive(location);
 
     if (!isEpub) {
@@ -332,14 +287,14 @@ class FileManager {
     if (FileManager.environment === "browser") {
       // if running in client, use BrowserFS to mount Zip as file system in memory
       console.log("Mounting epub archive with BrowserFS", location);
-      const response = await fetch(location, this._fetchOptions);
+      const response = await fetch(location, fetchOptions);
       const zipData = await response.arrayBuffer();
       const Buffer = BrowserFS.BFSRequire("buffer").Buffer;
       const workingDir = path.parse(location).name;
       const result = await promisify(BrowserFS.configure)({
         fs: "MountableFileSystem",
         options: {
-          [`${this._virtualPath}/overlay/${workingDir}`]: {
+          [`${FileManager.virtualPath}/overlay/${workingDir}`]: {
             fs: "OverlayFS",
             options: {
               readable: {
@@ -367,21 +322,26 @@ class FileManager {
         console.log("files", files);
       });
       // return the virtual path to the epub root
-      this._workingPath = path.normalize(
-        `${this._virtualPath}/overlay/${workingDir}`
+      const workingPath = path.normalize(
+        `${FileManager.virtualPath}/overlay/${workingDir}`
       );
-      return this._workingPath;
+      return workingPath;
     } else {
       // when running in Node, decompress epub to tmp directory.
       const tmpDir = os.tmpdir();
       const tmpPath = path.resolve(tmpDir, path.basename(location));
       const AdmZip = new AdmZip(location);
       AdmZip.extractAllTo(tmpPath, true);
-      this._workingPath = tmpPath;
-      return this._workingPath;
+      const workingPath = tmpPath;
+      return workingPath;
     }
   }
 
+  /**
+   * Test if file is a .epub archive
+   * @param {string} location - path to file
+   * @returns {boolean}
+   */
   static isEpubArchive(location) {
     const ext = path.extname(location);
 
@@ -389,6 +349,49 @@ class FileManager {
       return true;
     }
 
+    return false;
+  }
+
+  /**
+   * A wrapepr for the fs.stat method
+   * @param {string} location
+   * @returns {object} - stats object
+   */
+  static async getStats(location) {
+    let stats;
+
+    try {
+      stats = await promisify(fs.stat)(location);
+    } catch (err) {
+      console.warn("Could not get stat", err);
+      return;
+    }
+    return stats;
+  }
+
+  /**
+   * Wrapper for stats isDirectory()
+   * @param {string} location
+   * @returns {boolean}
+   */
+  static async isDir(location) {
+    const stats = await FileManager.getStats(location);
+    if (stats) {
+      return stats.isDirectory();
+    }
+    return false;
+  }
+
+  /**
+   * Wrapper for stats isFile()
+   * @param {string} location
+   * @returns {boolean}
+   */
+  static async isFile(location) {
+    const stats = await FileManager.getStats(location);
+    if (stats) {
+      return stats.isFile();
+    }
     return false;
   }
 
@@ -456,6 +459,11 @@ class FileManager {
     return _results;
   }
 
+  /**
+   * Get the contents of a directory
+   * @param {string} directory
+   * @returns {array}
+   */
   static async readDir(directory) {
     return new Promise((resolve, reject) => {
       fs.readdir(directory, (err, content) => {

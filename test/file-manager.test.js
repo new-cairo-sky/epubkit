@@ -112,8 +112,7 @@ test("can prepare epub archive in browser", async () => {
 test("can save epub dir to new archive with node.js fs", async () => {
   process.env.MOCK_ENV = "node";
   const epubPath = path.resolve("./test/fixtures/a_dogs_tale");
-  const fileManager = new FileManager("node");
-  const workingPath = await fileManager.prepareEpubDir(epubPath);
+  const workingPath = await FileManager.prepareEpubDir(epubPath);
 
   // check working path
   const expectedWorkingPath = await promisify(fs.realpath)(os.tmpdir);
