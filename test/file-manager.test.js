@@ -9,24 +9,8 @@ import { promisify } from "es6-promisify";
 import FileManager from "../src/file-manager";
 import epubkitCheck from "epubkit-check";
 
-// beforeAll(async () => {
-//   // clear out output directory
-
-//   const directory = path.resolve("./test/output");
-
-//   try {
-//     const files = await readdir(directory);
-//     const unlinkPromises = files.map((filename) =>
-//       unlink(`${directory}/${filename}`)
-//     );
-//     return Promise.all(unlinkPromises);
-//   } catch (err) {
-//     console.log(err);
-//   }
-// });
-
-beforeEach(async () => {
-  //FileSaver.mockClear();
+beforeAll(async () => {
+  // clear out output directory
 
   const directory = path.resolve("./test/output");
 
@@ -40,6 +24,22 @@ beforeEach(async () => {
     console.log(err);
   }
 });
+
+// beforeEach(async () => {
+//   //FileSaver.mockClear();
+
+//   const directory = path.resolve("./test/output");
+
+//   try {
+//     const files = await readdir(directory);
+//     const unlinkPromises = files.map((filename) =>
+//       unlink(`${directory}/${filename}`)
+//     );
+//     return Promise.all(unlinkPromises);
+//   } catch (err) {
+//     console.log(err);
+//   }
+// });
 
 test("can detect not running in client in node.js", () => {
   process.env.MOCK_ENV = "node";
@@ -82,7 +82,7 @@ test("can prepare epub directory in browser", async () => {
   });
 
   await expect(page).toMatch(epubPath);
-  await expect(page).toMatch("/epubkit/overlay/fixtures/alice");
+  await expect(page).toMatch("/epubkit/overlay/");
 });
 
 test("can prepare epub archive in browser", async () => {
@@ -111,18 +111,23 @@ test("can prepare epub archive in browser", async () => {
 
 test("can save epub dir to new archive with node.js fs", async () => {
   process.env.MOCK_ENV = "node";
-  const epubPath = path.resolve("./test/fixtures/a_dogs_tale");
+  const epubPath = path.resolve("./test/fixtures/alice");
   const workingPath = await FileManager.prepareEpubDir(epubPath);
 
   // check working path
   const expectedWorkingPath = await promisify(fs.realpath)(os.tmpdir);
   expect(workingPath.indexOf(expectedWorkingPath)).toBe(0);
 
-  const outputPath = path.resolve("./test/output/a_dogs_tale.epub");
+  const outputPath = path.resolve("./test/output/test-node-output.epub");
   console.log("attempting to save to ", outputPath);
   await FileManager.saveEpubArchive(workingPath, outputPath);
   const stats = await promisify(fs.stat)(outputPath);
   expect(stats.isFile()).toBe(true);
+  const epubCheckResult = await epubkitCheck(
+    "./test/output/test-node-output.epub"
+  );
+  console.log("epubCheckResult", epubCheckResult);
+  await expect(epubCheckResult.pass).toBe(true);
 });
 
 /**
@@ -261,5 +266,6 @@ test("can save epub dir to new archive in a browser", async () => {
     "./test/output/file-saver-data.epub"
   );
 
+  console.log("epubCheckResult", epubCheckResult);
   await expect(epubCheckResult.pass).toBe(true);
 }, 10000);

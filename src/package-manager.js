@@ -1,3 +1,5 @@
+import path from "path";
+import FileManager from "./file-manager";
 import PackageElement from "./package-element";
 import PackageMetadata from "./package-metadata";
 import PackageManifest from "./package-manifest";
@@ -5,7 +7,7 @@ import PackageSpine from "./package-spine";
 import { parseXml } from "./utils/xml";
 
 export default class PackageManager extends PackageElement {
-  constructor() {
+  constructor(locationInEpub = "") {
     super("package", {
       xmlns: "http://www.idpf.org/2007/opf",
       dir: undefined,
@@ -15,10 +17,23 @@ export default class PackageManager extends PackageElement {
       "unique-identifier": undefined,
       version: undefined,
     });
+
+    this._location = locationInEpub; // the path relative to the epub root.
     this.metadata = undefined;
     this.manifest = undefined;
     this.spine = undefined;
     this.rawData = undefined;
+  }
+
+  set location(locationInEpub) {
+    this._location = locationInEpub; // the path relative to the epub root.
+    if (this.manifest) {
+      this.manifest.location = locationInEpub;
+    }
+  }
+
+  get location() {
+    return this._location;
   }
 
   findUniqueIdentifier() {
@@ -44,7 +59,10 @@ export default class PackageManager extends PackageElement {
     if (tocId) {
       const ncxItem = this.manifest.findItemWithId(tocId);
       if (ncxItem) {
-        return ncxItem.href;
+        return FileManager.resolveIriToEpubLocation(
+          ncxItem.href,
+          this.location
+        );
       }
     }
     return;
@@ -58,7 +76,10 @@ export default class PackageManager extends PackageElement {
   findNavigationFilePath() {
     const spineItem = this.manifest.findNav();
     if (spineItem) {
-      return spineItem.href;
+      return FileManager.resolveIriToEpubLocation(
+        spineItem.href,
+        this.location
+      );
     }
     return;
   }
@@ -105,7 +126,11 @@ export default class PackageManager extends PackageElement {
         }
       );
 
-      this.manifest = new PackageManifest(manifestItems, rawManifest?.attr);
+      this.manifest = new PackageManifest(
+        manifestItems,
+        rawManifest?.attr,
+        this._location
+      );
 
       // construct the manifest section
       const rawSpine = result.package.spine[0];
@@ -119,6 +144,8 @@ export default class PackageManager extends PackageElement {
       });
 
       this.spine = new PackageSpine(spineItems, rawSpine?.attr);
+    } else {
+      console.error("Error parsing XML");
     }
   }
 

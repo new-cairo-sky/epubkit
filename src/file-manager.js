@@ -84,9 +84,12 @@ class FileManager {
     for (const filePath of filePaths) {
       const contents = await FileManager.readFile(filePath);
       // convert the absolute path to the internal epub path
-      const relativePath = filePath.substring(
-        `${path.normalize(sourceLocation)}/`.length
+      let relativePath = filePath.substring(
+        `${path.normalize(sourceLocation)}`.length
       );
+      if (relativePath.substring(0, 1) === "/") {
+        relativePath = relativePath.substring(1);
+      }
       if (relativePath !== "mimetype") {
         if (contents) {
           zip.file(`${relativePath}`, contents);
@@ -152,6 +155,7 @@ class FileManager {
       initialized without the file index, so we must preload the container.xml
       and OPF file first. 
       */
+      const prefixUrl = path.resolve(location);
       const containerLocation = "./META-INF/container.xml";
       const containerUrl = path.resolve(location, containerLocation);
       const response = await fetch(containerUrl, fetchOptions);
@@ -181,17 +185,16 @@ class FileManager {
       const opfLocation = path.resolve(location, manifestPath);
       const opfFetchResponse = await fetch(opfLocation, fetchOptions);
       const opfData = await opfFetchResponse.text();
-      const packageManager = new PackageManager();
+      const packageManager = new PackageManager(manifestPath);
       await packageManager.loadXml(opfData);
       const manifestItems = packageManager.manifest.items;
 
       const fsManifestPath = path.join(location, manifestPath);
       const fileIndex = opfManifestToBrowserFsIndex(
         manifestItems,
-        location,
-        fsManifestPath
+        manifestPath
       );
-      console.log("Mounting epub directiry with BrowserFS", location);
+      console.log("Mounting epub directory with BrowserFS", location);
       console.log("file index", JSON.parse(JSON.stringify(fileIndex)));
 
       try {
@@ -204,6 +207,7 @@ class FileManager {
                 readable: {
                   fs: "HTTPRequest",
                   options: {
+                    baseUrl: prefixUrl,
                     index: fileIndex /* a json directory structure */,
                   },
                 },
@@ -226,9 +230,7 @@ class FileManager {
       // });
 
       // return the virtual path to the epub root
-      const workingPath = path.normalize(
-        `${FileManager.virtualPath}/overlay/${location}`
-      );
+      const workingPath = path.normalize(`${FileManager.virtualPath}/overlay/`);
       return workingPath;
     } else {
       // when running in Node, copy the epub dir to tmp directory.
@@ -441,6 +443,10 @@ class FileManager {
    */
   static async findAllFiles(directoryName, _results = []) {
     let files;
+    if (directoryName === "..") {
+      return;
+    }
+
     try {
       files = await FileManager.readDir(directoryName);
     } catch (err) {
@@ -450,14 +456,37 @@ class FileManager {
 
     for (let file of files) {
       const fullPath = path.join(directoryName, file);
-      if (await FileManager.isDir(fullPath)) {
-        await FileManager.findAllFiles(fullPath, _results);
+      if (file !== "." && (await FileManager.isDir(fullPath))) {
+        const subdir = await FileManager.findAllFiles(fullPath, _results);
+        // console.log("subdir", subdir);
       } else {
         _results.push(fullPath);
       }
     }
     return _results;
   }
+
+  // static async findAllFiles(directoryName) {
+  //   let files = [];
+  //   let allFiles = [];
+  //   try {
+  //     files = await FileManager.readDir(directoryName);
+  //   } catch (err) {
+  //     console.error("Error reading directory", directoryName, err);
+  //     return;
+  //   }
+
+  //   for (let file of files) {
+  //     const fullPath = path.join(directoryName, file);
+  //     if (await FileManager.isDir(fullPath)) {
+  //       allFiles = allFiles.concat(await FileManager.findAllFiles(fullPath));
+  //       return;
+  //     } else {
+  //       allFiles = allFiles.concat(fullPath);
+  //     }
+  //   }
+  //   return allFiles;
+  // }
 
   /**
    * Get the contents of a directory
@@ -584,6 +613,22 @@ class FileManager {
     } else {
       return "/tmp";
     }
+  }
+
+  static resolveIriToEpubLocation(iri, referencePath) {
+    if (iri.indexOf("http") === 0) {
+      return iri;
+    } else {
+      return path.join(path.dirname(referencePath), iri);
+    }
+  }
+
+  static absolutePathToEpubLocation(epubPath, resourcePath) {
+    return path.relative(epubPath, resourcePath);
+  }
+
+  static epubLocationToAbsolutePath(epubPath, resourcePath) {
+    return path.join(path.dirname, epubPath, resourcePath);
   }
 }
 

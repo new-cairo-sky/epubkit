@@ -2,13 +2,14 @@ import PackageElement from "./package-element";
 import PackageManifestItem from "./package-manifest-item";
 
 export default class PackageManifest extends PackageElement {
-  constructor(items = [], id = undefined) {
+  constructor(items = [], id = undefined, location) {
     const attr = {};
     if (id) {
       attr.id = id;
     }
     super("manifest", undefined, attr);
 
+    this._location = location;
     this.items = [];
 
     items.forEach((itemData) => {
@@ -17,12 +18,19 @@ export default class PackageManifest extends PackageElement {
     });
   }
 
+  set location(locationInEpub) {
+    this._location = locationInEpub;
+    this.items.forEach((item) => {
+      item.opfLocation = locationInEpub;
+    });
+  }
+
   addItem(id, href, mediaType, options = {}, index = undefined) {
     const pos = index !== undefined ? index : this.items.length;
     this.items.splice(
       pos,
       0,
-      new PackageManifestItem(id, href, mediaType, options)
+      new PackageManifestItem(id, href, mediaType, options, this._location)
     );
   }
 

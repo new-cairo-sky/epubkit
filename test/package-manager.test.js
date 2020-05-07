@@ -7,13 +7,15 @@ import PackageSpine from "../src/package-spine";
 
 import FileManager from "../src/file-manager";
 
+const epub2OpfEpubLocation = "3174/content.opf";
 const epub2OpfPath = path.resolve(
   "./test/fixtures/a_dogs_tale/3174/content.opf"
 );
+const epub3OpfEpubLocation = "OPS/package.opf";
 const epub3OpfPath = path.resolve("./test/fixtures/alice/OPS/package.opf");
 
 test("can parse package.opf xml", async () => {
-  const packageManager = new PackageManager();
+  const packageManager = new PackageManager(epub3OpfEpubLocation);
   const data = await FileManager.readFile(epub3OpfPath);
   await packageManager.loadXml(data);
 
@@ -23,7 +25,7 @@ test("can parse package.opf xml", async () => {
 });
 
 test("can prepare package xml", async () => {
-  const packageHandler = new PackageManager();
+  const packageHandler = new PackageManager(epub3OpfEpubLocation);
   const data = await FileManager.readFile(epub3OpfPath);
 
   await packageHandler.loadXml(data);
@@ -36,7 +38,7 @@ test("can prepare package xml", async () => {
 });
 
 test("can find Unique Identifier", async () => {
-  const packageHandler = new PackageManager();
+  const packageHandler = new PackageManager(epub3OpfEpubLocation);
   const data = await FileManager.readFile(epub3OpfPath);
 
   await packageHandler.loadXml(data);
@@ -47,21 +49,21 @@ test("can find Unique Identifier", async () => {
 });
 
 test("can find ncx file path", async () => {
-  const packageHandler = new PackageManager();
+  const packageHandler = new PackageManager(epub2OpfEpubLocation);
 
   const data = await FileManager.readFile(epub2OpfPath);
 
   await packageHandler.loadXml(data);
 
-  expect(packageHandler.findNcxFilePath()).toBe("toc.ncx");
+  expect(packageHandler.findNcxFilePath()).toBe("3174/toc.ncx");
 });
 
 test("can find navigation file path", async () => {
-  const packageHandler = new PackageManager();
+  const packageHandler = new PackageManager(epub3OpfEpubLocation);
 
   const data = await FileManager.readFile(epub3OpfPath);
 
   await packageHandler.loadXml(data);
 
-  expect(packageHandler.findNavigationFilePath()).toBe("toc.xhtml");
+  expect(packageHandler.findNavigationFilePath()).toBe("OPS/toc.xhtml");
 });
