@@ -6,7 +6,7 @@
 
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
-A universal JS library for parsing and editing epubs in both Node.js (v8.x +) and the client.
+A universal JS library for parsing and editing epubs in both Node.js (v8.x +) and the browser.
 
 ### Features
 
@@ -15,7 +15,7 @@ A universal JS library for parsing and editing epubs in both Node.js (v8.x +) an
 - Modify and save epubs in the browser.
 - Lazy fetching of resources when loading pre-expanded epub directories in the browser.
 
-Epubkit relies on [BrowserFS](https://github.com/jvilk/BrowserFS) for browser support.
+Note: Epubkit relies on [BrowserFS](https://github.com/jvilk/BrowserFS) v2.0.0-beta for browser support.
 
 ## Install
 

@@ -12,7 +12,7 @@ export default class PackageSpine extends PackageElement {
       options
     );
 
-    super("manifest", undefined, attr);
+    super("spine", undefined, attr);
 
     this.items = [];
 

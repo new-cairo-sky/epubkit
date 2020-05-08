@@ -401,10 +401,10 @@ class FileManager {
    * Read a file and return the data
    * @param {string} location
    */
-  static async readFile(location) {
+  static async readFile(location, encoding = undefined) {
     let data;
     try {
-      data = await promisify(fs.readFile)(location /*, "utf8"*/);
+      data = await promisify(fs.readFile)(location, encoding);
     } catch (err) {
       console.warn("Could not readFile", location, err);
       return;
