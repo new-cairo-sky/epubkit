@@ -4,7 +4,12 @@ import PackageElement from "./package-element";
 import PackageMetadata from "./package-metadata";
 import PackageManifest from "./package-manifest";
 import PackageSpine from "./package-spine";
-import { parseXml } from "./utils/xml";
+import {
+  parseXml,
+  generateXml,
+  filterAttributes,
+  prepareItemsForXml,
+} from "./utils/xml";
 
 export default class PackageManager extends PackageElement {
   constructor(locationInEpub = "") {
@@ -149,7 +154,20 @@ export default class PackageManager extends PackageElement {
     }
   }
 
-  get xml() {
+  /**
+   * Get the xml string data
+   * @returns {string}
+   */
+  async getXml() {
+    const xml = await generateXml(this.getXml2JsObject());
+    return xml;
+  }
+
+  /**
+   * Build the xml2Js object for conversion to raw xml
+   * @returns {object}
+   */
+  getXml2JsObject() {
     const filterAttributes = (attributes) => {
       if (Object.keys(attributes).length) {
         const attr = Object.entries(attributes)

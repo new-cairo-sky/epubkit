@@ -11,13 +11,13 @@ import PackageManager from "./package-manager";
 import { opfManifestToBrowserFsIndex } from "./utils/opf-to-browser-fs-index";
 
 /**
- * This class wraps a lot of the node fs file system library methods.
- * For browser clients the BroswerFS module is used to emulate Node FS and
- * FileSaver is used to enable client's to download documents for saving.
- * BrowserFS does not pollyfill the fs native promises, so many fs methods
- * are wrapped with promisify.
  * Most of the nasty details in managing the different environments is
  * contained in here.
+ * This class wraps a lot of the node fs file system library methods.
+ * For browser clients, the BroswerFS module is used to emulate Node FS and
+ * FileSaver is used to enable client's to download documents for saving.
+ * BrowserFS does not pollyfill the fs native promises, so many fs methods
+ * are wrapped with promisify below.
  *
  * see also:
  * https://github.com/jvilk/BrowserFS

@@ -12,7 +12,7 @@ const parseOptions = {
 const buildOptions = {
   attrkey: "attr",
   charkey: "val",
-  xmldec: { standalone: false },
+  xmldec: { version: "1.0", encoding: "UTF-8" },
 };
 
 export async function parseXml(data) {

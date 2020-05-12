@@ -1,10 +1,12 @@
 import path from "path";
+import xml2js from "xml2js";
+const { JSDOM } = require("jsdom");
 import { parseXml } from "../src/utils/xml";
 import PackageManager from "../src/package-manager";
 import PackageManifest from "../src/package-manifest";
 import PackageMetadata from "../src/package-metadata";
 import PackageSpine from "../src/package-spine";
-
+import { promisify } from "es6-promisify";
 import FileManager from "../src/file-manager";
 
 const epub2OpfEpubLocation = "3174/content.opf";
@@ -24,17 +26,36 @@ test("can parse package.opf xml", async () => {
   expect(packageManager.spine).toBeInstanceOf(PackageSpine);
 });
 
-test("can prepare package xml", async () => {
+test("can get xml2js object", async () => {
   const packageHandler = new PackageManager(epub3OpfEpubLocation);
   const data = await FileManager.readFile(epub3OpfPath);
 
   await packageHandler.loadXml(data);
 
-  const testXml = packageHandler.xml;
+  const testXml = packageHandler.getXml2JsObject();
 
   const referenceXml = await parseXml(data);
 
-  expect(testXml.package).toEqual(referenceXml.package);
+  expect(testXml).toEqual(referenceXml);
+});
+
+test("can generate valid xml ", async () => {
+  const packageHandler = new PackageManager(epub3OpfEpubLocation);
+  const data = await FileManager.readFile(epub3OpfPath, "utf8");
+
+  const referenceXmlJs = await promisify(xml2js.parseString)(data);
+  const builder = new xml2js.Builder({
+    xmldec: { version: "1.0", encoding: "UTF-8" },
+  });
+  const referenceXml = builder.buildObject(referenceXmlJs);
+
+  await packageHandler.loadXml(data);
+  const testXml = await packageHandler.getXml();
+
+  const referenceJsdom = JSDOM.fragment(referenceXml);
+  const testJsdom = JSDOM.fragment(testXml);
+
+  expect(testJsdom.isEqualNode(referenceJsdom)).toBe(true);
 });
 
 test("can find Unique Identifier", async () => {
