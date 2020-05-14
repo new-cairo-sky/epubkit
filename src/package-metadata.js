@@ -1,14 +1,25 @@
+import { v4 as uuidv4 } from "uuid";
 import PackageElement from "./package-element";
 import PackageMetadataItem from "./package-metadata-item";
 
+// TODO: add date modified meta element on save
+
 export default class PackageMetadata extends PackageElement {
   constructor(items = [], attributes = {}) {
-    super("metadata", undefined, attributes);
+    const attr = Object.assign(
+      {
+        "xmlns:dc": "http://purl.org/dc/elements/1.1/",
+      },
+      attributes
+    );
+
+    super("metadata", undefined, attr);
 
     const requiredMetadata = [
-      { element: "dc:identifier", value: undefined },
+      // { element: "dc:identifier", value: `urn:uuid:${uuidv4()}` },
       { element: "dc:title", value: "Untitled" },
       { element: "dc:language", value: "en-US" },
+      // { element: "meta", value: undefined, attributes: {property: "dcterms:modified"}}
     ];
 
     const neededMetadata = requiredMetadata.filter((requiredItem) => {
@@ -58,7 +69,7 @@ export default class PackageMetadata extends PackageElement {
 
   /**
    * Finds items that have all of the attributes listed in the provided object.
-   * If the onject attribute's value is undefined, then only the attribute name
+   * If the object attribute's value is undefined, then only the attribute name
    * is matched.
    * @param {object} attributes
    */

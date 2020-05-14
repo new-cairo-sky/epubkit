@@ -16,6 +16,14 @@ const epub2OpfPath = path.resolve(
 const epub3OpfEpubLocation = "OPS/package.opf";
 const epub3OpfPath = path.resolve("./test/fixtures/alice/OPS/package.opf");
 
+test("can set file location in epub", () => {
+  const packageManager = new PackageManager();
+  packageManager.create();
+  packageManager.location = "ops/package.opf";
+  expect(packageManager.location).toBe("ops/package.opf");
+  expect(packageManager.manifest.location).toBe("ops/package.opf");
+});
+
 test("can parse package.opf xml", async () => {
   const packageManager = new PackageManager(epub3OpfEpubLocation);
   const data = await FileManager.readFile(epub3OpfPath);
@@ -87,4 +95,25 @@ test("can find navigation file path", async () => {
   await packageHandler.loadXml(data);
 
   expect(packageHandler.findNavigationFilePath()).toBe("OPS/toc.xhtml");
+});
+
+test("can generate valid xml without source xml file", async () => {
+  const uid = "test-uid";
+  const expectedXml = `
+  <?xml version="1.0" encoding="UTF-8"?>
+  <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="pub-id" version="3.0">
+    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+      <dc:title>Untitled</dc:title>
+      <dc:language>en-US</dc:language>
+      <dc:identifier id="pub-id">${uid}</dc:identifier>
+    </metadata>
+    <manifest/>
+    <spine/>
+  </package>
+  `.replace(/\s/g, "");
+  const packageManager = new PackageManager();
+  packageManager.create();
+  packageManager.setUniqueIdentifier(uid);
+  const emptyXml = await packageManager.getXml();
+  expect(emptyXml.replace(/\s/g, "")).toBe(expectedXml);
 });

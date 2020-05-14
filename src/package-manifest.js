@@ -25,6 +25,10 @@ export default class PackageManifest extends PackageElement {
     });
   }
 
+  get location() {
+    return this._location;
+  }
+
   addItem(id, href, mediaType, options = {}, index = undefined) {
     const pos = index !== undefined ? index : this.items.length;
     this.items.splice(

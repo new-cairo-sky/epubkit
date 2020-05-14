@@ -1,4 +1,5 @@
 import path from "path";
+import { v4 as uuidv4 } from "uuid";
 import FileManager from "./file-manager";
 import PackageElement from "./package-element";
 import PackageMetadata from "./package-metadata";
@@ -11,16 +12,20 @@ import {
   prepareItemsForXml,
 } from "./utils/xml";
 
+/**
+ * Package manager to create and edit opf files.
+ * https://www.w3.org/publishing/epub32/epub-packages.html
+ */
 export default class PackageManager extends PackageElement {
   constructor(locationInEpub = "") {
-    super("package", {
+    super("package", undefined, {
       xmlns: "http://www.idpf.org/2007/opf",
       dir: undefined,
       id: undefined,
       prefix: undefined,
       "xml:lang": undefined,
       "unique-identifier": undefined,
-      version: undefined,
+      version: "3.0",
     });
 
     this._location = locationInEpub; // the path relative to the epub root.
@@ -41,6 +46,35 @@ export default class PackageManager extends PackageElement {
     return this._location;
   }
 
+  /**
+   * Set the unique identifier of the ebook. This sets both the package
+   * 'unique-identifier' id value which refers to a meta tag as well as the
+   * meta tag value and id.
+   * Note that the uid has side-effects with epub font obfuscation. The UID
+   * is used as the obfuscation key and obfuscated fonts must be
+   * re-processed when changing this value.
+   * @param {string} value the UUID or other unique identifier
+   * @param {string} id - the id of the meta tag that marks it as the uid.
+   */
+  setUniqueIdentifier(value, id = "pub-id") {
+    const existingId = this.attributes["unique-identifier"];
+    this.attributes["unique-identifier"] = id;
+
+    const uidMetadata = existingId
+      ? this.metadata.findItemWithId("dc:identifier", existingId)
+      : undefined;
+
+    if (uidMetadata) {
+      uidMetadata.value = value;
+      uidMetadata.id = id;
+    } else {
+      this.metadata.addItem("dc:identifier", value, { id: id });
+    }
+  }
+
+  /**
+   * Find the epub unique-identifer value
+   */
   findUniqueIdentifier() {
     const metadataId = this.attributes["unique-identifier"];
     if (metadataId) {
@@ -89,6 +123,22 @@ export default class PackageManager extends PackageElement {
     return;
   }
 
+  /**
+   * Initialize a new empty package.
+   */
+  create() {
+    const uuid = `urn:uuid:${uuidv4()}`;
+
+    this.metadata = new PackageMetadata();
+    this.manifest = new PackageManifest();
+    this.spine = new PackageSpine();
+    this.setUniqueIdentifier(uuid);
+  }
+
+  /**
+   * Initialize a new package object using the provided xml.
+   * @param {string | buffer} data - the xml data
+   */
   async loadXml(data) {
     const result = await parseXml(data);
 
