@@ -398,7 +398,7 @@ class FileManager {
   }
 
   /**
-   * Read a file and return the data
+   * Read entire file and return the data
    * @param {string} location
    */
   static async readFile(location, encoding = undefined) {
@@ -411,6 +411,13 @@ class FileManager {
     }
     return data;
   }
+
+  // static async read(location, buffer = undefined) {
+  //   const dataBuffer = buffer ? buffer : new Buffer();
+  //   try {
+  //     await promisify(fs.read)(location, dataBuffer);
+  //   }
+  // }
 
   /**
    * Read a XML file and parse it into a json object using xml2js

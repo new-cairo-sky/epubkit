@@ -27,6 +27,7 @@
     }
   },
   "dependencies": {
+    "@peculiar/webcrypto": "^1.1.1",
     "adm-zip": "^0.4.14",
     "browserfs": "git+https://github.com/jvilk/BrowserFS.git",
     "css": "^2.2.4",
@@ -35,9 +36,11 @@
     "helmet": "^3.22.0",
     "jssha": "^3.1.0",
     "jszip": "^3.4.0",
+    "node-webcrypto-ossl": "^2.1.0",
     "utf8": "^3.0.0",
     "uuid": "^8.0.0",
-    "xml2js": "^0.4.23"
+    "xml2js": "^0.4.23",
+    "xmldsigjs": "^2.0.30"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
