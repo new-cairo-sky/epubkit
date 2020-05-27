@@ -4,8 +4,10 @@ https://www.w3.org/TR/2008/REC-xmldsig-core-20080610/#sec-EnvelopedSignature
 https://github.com/PeculiarVentures/xmldsigjs
 */
 
-import { Crypto } from "@peculiar/webcrypto";
+// import { Crypto } from "@peculiar/webcrypto";
 import * as xmldsigjs from "xmldsigjs";
+
+import getEnvironment from "./utils/environment";
 
 import DataElement from "./data-element";
 
@@ -16,8 +18,13 @@ export default class SignaturesManager extends DataElement {
     });
   }
 
-  async initCrypto() {
-    const crypto = new Crypto();
-    xmldsigjs.Application.setEngine("WebCrypto", crypto);
+  initCrypto() {
+    // only load the webcrypto pollyfill in node
+    // xmldsigjs will default to native webcrypto in the browser
+    if (getEnvironment() === "node") {
+      const { Crypto } = require("@peculiar/webcrypto");
+      const crypto = new Crypto();
+      xmldsigjs.Application.setEngine("WebCrypto", crypto);
+    }
   }
 }

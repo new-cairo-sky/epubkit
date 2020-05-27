@@ -8,14 +8,17 @@
 
 A universal JS library for parsing and editing epubs in both Node.js (v8.x +) and the browser.
 
+Note: Support for signatures requires Node v10+ for the Crypto API used by the node [WebCrypto pollyfill](https://github.com/PeculiarVentures/webcrypto#readme).
+
 ### Features
 
 - Support for both `.epub` archive files and expanded epub diretories.
 - Support for un/obfuscating epub fonts in both IDPF and Adobe format.
 - Modify and save epubs in the browser.
 - Lazy fetching of resources when loading pre-expanded epub directories in the browser.
+- Node / Web support for signed signatures
 
-Note: Epubkit relies on [BrowserFS](https://github.com/jvilk/BrowserFS) v2.0.0-beta for browser support.
+Note: Epubkit relies on [BrowserFS](https://github.com/jvilk/BrowserFS) v2.0.0-beta for browser support of node fs. Cryptographic signing and hashing for signatures.xml relies on [XMLDSIG](https://github.com/PeculiarVentures/xmldsigjs) and a [WebCrypto pollyfill](https://github.com/PeculiarVentures/webcrypto#readme) for Node.
 
 ## Install
 

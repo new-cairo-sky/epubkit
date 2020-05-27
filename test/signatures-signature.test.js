@@ -10,7 +10,7 @@
 import SignaturesManager from "../src/signatures-manager";
 import SignaturesSignature from "../src/signatures-signature";
 
-test("can hash a file using xmldsig.js", async () => {
+test("can hash an xml file using xmldsig.js", async () => {
   const signatureManager = new SignaturesManager();
   await signatureManager.initCrypto();
 
@@ -18,4 +18,24 @@ test("can hash a file using xmldsig.js", async () => {
   await signaturesSignature.addManifestReference(
     "./test/fixtures/alice/OPS/package.opf"
   );
+
+  const digestValue =
+    signaturesSignature.manifest.references[0].digestValue.value;
+
+  expect(digestValue).toBe("v+utESdJOT3cKjJd7rgE4Iw8GTwjdb3zRf37BllF2Mk=");
+});
+
+test("can hash a binary file using xmldsig.js", async () => {
+  const signatureManager = new SignaturesManager();
+  await signatureManager.initCrypto();
+
+  const signaturesSignature = new SignaturesSignature();
+  await signaturesSignature.addManifestReference(
+    "./test/fixtures/alice/OPS/css/stylesheet.css"
+  );
+
+  const digestValue =
+    signaturesSignature.manifest.references[0].digestValue.value;
+
+  expect(digestValue).toBe("jsl7lao3CReMRW2eUocxMQans6bucWlexHNl1V+g008=");
 });
