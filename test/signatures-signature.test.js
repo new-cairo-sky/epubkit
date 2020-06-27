@@ -4,7 +4,7 @@
 /* ^^^^^^^^^
  * XmlDSigJs checks the environment with
  * typeof self === "undefined" && typeof window === "undefined")
- * this results an error with webcrypto which is not supported by JSDOM
+ * This results in an error with webcrypto which is not supported by JSDOM
  * We must force Node environment so that self and window are both undefined
  */
 import SignaturesManager from "../src/signatures-manager";
@@ -37,5 +37,6 @@ test("can hash a binary file using xmldsig.js", async () => {
   const digestValue =
     signaturesSignature.manifest.references[0].digestValue.value;
 
+  // verified using https://emn178.github.io/online-tools/sha256_checksum.html
   expect(digestValue).toBe("jsl7lao3CReMRW2eUocxMQans6bucWlexHNl1V+g008=");
 });

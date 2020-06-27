@@ -9,8 +9,8 @@ import {
   prepareItemsForXml,
 } from "./utils/xml";
 
-class NcxManager extends DataElement {
-  constructor(jsonData) {
+class NcxManager {
+  constructor() {
     this._content = undefined;
   }
 

@@ -98,7 +98,7 @@ class ContainerManager extends DataElement {
    * @returns {string} - package file's location relative to the epub's root.
    */
   get rootFilePath() {
-    const rootPath = this.rootfiles.items[0]["full-path"];
+    const rootPath = this.rootfiles?.items[0]["full-path"];
     return rootPath;
   }
 }

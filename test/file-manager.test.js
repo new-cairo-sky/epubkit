@@ -128,7 +128,7 @@ test("can save epub dir to new archive with node.js fs", async () => {
   );
   console.log("epubCheckResult", epubCheckResult);
   await expect(epubCheckResult.pass).toBe(true);
-});
+}, 10000);
 
 /**
  * Test that fileSaver produces a file download
