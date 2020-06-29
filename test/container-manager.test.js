@@ -50,9 +50,9 @@ test("can generate valid xml", async () => {
   await containerManager.loadXml(referenceXml);
 
   const testXml = await containerManager.getXml();
-  const clearnTestXml = testXml.replace(/[\r\n]| {2,}/gm, "");
+  const cleanTestXml = testXml.replace(/[\r\n]| {2,}/gm, "");
   const referenceJsdom = JSDOM.fragment(cleanReferenceXml);
-  const testJsdom = JSDOM.fragment(clearnTestXml);
+  const testJsdom = JSDOM.fragment(cleanTestXml);
 
   expect(testJsdom.isEqualNode(referenceJsdom)).toBe(true);
 });

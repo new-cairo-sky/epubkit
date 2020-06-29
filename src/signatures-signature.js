@@ -8,14 +8,19 @@ import FileManager from "./file-manager";
 import SignaturesSignatureObjectManifest from "./signatures-signature-manifest";
 
 export default class SignaturesSignature extends DataElement {
-  constructor(id = "sig") {
+  constructor(epubLocation = "", id = "sig") {
     super("signature", undefined, {
       id: id,
       xmlns: "http://www.w3.org/2000/09/xmldsig#",
     });
 
     this.manifest = new SignaturesSignatureObjectManifest(id);
+    this.epubLocation = epubLocation;
   }
+
+  sign() {}
+
+  getManifestXml() {}
 
   /**
    * Add a manifest reference to the signature. Using a manifest is the recommended signature form
@@ -41,6 +46,8 @@ export default class SignaturesSignature extends DataElement {
 
     const fileExt = path.extname(location);
 
+    const resolvedLocation = path.resolve(this.epubLocation, location);
+
     let data;
     let transforms;
 
@@ -48,10 +55,12 @@ export default class SignaturesSignature extends DataElement {
 
     /* Xml files should be canonicalized */
     if (xmlExts.includes(fileExt)) {
-      const fileData = await FileManager.readFile(location, "utf8");
+      // NOTE: the signatures.xml must be in the META-INF folder at the epub root
+
+      const fileData = await FileManager.readFile(resolvedLocation, "utf8");
 
       if (!fileData) {
-        console.error("Error: file could not be loaded", location);
+        console.error("Error: file could not be loaded", resolvedLocation);
       }
       transforms = ["http://www.w3.org/TR/2001/REC-xml-c14n-2001031"];
       const transform = new xmldsigjs.XmlDsigC14NTransform();
@@ -59,8 +68,8 @@ export default class SignaturesSignature extends DataElement {
       transform.LoadInnerXml(node);
       data = transform.GetOutput();
     } else {
-      // readFile will be default return a Uint8Array binary node buffer
-      data = await FileManager.readFile(location);
+      // readFile will by default return a Uint8Array binary node buffer
+      data = await FileManager.readFile(resolvedLocation);
     }
 
     try {
