@@ -29,7 +29,7 @@ export default class SignaturesManager extends DataElement {
     });
 
     this._rawData = undefined;
-    this.signatures = undefined;
+    this.signature = undefined;
     this.epubLocation = epubLocation;
     this.location = path.resolve(epubLocation, "./META-INF/signatures.xml");
   }
@@ -56,10 +56,31 @@ export default class SignaturesManager extends DataElement {
       const signature = new SignaturesSignature(this.epubLocation);
       for (const xmlReference of xmlSig?.object[0].manifest[0].reference) {
         const uri = xmlReference.attr.URI;
-        await signature.addManifestReference(uri);
+
+        let transforms = [];
+        for (const xmlTransform of xmlReference?.transforms[0]?.transform) {
+          transforms.push(xmlTransform.attr.Algorithm);
+        }
+        const digestMethod = xmlReference?.digestMethod[0].attr.Algorithm;
+        const digestValue = xmlReference?.digestValue[0].value;
+
+        await signature.addManifestReference(
+          uri,
+          transforms,
+          digestMethod,
+          digestValue
+        );
       }
       this.signatures.push(signature);
     }
     return this._rawData;
+  }
+
+  create() {
+    this.signatures = [];
+  }
+
+  addSignature(id) {
+    this.signatures.push(new SignaturesSignature(this.epubLocation, id));
   }
 }

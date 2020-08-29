@@ -2,8 +2,8 @@ import DataElement from "./data-element";
 import SignaturesSignatureReference from "./signatures-signature-reference";
 import { generateXml, prepareItemForXml } from "./utils/xml";
 
-export default class SignaturesSignatureObjectManifest extends DataElement {
-  constructor(id = "manifest") {
+export default class SignaturesSignatureManifest extends DataElement {
+  constructor(id = "manifest1") {
     super("manifest", undefined, {
       id: id,
     });
@@ -11,10 +11,11 @@ export default class SignaturesSignatureObjectManifest extends DataElement {
   }
 
   async getXml() {
-    const xml = await generateXml();
+    const xml = await generateXml(this.getXml2JsObject(), true);
+    return xml;
   }
 
-  getXml2JsObject() {
+  getXml2JsObjectOld() {
     let refData = this.references.map((ref) => {
       const transforms = {};
       const transformList = ref.transforms.map((transform) => {
@@ -22,15 +23,31 @@ export default class SignaturesSignatureObjectManifest extends DataElement {
       });
       transforms.transform = transformList;
       const digestMethod = prepareItemForXml(ref.digestMethod);
-      const digestValue = prepareItemForXml(red.digestValue);
+      const digestValue = prepareItemForXml(ref.digestValue);
       const reference = prepareItemForXml(ref);
       reference.transforms = transforms;
       reference.digestMethod = digestMethod;
       reference.digestValue = digestValue;
       return reference;
     });
+    return refData;
   }
 
+  getXml2JsObject() {
+    const xmlObj = prepareItemForXml(this);
+    const xmlSelf = { manifest: xmlObj };
+    return xmlSelf;
+
+    let refData = this.references.map((ref) => {
+      return prepareItemForXml(ref);
+    });
+
+    return {
+      manifest: {
+        reference: refData,
+      },
+    };
+  }
   addReference(
     uri,
     transforms,

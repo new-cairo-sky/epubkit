@@ -8,6 +8,8 @@ const parseOptions = {
   explicitCharkey: true,
   normalizeTags: true,
   trim: true,
+  attrNameProcessors: [(name) => name.toLowerCase()],
+
   // TODO: test async: true
 };
 const buildOptions = {
@@ -27,7 +29,12 @@ export async function parseXml(data) {
   }
 }
 
-export async function generateXml(data) {
+export async function generateXml(data, isFragment = false) {
+  if (isFragment) {
+    const options = Object.assign(buildOptions, {
+      headless: true,
+    });
+  }
   const builder = new xml2js.Builder(buildOptions);
   const xml = builder.buildObject(data);
   return xml;
@@ -82,7 +89,7 @@ export function prepareItemsForXml(items) {
 }
 
 export function prepareItemForXml(item) {
-  const data = {};
+  let data = {};
 
   const entries = Object.entries(item);
 
@@ -97,7 +104,13 @@ export function prepareItemForXml(item) {
       data.val = value;
     } else if (value instanceof DataElement) {
       // this is a child dataelement
-      const child = value;
+      // TODO: handle recursion...
+      //const child = value;
+
+      data[value.element] = prepareItemForXml(value);
+    } else if (Array.isArray(value) && value.length > 0) {
+      const children = prepareItemsForXml(value);
+      Object.assign(data, children);
     }
     //}
   }

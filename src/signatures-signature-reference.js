@@ -14,8 +14,10 @@ export default class SignaturesSignatureReference extends DataElement {
   ) {
     super("reference", undefined, { uri: uri });
 
+    this.transforms = new DataElement("transforms");
+
     if (Array.isArray(transforms)) {
-      this.transforms = transforms.map((transform) => {
+      this.transforms.transform = transforms.map((transform) => {
         return new SignaturesSignatureReferenceTransform(transform);
       });
     }

@@ -5,7 +5,7 @@ import * as xmldsigjs from "xmldsigjs";
 
 import DataElement from "./data-element";
 import FileManager from "./file-manager";
-import SignaturesSignatureObjectManifest from "./signatures-signature-manifest";
+import SignaturesSignatureManifest from "./signatures-signature-manifest";
 
 export default class SignaturesSignature extends DataElement {
   constructor(epubLocation = "", id = "sig") {
@@ -14,7 +14,11 @@ export default class SignaturesSignature extends DataElement {
       xmlns: "http://www.w3.org/2000/09/xmldsig#",
     });
 
-    this.manifest = new SignaturesSignatureObjectManifest(id);
+    this.signedInfo = new DataElement("signedInfo");
+    this.signatureValue = new DataElement("signatureValue");
+    this.keyInfo = new DataElement("keyInfo");
+    this.object = new DataElement("object");
+    this.object.manifest = new SignaturesSignatureManifest(id);
     this.epubLocation = epubLocation;
   }
 
@@ -36,51 +40,70 @@ export default class SignaturesSignature extends DataElement {
    * https://github.com/w3c/webcrypto/issues/
    *
    * @param {string} location path to the resource, relative to the epub root
-   * @param {string} method - the digest standard to use. see https://github.com/PeculiarVentures/xmldsigjs
+   * @param {string} digestMethod - the digest standard to use. see https://github.com/PeculiarVentures/xmldsigjs
    */
   async addManifestReference(
     location,
-    method = "http://www.w3.org/2001/04/xmlenc#sha256"
+    transforms = ["http://www.w3.org/TR/2001/REC-xml-c14n-2001031"],
+    digestMethod = "http://www.w3.org/2001/04/xmlenc#sha256",
+    digestValue = undefined
   ) {
-    const digest = xmldsigjs.CryptoConfig.CreateHashAlgorithm(method);
+    const digest = xmldsigjs.CryptoConfig.CreateHashAlgorithm(digestMethod);
 
     const fileExt = path.extname(location);
 
     const resolvedLocation = path.resolve(this.epubLocation, location);
 
     let data;
-    let transforms;
 
-    const xmlExts = [".xml", ".xhtml", "html", ".opf", ".ncx"];
-
-    /* Xml files should be canonicalized */
-    if (xmlExts.includes(fileExt)) {
-      // NOTE: the signatures.xml must be in the META-INF folder at the epub root
-
-      const fileData = await FileManager.readFile(resolvedLocation, "utf8");
-
-      if (!fileData) {
-        console.error("Error: file could not be loaded", resolvedLocation);
-      }
-      transforms = ["http://www.w3.org/TR/2001/REC-xml-c14n-2001031"];
-      const transform = new xmldsigjs.XmlDsigC14NTransform();
-      const node = xmldsigjs.Parse(fileData).documentElement;
-      transform.LoadInnerXml(node);
-      data = transform.GetOutput();
+    if (digestValue) {
+      // if digestValue is provided, use that
+      this.object.manifest.addReference(
+        location,
+        transforms,
+        digestMethod,
+        digestValue
+      );
     } else {
-      // readFile will by default return a Uint8Array binary node buffer
-      data = await FileManager.readFile(resolvedLocation);
-    }
+      // if no digestValue is provided, generate a new one
 
-    try {
-      const digestValue = await digest.Digest(data);
+      const xmlExts = [".xml", ".xhtml", "html", ".opf", ".ncx"];
 
-      // the fileHash should be represented as a base64 string
-      const base64Digest = Buffer.from(digestValue).toString("base64");
-      //console.log("digestValue", Buffer.from(digestValue).toString("hex"));
-      this.manifest.addReference(location, transforms, method, base64Digest);
-    } catch (err) {
-      console.error("error hashing file", err);
+      /* Xml files should be canonicalized */
+      if (xmlExts.includes(fileExt)) {
+        // NOTE: the signatures.xml must be in the META-INF folder at the epub root
+
+        const fileData = await FileManager.readFile(resolvedLocation, "utf8");
+
+        if (!fileData) {
+          console.error("Error: file could not be loaded", resolvedLocation);
+        }
+
+        const transform = new xmldsigjs.XmlDsigC14NTransform();
+        const node = xmldsigjs.Parse(fileData).documentElement;
+        transform.LoadInnerXml(node);
+        data = transform.GetOutput();
+      } else {
+        // All other file types are left alone.
+        // note: readFile will by default return a Uint8Array binary node buffer
+        data = await FileManager.readFile(resolvedLocation);
+      }
+
+      try {
+        const digestValue = await digest.Digest(data);
+
+        // the fileHash should be represented as a base64 string
+        const base64Digest = Buffer.from(digestValue).toString("base64");
+        //console.log("digestValue", Buffer.from(digestValue).toString("hex"));
+        this.object.manifest.addReference(
+          location,
+          transforms,
+          digestMethod,
+          base64Digest
+        );
+      } catch (err) {
+        console.error("error hashing file", err);
+      }
     }
   }
 }
