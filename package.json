@@ -19,7 +19,8 @@
     "globalTeardown": "jest-environment-puppeteer-jsdom/teardown",
     "testEnvironment": "jest-environment-puppeteer-jsdom",
     "setupFilesAfterEnv": [
-      "expect-puppeteer"
+      "expect-puppeteer",
+      "jest-xml-matcher"
     ],
     "verbose": true,
     "transform": {
@@ -63,6 +64,7 @@
     "jest": "^25.5.4",
     "jest-environment-puppeteer-jsdom": "^4.3.1",
     "jest-puppeteer": "^4.4.0",
+    "jest-xml-matcher": "^1.2.0",
     "puppeteer": "^2.1.1",
     "webpack": "^4.43.0",
     "webpack-bundle-analyzer": "^3.8.0",

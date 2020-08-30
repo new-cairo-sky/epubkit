@@ -1,4 +1,24 @@
+/**
+ * @jest-environment node
+ */
+/* ^^^^^^^^^
+ * XmlDSigJs checks the environment with
+ * typeof self === "undefined" && typeof window === "undefined")
+ * This results in an error with webcrypto which is not supported by JSDOM
+ * We must force Node environment so that self and window are both undefined
+ */
+
+require("jest-xml-matcher");
+
+import path from "path";
+import normalizeXml from "./utils/normalize-xml";
+
+import FileManager from "../src/file-manager";
 import DataElement from "../src/data-element";
+import PackageManager from "../src/package-manager";
+
+const epub3OpfEpubLocation = "OPS/package.opf";
+const epub3OpfPath = path.resolve("./test/fixtures/alice/OPS/package.opf");
 
 test("can construct new data element object", () => {
   const attributes = {
@@ -77,4 +97,20 @@ test("can remove attribute", () => {
 
   expect(dataElement.attrA).toBeUndefined();
   expect(dataElement.attributes.attrA).toBeUndefined();
+});
+
+test("can prepareFoxXml", async () => {
+  const packageManager = new PackageManager(epub3OpfEpubLocation);
+  const data = await FileManager.readFile(epub3OpfPath, "utf8");
+  const expectedXml = normalizeXml(data);
+  await packageManager.loadXml(expectedXml);
+
+  // const xmlObject = packageManager.prepareForXml();
+
+  // console.log("xmlObject", xmlObject);
+
+  const xml = await packageManager.getXml();
+  const resultXml = normalizeXml(xml);
+
+  expect(resultXml).toEqualXML(expectedXml);
 });

@@ -1,3 +1,5 @@
+// THIS WILL NOT RUN IN JSDOM
+
 import * as xmldsigjs from "xmldsigjs";
 const { Crypto } = require("@peculiar/webcrypto");
 
