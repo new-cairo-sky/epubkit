@@ -1,9 +1,9 @@
 import DataElement from "./data-element";
-import SignaturesSignatureReference from "./signatures-signature-reference";
+import SignatureReference from "./signature-reference";
 import { generateXml, prepareItemForXml } from "./utils/xml";
 
-export default class SignaturesSignatureManifest extends DataElement {
-  constructor(id = "manifest1") {
+export default class SignatureManifest extends DataElement {
+  constructor(id = "manifest") {
     super("manifest", undefined, {
       id: id,
     });
@@ -55,12 +55,7 @@ export default class SignaturesSignatureManifest extends DataElement {
     digestValue
   ) {
     this.references.push(
-      new SignaturesSignatureReference(
-        uri,
-        transforms,
-        digestMethod,
-        digestValue
-      )
+      new SignatureReference(uri, transforms, digestMethod, digestValue)
     );
   }
 }

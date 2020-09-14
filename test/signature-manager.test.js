@@ -11,7 +11,7 @@ import path from "path";
 import FileManager from "../src/file-manager";
 
 import SignaturesManager from "../src/signatures-manager";
-import SignaturesSignature from "../src/signatures-signature";
+import Signature from "../src/signature";
 
 const signaturesEpubFixture = path.resolve("./test/fixtures/signatures-test");
 const signaturesFilePath = path.resolve(

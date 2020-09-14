@@ -99,7 +99,7 @@ test("can remove attribute", () => {
   expect(dataElement.attributes.attrA).toBeUndefined();
 });
 
-test("can prepareFoxXml", async () => {
+test("can can get xml", async () => {
   const packageManager = new PackageManager(epub3OpfEpubLocation);
   const data = await FileManager.readFile(epub3OpfPath, "utf8");
   const expectedXml = normalizeXml(data);

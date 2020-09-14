@@ -5,20 +5,22 @@ import * as xmldsigjs from "xmldsigjs";
 
 import DataElement from "./data-element";
 import FileManager from "./file-manager";
-import SignaturesSignatureManifest from "./signatures-signature-manifest";
+import SignatureManifest from "./signature-manifest";
+import SignatureSignedInfo from "./signature-signed-info";
 
-export default class SignaturesSignature extends DataElement {
+export default class Signature extends DataElement {
   constructor(epubLocation = "", id = "sig") {
     super("signature", undefined, {
       id: id,
       xmlns: "http://www.w3.org/2000/09/xmldsig#",
     });
 
-    this.signedInfo = new DataElement("signedInfo");
+    this.signedInfo = new SignatureSignedInfo();
+
     this.signatureValue = new DataElement("signatureValue");
     this.keyInfo = new DataElement("keyInfo");
     this.object = new DataElement("object");
-    this.object.manifest = new SignaturesSignatureManifest(id);
+    this.object.manifest = new SignatureManifest();
     this.epubLocation = epubLocation;
   }
 

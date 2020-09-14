@@ -20,7 +20,7 @@ import * as xmldsigjs from "xmldsigjs";
 import getEnvironment from "./utils/environment";
 
 import DataElement from "./data-element";
-import SignaturesSignature from "./signatures-signature";
+import Signature from "./signature";
 
 export default class SignaturesManager extends DataElement {
   constructor(epubLocation = "") {
@@ -53,7 +53,7 @@ export default class SignaturesManager extends DataElement {
     // hashing can be resource intensive so we will run the async functions sequentially.
     this.signatures = [];
     for (const xmlSig of this._rawData.signatures.signature) {
-      const signature = new SignaturesSignature(this.epubLocation);
+      const signature = new Signature(this.epubLocation);
       for (const xmlReference of xmlSig?.object[0].manifest[0].reference) {
         const uri = xmlReference.attr.URI;
 
@@ -81,6 +81,6 @@ export default class SignaturesManager extends DataElement {
   }
 
   addSignature(id) {
-    this.signatures.push(new SignaturesSignature(this.epubLocation, id));
+    this.signatures.push(new Signature(this.epubLocation, id));
   }
 }

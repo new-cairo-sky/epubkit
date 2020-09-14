@@ -12,7 +12,7 @@ import { parseXml, generateXml } from "../src/utils/xml";
 
 import normalizeXml from "./utils/normalize-xml";
 
-import SignaturesSignatureManifest from "../src/signatures-signature-manifest.js";
+import SignatureManifest from "../src/signatures-signature-manifest.js";
 
 const manifestXml = `
 <?xml version="1.0" encoding="UTF-8"?>
@@ -28,7 +28,7 @@ const manifestXml = `
 `;
 
 test("can get valid xmlJsObj from manifest", async () => {
-  const manifest = new SignaturesSignatureManifest();
+  const manifest = new SignatureManifest();
   manifest.addReference(
     "META-INF/container.xml",
     ["http://www.w3.org/TR/2001/REC-xml-c14n-20010315"],
@@ -52,7 +52,7 @@ test("can get valid xmlJsObj from manifest", async () => {
 });
 
 test("can generate valid xml", async () => {
-  const manifest = new SignaturesSignatureManifest();
+  const manifest = new SignatureManifest();
   manifest.addReference(
     "META-INF/container.xml",
     ["http://www.w3.org/TR/2001/REC-xml-c14n-20010315"],
