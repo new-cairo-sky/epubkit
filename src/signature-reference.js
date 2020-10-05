@@ -1,6 +1,6 @@
 import DataElement from "./data-element";
 import SignatureDigestMethod from "./signature-digest-method";
-import SignatureDigestMethod from "./signature-digest-value";
+import SignatureDigestValue from "./signature-digest-value";
 import SignatureReferenceTransform from "./signature-reference-transform";
 
 // https://www.w3.org/TR/xmldsig-core1/#sec-Reference
@@ -23,6 +23,6 @@ export default class SignatureReference extends DataElement {
 
     this.digestMethod = new SignatureDigestMethod(digestMethod);
 
-    this.digestValue = new SignatureDigestMethod(digestValue);
+    this.digestValue = new SignatureDigestValue(digestValue);
   }
 }

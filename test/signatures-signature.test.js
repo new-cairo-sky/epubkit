@@ -8,7 +8,7 @@
  * We must force Node environment so that self and window are both undefined
  */
 import SignaturesManager from "../src/signatures-manager";
-import Signature from "../src/signatures-signature";
+import Signature from "../src/signature";
 
 test("can hash an xml file using xmldsig.js", async () => {
   const signatureManager = new SignaturesManager();
@@ -39,4 +39,20 @@ test("can hash a binary file using xmldsig.js", async () => {
 
   // verified using https://emn178.github.io/online-tools/sha256_checksum.html
   expect(digestValue).toBe("jsl7lao3CReMRW2eUocxMQans6bucWlexHNl1V+g008=");
+});
+
+test("can generate a signature", async () => {
+  const signatureManager = new SignaturesManager();
+  signatureManager.initCrypto();
+  const signaturesSignature = new Signature();
+  await signaturesSignature.addManifestReference(
+    "./test/fixtures/alice/OPS/css/stylesheet.css"
+  );
+  console.log("before signed", await signaturesSignature.getXml());
+  try {
+    await signaturesSignature.sign();
+    console.log("signed?", await signaturesSignature.getXml());
+  } catch (e) {
+    console.log("error", e);
+  }
 });

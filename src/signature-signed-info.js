@@ -1,7 +1,6 @@
 import DataElement from "./data-element";
 import SignatureReference from "./signature-reference";
-import SignatureDigestMethod from "./signature-digest-method";
-import SignatureDigestValue from "./signature-digest-value";
+import SignatureSignatureMethod from "./signature-signature-method";
 import SignatureCanonicalizationMethod from "./signature-canonicalization-method";
 
 // https://www.w3.org/TR/xmldsig-core1/#sec-SignedInfo

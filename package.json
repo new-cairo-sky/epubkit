@@ -12,8 +12,8 @@
     "build:client": "webpack --progress --mode=production",
     "start": "babel-node ./test/dev-server.js"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Erik Wysocan",
+  "license": "Hippocratic-2.1",
   "jest": {
     "globalSetup": "jest-environment-puppeteer-jsdom/setup",
     "globalTeardown": "jest-environment-puppeteer-jsdom/teardown",

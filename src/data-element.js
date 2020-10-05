@@ -112,7 +112,7 @@ export default class DataElement {
             children[child.element].push(childData[child.element]);
           } else {
             // otherwise make a new array
-            children[child.element] = [childData];
+            children[child.element] = [childData[child.element]];
           }
         });
         Object.assign(data, children);
