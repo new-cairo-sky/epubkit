@@ -12,11 +12,11 @@ import { parseXml, generateXml } from "../src/utils/xml";
 
 import normalizeXml from "./utils/normalize-xml";
 
-import SignatureManifest from "../src/signatures-signature-manifest.js";
+import SignatureManifest from "../src/signature-manifest.js";
 
 const manifestXml = `
 <?xml version="1.0" encoding="UTF-8"?>
-<manifest id="manifest1">
+<manifest id="manifest">
   <reference uri="META-INF/container.xml">
     <transforms>
       <transform algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
@@ -37,13 +37,12 @@ test("can get valid xmlJsObj from manifest", async () => {
   );
 
   const expected = await parseXml(manifestXml);
-  //const oldXml2JsObj = manifest.getXml2JsObjectOld();
-  const xml2JsObj = manifest.getXml2JsObject();
-  //console.log("oldXml2JsObj", oldXml2JsObj);
+
+  const xml2JsObj = manifest.prepareForXml();
 
   const expectedXml = normalizeXml(manifestXml);
 
-  const resultXml = await generateXml(xml2JsObj, true);
+  const resultXml = await manifest.getXml(xml2JsObj, true);
   const normalizedResultXml = normalizeXml(resultXml);
 
   console.log(expectedXml);
