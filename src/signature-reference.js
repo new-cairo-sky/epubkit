@@ -12,14 +12,30 @@ export default class SignatureReference extends DataElement {
     digestMethod = "http://www.w3.org/2001/04/xmlenc#sha256",
     digestValue
   ) {
-    super("reference", undefined, { uri: uri });
+    super("Reference", undefined, { uri: uri });
 
-    if (Array.isArray(transforms)) {
-      this.transforms = new DataElement("transforms");
-      this.transforms.transform = transforms.map((transform) => {
-        return new SignatureReferenceTransform(transform);
-      });
-    }
+    Object.defineProperty(this, "transforms", {
+      configurable: true,
+      get() {
+        return this._transforms;
+      },
+      set(val) {
+        if (Array.isArray(val)) {
+          this._transforms = new DataElement("Transforms");
+          this._transforms.transform = val.map((transform) => {
+            return new SignatureReferenceTransform(transform);
+          });
+        }
+      },
+    });
+    // if (Array.isArray(transforms)) {
+    //   this.transforms = new DataElement("transforms");
+    //   this.transforms.transform = transforms.map((transform) => {
+    //     return new SignatureReferenceTransform(transform);
+    //   });
+    // }
+
+    this.transforms = transforms;
 
     this.digestMethod = new SignatureDigestMethod(digestMethod);
 

@@ -21,6 +21,6 @@ import SignatureCanonicalizationMethod from "./signature-canonicalization-method
 export default class SignatureValue extends DataElement {
   constructor(value, id) {
     // value should be base64
-    super("signatureValue", value, { id: id });
+    super("SignatureValue", value, { id: id });
   }
 }

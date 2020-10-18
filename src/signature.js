@@ -9,7 +9,9 @@ import SignatureValue from "./signature-value";
 
 export default class Signature extends DataElement {
   constructor(epubLocation = "", id = "sig") {
-    super("signature", undefined, {
+    // Note that the Signature and children tags need to be capitalized
+
+    super("Signature", undefined, {
       id: id,
       xmlns: "http://www.w3.org/2000/09/xmldsig#",
     });
@@ -17,8 +19,8 @@ export default class Signature extends DataElement {
     this.signedInfo = new SignatureSignedInfo();
 
     this.signatureValue = new SignatureValue();
-    this.keyInfo = new DataElement("keyInfo");
-    this.object = new DataElement("object");
+    this.keyInfo = new DataElement("KeyInfo");
+    this.object = new DataElement("Object");
     this.object.manifest = new SignatureManifest();
     this.epubLocation = epubLocation;
   }
@@ -30,9 +32,9 @@ export default class Signature extends DataElement {
    * transform can be used. In this case, adding or removing a signature
    * invalidates the signatures.xml file.
    *
-   * The Signature transform removes the whole signature element containing the
-   * transform. In a Signatures.xml file, any previous Signature nodes will be
-   * included in the signing.
+   * The envelope transform removes the whole signature element containing the
+   * transform from the signing process. In a Signatures.xml file, any previous
+   * Signature nodes will be included in the signing.
    *
    * see:
    * https://www.w3.org/publishing/epub32/epub-ocf.html#sec-container-metainf-signatures.xml
@@ -70,7 +72,7 @@ export default class Signature extends DataElement {
           id: "ref_id", // ref id,
           uri: `#${this.object.manifest.id}`, // ref uri
           hash: "SHA-256", // hash algo to use
-          transforms: ["enveloped", "c14n"], // array of transforms to use
+          transforms: ["c14n"], // array of transforms to use
         },
       ],
     };
@@ -98,7 +100,7 @@ export default class Signature extends DataElement {
       existing.transforms = transforms;
       existing.digestMethod = digestMethod;
       if (!digestValue) {
-        digestValue = await this.generateFileDigest(location);
+        digestValue = await this.generateFileDigest(location, digestMethod);
       }
       existing.digestValue = digestValue;
     } else {
@@ -112,10 +114,11 @@ export default class Signature extends DataElement {
   }
 
   /**
-   * Create a base64 encoded disest hash of a file.
+   * Create a base64 encoded digest hash of a file.
+   * https://www.w3.org/TR/2008/REC-xmldsig-core-20080610/#sec-EnvelopedSignature
    * @param {string} location the location of the file relative to the epub root
    */
-  async generateFileDigest(location) {
+  async generateFileDigest(location, digestMethod) {
     const xmlExts = [".xml", ".xhtml", "html", ".opf", ".ncx"];
 
     const digest = xmldsigjs.CryptoConfig.CreateHashAlgorithm(digestMethod);
@@ -123,6 +126,8 @@ export default class Signature extends DataElement {
     const fileExt = path.extname(location);
 
     const resolvedLocation = path.resolve(this.epubLocation, location);
+
+    let data;
 
     /* Xml files should be canonicalized */
     if (xmlExts.includes(fileExt)) {
@@ -156,18 +161,22 @@ export default class Signature extends DataElement {
     }
   }
   /**
-   * Add a manifest reference to the signature. Using a manifest is the recommended signature form
+   * Add a manifest reference to the signature. Using an Object > Manifest is the recommended signature form
    * in the epub spec. see: https://www.w3.org/publishing/epub32/epub-ocf.html#sec-container-metainf-signatures.xml
    * A comment in the example notes that xml/html files should be canonicalized before the digest is produced -
    * that is the approach taken below.
+   *
+   * TODO! this does not apply the transforms. Currently all xml files are normalized downstream.
+   * (see generateFileDigest above). or that transforms happened upstream and included in provided digestValue
    *
    * Note that WebCrypto does not accept streams, so the entire file must be loaded into memory. Node has a 1gb
    * file size limit (?) - so large files cannot be digested.
    * see:
    * https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
    * https://github.com/w3c/webcrypto/issues/
+   * https://www.w3.org/TR/2008/REC-xmldsig-core-20080610/#sec-EnvelopedSignature
    *
-   * @param {string} location path to the resource, relative to the epub root
+   * @param {string} location - path to the resource, relative to the epub root
    * @param {string} digestMethod - the digest standard to use. see https://github.com/PeculiarVentures/xmldsigjs
    */
   async addManifestReference(
@@ -186,7 +195,10 @@ export default class Signature extends DataElement {
       );
     } else {
       // if no digestValue is provided, generate a new one
-      const base64Digest = await this.generateFileDigest(location);
+      const base64Digest = await this.generateFileDigest(
+        location,
+        digestMethod
+      );
 
       if (base64Digest) {
         this.object.manifest.addReference(

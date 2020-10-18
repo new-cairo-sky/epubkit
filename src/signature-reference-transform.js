@@ -4,6 +4,6 @@ import DataElement from "./data-element";
 
 export default class SignatureReferenceTransform extends DataElement {
   constructor(algorithm) {
-    super("transform", undefined, { algorithm: algorithm });
+    super("Transform", undefined, { algorithm: algorithm });
   }
 }

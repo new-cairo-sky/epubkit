@@ -4,7 +4,7 @@ import { generateXml, prepareItemForXml } from "./utils/xml";
 
 export default class SignatureManifest extends DataElement {
   constructor(id = "manifest") {
-    super("manifest", undefined, {
+    super("Manifest", undefined, {
       id: id,
     });
     this.references = [];
@@ -54,6 +54,10 @@ export default class SignatureManifest extends DataElement {
     digestMethod = "http://www.w3.org/2001/04/xmlenc#sha256",
     digestValue
   ) {
+    if (this.getReference(uri)) {
+      // reference already exists
+      throw `Reference with uri "${uri}" already exists.`;
+    }
     this.references.push(
       new SignatureReference(uri, transforms, digestMethod, digestValue)
     );
@@ -62,5 +66,16 @@ export default class SignatureManifest extends DataElement {
   getReference(uri) {
     const found = this.references.find((ref) => ref.uri === uri);
     return found;
+  }
+
+  /**
+   * Remove a reference from the signature manifest
+   * @param {string} uri - the URI of the reference
+   */
+  removeReference(uri) {
+    const index = this.references.findIndex((ref) => ref.uri === uri);
+    if (index !== -1) {
+      this.references.splice(index, 1);
+    }
   }
 }

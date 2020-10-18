@@ -17,7 +17,7 @@ import SignatureCanonicalizationMethod from "./signature-canonicalization-method
 */
 export default class SignatureSignedInfo extends DataElement {
   constructor(id) {
-    super("signedInfo", undefined, { id: id });
+    super("SignedInfo", undefined, { id: id });
 
     this.canonicalizationMethod = new SignatureCanonicalizationMethod();
     this.signatureMethod = new SignatureSignatureMethod();

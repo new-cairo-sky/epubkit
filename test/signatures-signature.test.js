@@ -9,6 +9,7 @@
  */
 import SignaturesManager from "../src/signatures-manager";
 import Signature from "../src/signature";
+import { text } from "express";
 
 test("can hash an xml file using xmldsig.js", async () => {
   const signatureManager = new SignaturesManager();
@@ -37,6 +38,25 @@ test("can hash a binary file using xmldsig.js", async () => {
   const digestValue =
     signaturesSignature.object.manifest.references[0].digestValue.value;
 
+  // verified using https://emn178.github.io/online-tools/sha256_checksum.html
+  expect(digestValue).toBe("jsl7lao3CReMRW2eUocxMQans6bucWlexHNl1V+g008=");
+});
+
+test("test can add signature.xml to manifest with enveloped transform", async () => {
+  const signatureManager = new SignaturesManager();
+  await signatureManager.initCrypto();
+
+  const signaturesSignature = new Signature();
+  await signaturesSignature.addManifestReference(
+    "./test/fixtures/alice/OPS/css/stylesheet.css"
+  );
+
+  await signaturesSignature.addSelfToManifest();
+
+  const digestValue =
+    signaturesSignature.object.manifest.references[0].digestValue.value;
+
+  //console.log("signature xml", await signaturesSignature.getXml());
   // verified using https://emn178.github.io/online-tools/sha256_checksum.html
   expect(digestValue).toBe("jsl7lao3CReMRW2eUocxMQans6bucWlexHNl1V+g008=");
 });

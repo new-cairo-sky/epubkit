@@ -13,9 +13,9 @@ this way the watermarked epub signature can be traced back and matched to origin
 
 // import { Crypto } from "@peculiar/webcrypto";
 import path from "path";
-import { parseXml } from "./utils/xml";
-
 import * as xmldsigjs from "xmldsigjs";
+
+import { generateXml, parseXml } from "./utils/xml";
 
 import getEnvironment from "./utils/environment";
 
@@ -29,7 +29,7 @@ export default class SignaturesManager extends DataElement {
     });
 
     this._rawData = undefined;
-    this.signature = undefined;
+    this.signatures = [];
     this.epubLocation = epubLocation;
     this.location = path.resolve(epubLocation, "./META-INF/signatures.xml");
   }
@@ -82,5 +82,73 @@ export default class SignaturesManager extends DataElement {
 
   addSignature(id) {
     this.signatures.push(new Signature(this.epubLocation, id));
+  }
+
+  getSignature(id) {
+    return this.signatures.find((signature) => signature.id === id);
+  }
+
+  /**
+   * The signatures.xml file should be included in the signature manifest, but it requires
+   * an envelopedTransform.
+   */
+  async addSelfToSignatureManifest(signature) {
+    // get the enveloped transfromed xml for this signatures xml
+    // note: we don't use the xmldsigjs XmlDsigEnvelopedSignatureTransform
+    // because of issue https://github.com/PeculiarVentures/xmldsigjs/issues/49
+    // TODO: patch when issue is fixed.
+    const xml = this.getEnvelopedSignatureTransformedXml(signature);
+
+    // get the C14N Normalized xml
+    const C14NTransform = new xmldsigjs.XmlDsigC14NTransform();
+    const node = xmldsigjs.Parse(xml).documentElement;
+    C14NTransform.LoadInnerXml(node);
+    // GetOuput returns xml as string
+    let data = C14NTransform.GetOutput();
+
+    //console.log("after enveloped", new XMLSerializer().serializeToString(data));
+    const digest = xmldsigjs.CryptoConfig.CreateHashAlgorithm(
+      "http://www.w3.org/2001/04/xmlenc#sha256"
+    );
+    const digestValue = await digest.Digest(data);
+
+    // the fileHash should be represented as a base64 string
+    const base64Digest = Buffer.from(digestValue).toString("base64");
+    await this.addManifestReference(
+      "META-INF/signatures.xml",
+      [
+        "http://www.w3.org/2000/09/xmldsig#enveloped-signature",
+        "http://www.w3.org/TR/2001/REC-xml-c14n-2001031",
+      ],
+      "http://www.w3.org/2001/04/xmlenc#sha256",
+      base64Digest
+    );
+  }
+
+  /**
+   * Returns a string represention of signatures xml, with 'enveloped transform' applied.
+   * This will remove the provided Signature instance from signatures so that the xml can
+   * be signed without recursion.
+   * The xmldsigjs.XmlDsigEnvelopedSignatureTransform() is not used becuase of issue:
+   * https://github.com/PeculiarVentures/xmldsigjs/issues/49
+   * The EnvelopedSignature transform is intended to remove only the direct ancestor
+   * Signature of the transform.
+   *
+   * @param {object} envelopedSignature - the signature object instance to be enveloped
+   * @returns {string} - enveloped xml
+   */
+  async getEnvelopedSignatureTransformedXml(envelopedSignature) {
+    const xmlJsObject = this.prepareForXml();
+
+    const sigIndex = this.signatures.findIndex(
+      (sig) => sig == envelopedSignature
+    );
+
+    if (sigIndex !== -1) {
+      xmlJsObject.signatures.Signature.splice(sigIndex, 1);
+    }
+
+    const xml = await generateXml(xmlJsObject);
+    return xml;
   }
 }

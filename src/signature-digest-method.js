@@ -4,6 +4,6 @@ import DataElement from "./data-element";
 
 export default class SignatureDigestMethod extends DataElement {
   constructor(algorithm) {
-    super("digestMethod", undefined, { algorithm: algorithm });
+    super("DigestMethod", undefined, { algorithm: algorithm });
   }
 }
