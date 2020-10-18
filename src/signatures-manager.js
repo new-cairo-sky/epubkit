@@ -114,7 +114,7 @@ export default class SignaturesManager extends DataElement {
 
     // the fileHash should be represented as a base64 string
     const base64Digest = Buffer.from(digestValue).toString("base64");
-    await this.addManifestReference(
+    await signature.addManifestReference(
       "META-INF/signatures.xml",
       [
         "http://www.w3.org/2000/09/xmldsig#enveloped-signature",
