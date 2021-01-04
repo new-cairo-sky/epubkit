@@ -102,7 +102,7 @@ test("can remove attribute", () => {
 test("can can get xml", async () => {
   const packageManager = new PackageManager(epub3OpfEpubLocation);
   const data = await FileManager.readFile(epub3OpfPath, "utf8");
-  const expectedXml = normalizeXml(data);
+  const expectedXml = await normalizeXml(data);
   await packageManager.loadXml(expectedXml);
 
   // const xmlObject = packageManager.prepareForXml();
@@ -110,7 +110,7 @@ test("can can get xml", async () => {
   // console.log("xmlObject", xmlObject);
 
   const xml = await packageManager.getXml();
-  const resultXml = normalizeXml(xml);
+  const resultXml = await normalizeXml(xml);
 
   expect(resultXml).toEqualXML(expectedXml);
 });

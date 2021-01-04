@@ -6,7 +6,7 @@ import utf8 from "utf8";
  * To unobfuscate just run the obfuscated font through the obfuscator again.
  * Based on the java implementations found at
  * https://github.com/dita4publishers/epub-font-obfuscator
- * and
+ * and the C++ implementation at:
  * https://github.com/Sigil-Ebook/Sigil/blob/master/src/Misc/FontObfuscation.cpp
  *
  * The spec is found at:

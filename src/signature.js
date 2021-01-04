@@ -17,7 +17,6 @@ export default class Signature extends DataElement {
     });
 
     this.signedInfo = new SignatureSignedInfo();
-
     this.signatureValue = new SignatureValue();
     this.keyInfo = new DataElement("KeyInfo");
     this.object = new DataElement("Object");

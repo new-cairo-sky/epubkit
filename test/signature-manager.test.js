@@ -9,7 +9,7 @@
  */
 import path from "path";
 import FileManager from "../src/file-manager";
-
+import "./expect/toBeEqualXml";
 import SignaturesManager from "../src/signatures-manager";
 import Signature from "../src/signature";
 
@@ -18,14 +18,16 @@ const signaturesFilePath = path.resolve(
   "./test/fixtures/signatures-test/META-INF/signatures.xml"
 );
 
-// test("can parse a signature.xml file", async () => {
-//   const signatureManager = new SignaturesManager(signaturesEpubFixture);
-//   await signatureManager.initCrypto();
+test("can parse a signature.xml file", async () => {
+  const signatureManager = new SignaturesManager(signaturesEpubFixture);
+  await signatureManager.initCrypto();
 
-//   const xmlData = await FileManager.readFile(signaturesFilePath);
-//   const result = await signatureManager.loadXml(xmlData);
-//   console.log("xml2js signatures", signatureManager.signatures);
-// });
+  const xmlData = await FileManager.readFile(signaturesFilePath, "utf8");
+  const result = await signatureManager.loadXml(xmlData);
+  console.log("xml2js signatures", signatureManager.signatures);
+  const signatureManagerXml = await signatureManager.getXml();
+  await expect(signatureManagerXml).toBeEqualXml(xmlData);
+});
 
 test("can generate properly formed xml", async () => {
   const signatureManager = new SignaturesManager(signaturesEpubFixture);
@@ -48,5 +50,18 @@ test("can get enveloped transform xml of signatures", async () => {
   const envelopedXml = await signatureManager.getEnvelopedSignatureTransformedXml(
     newsig
   );
-  console.log("evelopedXml", envelopedXml);
+  console.log("envelopedXml", envelopedXml);
+});
+
+test("can add self to signature manifest", async () => {
+  const signatureManager = new SignaturesManager(signaturesEpubFixture);
+  signatureManager.initCrypto();
+  const data = await FileManager.readFile(signaturesFilePath);
+  await signatureManager.loadXml(data);
+  signatureManager.addSignature("newsig");
+  const newsig = signatureManager.getSignature("newsig");
+  await signatureManager.addSelfToSignatureManifest(newsig);
+  const xml = await signatureManager.getXml();
+  console.log("xml", xml);
+  console.log("signedEnvelopedXml", xml);
 });

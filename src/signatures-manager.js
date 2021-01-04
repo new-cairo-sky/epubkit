@@ -9,6 +9,8 @@ A watermarked epub should maintain that orginal signature in the signatures.xml 
 signature. The sig should be transformed using the Enveloped Signature Transform. In
 this way the watermarked epub signature can be traced back and matched to original epub. 
 
+Note that the Signature xml node, as a w3d standard has different attr case requirements
+than other epub specs. Signature attr use PascalCase
 */
 
 // import { Crypto } from "@peculiar/webcrypto";
@@ -54,15 +56,44 @@ export default class SignaturesManager extends DataElement {
     this.signatures = [];
     for (const xmlSig of this._rawData.signatures.signature) {
       const signature = new Signature(this.epubLocation);
-      for (const xmlReference of xmlSig?.object[0].manifest[0].reference) {
-        const uri = xmlReference.attr.URI;
+
+      if (xmlSig?.attr) {
+        signature.addAttributes(xmlSig.attr);
+      }
+
+      for (const xmlSignedInfoReference of xmlSig?.singedinfo[0]?.reference) {
+        // todo: parse this info
+        const uri = xmlSignedInfoReference.attr?.uri;
+        const transforms = undefined;
+        const digestMethod = undefined;
+        const digestValue = undefined;
+        signature.signedInfo.addReference(
+          uri,
+          transforms,
+          digestMethod,
+          digestValue
+        );
+      }
+
+      if (xmlSig?.object[0].manifest[0]?.attr) {
+        signature.object.manifest.addAttributes(
+          xmlSig.object[0].manifest[0].attr
+        );
+      }
+
+      // get the object > manifest > references
+      for (const xmlManifestReference of xmlSig?.object[0].manifest[0]
+        .reference) {
+        const uri = xmlManifestReference.attr.uri;
 
         let transforms = [];
-        for (const xmlTransform of xmlReference?.transforms[0]?.transform) {
-          transforms.push(xmlTransform.attr.Algorithm);
+        for (const xmlTransform of xmlManifestReference?.transforms[0]
+          ?.transform) {
+          transforms.push(xmlTransform.attr.algorithm);
         }
-        const digestMethod = xmlReference?.digestMethod[0].attr.Algorithm;
-        const digestValue = xmlReference?.digestValue[0].value;
+        const digestMethod =
+          xmlManifestReference?.digestmethod[0].attr.algorithm;
+        const digestValue = xmlManifestReference?.digestvalue[0].value;
 
         await signature.addManifestReference(
           uri,
@@ -129,7 +160,7 @@ export default class SignaturesManager extends DataElement {
    * Returns a string represention of signatures xml, with 'enveloped transform' applied.
    * This will remove the provided Signature instance from signatures so that the xml can
    * be signed without recursion.
-   * The xmldsigjs.XmlDsigEnvelopedSignatureTransform() is not used becuase of issue:
+   * The xmldsigjs.XmlDsigEnvelopedSignatureTransform() is not used due to this issue:
    * https://github.com/PeculiarVentures/xmldsigjs/issues/49
    * The EnvelopedSignature transform is intended to remove only the direct ancestor
    * Signature of the transform.

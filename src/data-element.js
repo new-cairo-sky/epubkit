@@ -76,7 +76,8 @@ export default class DataElement {
    * Generate the actual xml data
    */
   async getXml(isFragment = false) {
-    const xml = await generateXml(this.prepareForXml(), isFragment);
+    const preparedObject = this.prepareForXml();
+    const xml = await generateXml(preparedObject, isFragment);
     return xml;
   }
 

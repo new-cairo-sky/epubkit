@@ -18,8 +18,14 @@ const buildOptions = {
   xmldec: { version: "1.0", encoding: "UTF-8" },
 };
 
-export async function parseXml(data) {
+export async function parseXml(data, normalizeAttrCase = true) {
   let result;
+  let options = parseOptions;
+
+  if (!normalizeAttrCase) {
+    delete options.attrNameProcessors;
+  }
+
   try {
     result = await promisify(xml2js.parseString)(data, parseOptions);
     return result;

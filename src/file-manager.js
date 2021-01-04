@@ -400,7 +400,7 @@ class FileManager {
   /**
    * Read entire file and return the data
    * if no encoding is set, a raw buffer is returned.
-   * User 'utf8' for string
+   * Use 'utf8' for string
    * @param {string} location
    */
   static async readFile(location, encoding = undefined) {

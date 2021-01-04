@@ -40,10 +40,10 @@ test("can get valid xmlJsObj from manifest", async () => {
 
   const xml2JsObj = manifest.prepareForXml();
 
-  const expectedXml = normalizeXml(manifestXml);
+  const expectedXml = await normalizeXml(manifestXml);
 
   const resultXml = await manifest.getXml(xml2JsObj, true);
-  const normalizedResultXml = normalizeXml(resultXml);
+  const normalizedResultXml = await normalizeXml(resultXml);
 
   console.log(expectedXml);
   console.log(normalizedResultXml);
