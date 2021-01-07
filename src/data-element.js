@@ -1,4 +1,4 @@
-import { generateXml } from "./utils/xml";
+import { generateXml, parseXml } from "./utils/xml";
 
 export default class DataElement {
   constructor(element, value = undefined, attributes = {}) {
@@ -11,6 +11,52 @@ export default class DataElement {
 
   get attributes() {
     return this._attributes;
+  }
+
+  /**
+   * Load and parse xml
+   * @param {string} xml - the xml to parse
+   * @param {boolean} recursive - set true to recursively parse children elements
+   */
+  async loadXml(xml, recursive = true) {
+    const xmlObj = await parseXml(xml);
+
+    for (let [key, value] of Object.entries(xmlObj)) {
+      this.element = key;
+      if (value?.attr) {
+        this.addAttributes(value.attr);
+      }
+      await this.parseXmlObj(value, recursive);
+    }
+  }
+
+  /**
+   * Parse an xml2Js object - primarily intended for use by loadXml method only
+   * @param {object} xmlObj - an xml2js object
+   * @param {boolean} recursive - if it should recurse through the children
+   */
+  async parseXmlObj(xmlObj, recursive = true) {
+    for (let [valKey, valValue] of Object.entries(xmlObj)) {
+      if (valKey === "attr") {
+        this.addAttributes(valValue);
+      } else if (valKey === "val") {
+        this.value = valValue;
+      } else if (recursive) {
+        // console.log("parsing", valKey);
+        if (Array.isArray(valValue)) {
+          this[valKey] = [];
+          valValue.forEach(async (child) => {
+            const length = this[valKey].push(new DataElement(valKey)); //await this.parseXmlObj()
+            await this[valKey][length - 1].parseXmlObj(child, recursive);
+          });
+        } else if (
+          Object.prototype.toString.call(valValue) === "[object Object]"
+        ) {
+          this[valKey] = new DataElement(valKey);
+          await this[valKey].parseXmlObj(valValue, recursive);
+        }
+      }
+    }
   }
 
   /**

@@ -9,6 +9,7 @@
  */
 
 require("jest-xml-matcher");
+import "./expect/toBeEqualXml";
 
 import path from "path";
 import normalizeXml from "./utils/normalize-xml";
@@ -19,6 +20,14 @@ import PackageManager from "../src/package-manager";
 
 const epub3OpfEpubLocation = "OPS/package.opf";
 const epub3OpfPath = path.resolve("./test/fixtures/alice/OPS/package.opf");
+
+test("can load xml", async () => {
+  const dataElement = new DataElement();
+  const data = await FileManager.readFile(epub3OpfPath, "utf8");
+  await dataElement.loadXml(data);
+  const generatedXml = await dataElement.getXml();
+  await expect(generatedXml).toBeEqualXml(data);
+});
 
 test("can construct new data element object", () => {
   const attributes = {

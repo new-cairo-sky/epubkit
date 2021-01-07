@@ -61,6 +61,7 @@ export default class SignaturesManager extends DataElement {
         signature.addAttributes(xmlSig.attr);
       }
 
+      // add signature > signedInfo > references
       for (const xmlSignedInfoReference of xmlSig?.singedinfo[0]?.reference) {
         // todo: parse this info
         const uri = xmlSignedInfoReference.attr?.uri;
@@ -75,6 +76,15 @@ export default class SignaturesManager extends DataElement {
         );
       }
 
+      // add SignatureValue
+      const signatureValueValue = xmlSig?.signaturevalue[0]?.value;
+      if (signatureValueValue) {
+        signature.signatureValue.value = signatureValueValue;
+      }
+
+      // add KeyInfo
+
+      // add object > manifest attributes
       if (xmlSig?.object[0].manifest[0]?.attr) {
         signature.object.manifest.addAttributes(
           xmlSig.object[0].manifest[0].attr
