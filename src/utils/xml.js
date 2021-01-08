@@ -18,10 +18,17 @@ const buildOptions = {
   xmldec: { version: "1.0", encoding: "UTF-8" },
 };
 
-export async function parseXml(data, normalizeAttrCase = true) {
+export async function parseXml(
+  data,
+  normalizeTagCase = true,
+  normalizeAttrCase = true
+) {
   let result;
   let options = parseOptions;
 
+  if (!normalizeTagCase) {
+    delete options.normalizeTags;
+  }
   if (!normalizeAttrCase) {
     delete options.attrNameProcessors;
   }

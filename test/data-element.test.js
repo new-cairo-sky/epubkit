@@ -11,6 +11,7 @@
 require("jest-xml-matcher");
 import "./expect/toBeEqualXml";
 
+import { parseXml } from "../src/utils/xml";
 import path from "path";
 import normalizeXml from "./utils/normalize-xml";
 
@@ -26,7 +27,9 @@ test("can load xml", async () => {
   const data = await FileManager.readFile(epub3OpfPath, "utf8");
   await dataElement.loadXml(data);
   const generatedXml = await dataElement.getXml();
-  await expect(generatedXml).toBeEqualXml(data);
+  const expected = parseXml(data);
+  const recieved = parseXml(generatedXml);
+  await expect(recieved).toStrictEqual(expected);
 });
 
 test("can construct new data element object", () => {
@@ -111,15 +114,16 @@ test("can remove attribute", () => {
 test("can can get xml", async () => {
   const packageManager = new PackageManager(epub3OpfEpubLocation);
   const data = await FileManager.readFile(epub3OpfPath, "utf8");
-  const expectedXml = await normalizeXml(data);
-  await packageManager.loadXml(expectedXml);
+  // const expectedXml = await normalizeXml(data);
+  await packageManager.loadXml(data);
 
   // const xmlObject = packageManager.prepareForXml();
 
   // console.log("xmlObject", xmlObject);
 
   const xml = await packageManager.getXml();
-  const resultXml = await normalizeXml(xml);
+  const recieved = parseXml(xml);
+  const expected = parseXml(data);
 
-  expect(resultXml).toEqualXML(expectedXml);
+  expect(recieved).toStrictEqual(expected);
 });

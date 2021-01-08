@@ -3,6 +3,8 @@ import { generateXml, parseXml } from "./utils/xml";
 export default class DataElement {
   constructor(element, value = undefined, attributes = {}) {
     this._attributes = {};
+    this._childen = {};
+
     this.addAttributes(attributes);
 
     this.element = element;
@@ -57,6 +59,46 @@ export default class DataElement {
         }
       }
     }
+  }
+
+  addChild(name, child) {
+    const safeName = name.toLowerCase();
+    const foundNames = Object.keys(this).filter(function (key) {
+      return key.toLowerCase() === safeName;
+    });
+    const actualName = foundNames.length > 0 ? foundNames[0] : name;
+
+    if (foundNames.length < 1) {
+      // does not already exist
+      Object.defineProperty(this, actualName, {
+        configurable: true,
+        get() {
+          const foundChild = this._children[actualName];
+          if (foundChild.length === 1) {
+            // if there is only one element, return the single item instead of array
+            return this._children[actualName][0];
+          } else {
+            return this._children[actualName];
+          }
+        },
+        set(val) {
+          // is val is an array, assume that is meant to replace existing array
+          if (Array.isArray(val)) {
+            this._children[actualName] = val;
+          } else {
+            // otherwise add it the the array
+            this._children[actualName] = [val];
+          }
+        },
+      });
+    } else {
+      // already exists
+      this._children[actualName].push(val);
+    }
+  }
+
+  get children() {
+    return this._children;
   }
 
   /**

@@ -47,73 +47,98 @@ export default class SignaturesManager extends DataElement {
   }
 
   async loadXml(data) {
-    const result = await parseXml(data);
+    const result = await parseXml(data, false);
     if (result) {
       this._rawData = result;
     }
 
     // hashing can be resource intensive so we will run the async functions sequentially.
     this.signatures = [];
-    for (const xmlSig of this._rawData.signatures.signature) {
+    for (const xmlSig of this._rawData.signatures.Signature) {
       const signature = new Signature(this.epubLocation);
 
-      if (xmlSig?.attr) {
-        signature.addAttributes(xmlSig.attr);
-      }
+      for (let [key, value] of Object.entries(xmlSig)) {
+        if (key === "attr") {
+          signature.addAttributes(xmlSig.attr);
+        } else if (key === "signedInfo") {
+          // add signature > signedInfo > references
+          for (const xmlSignedInfoReference of xmlSig.signedInfo[0]
+            ?.reference) {
+            // todo: parse this info
+            const uri = xmlSignedInfoReference.attr?.uri;
+            const transforms = undefined;
+            const digestMethod = undefined;
+            const digestValue = undefined;
+            signature.signedInfo.addReference(
+              uri,
+              transforms,
+              digestMethod,
+              digestValue
+            );
+          }
+        } else if (key === "signatureValue") {
+          const signatureValueValue = xmlSig.signatureValue[0]?.value;
+          if (signatureValueValue) {
+            signature.signatureValue.value = signatureValueValue;
+          }
+        } else if (key === "Object") {
+          // add object > manifest attributes
+          if (xmlSig.Object[0]?.Manifest[0]?.attr) {
+            signature.object.manifest.addAttributes(
+              xmlSig.Object[0].Manifest[0].attr
+            );
+          }
+          // get the object > manifest > references
+          for (const xmlManifestReference of xmlSig.Object[0].Manifest[0]
+            .Reference) {
+            const uri = xmlManifestReference.attr.uri;
 
-      // add signature > signedInfo > references
-      for (const xmlSignedInfoReference of xmlSig?.singedinfo[0]?.reference) {
-        // todo: parse this info
-        const uri = xmlSignedInfoReference.attr?.uri;
-        const transforms = undefined;
-        const digestMethod = undefined;
-        const digestValue = undefined;
-        signature.signedInfo.addReference(
-          uri,
-          transforms,
-          digestMethod,
-          digestValue
-        );
-      }
+            let transforms = [];
+            for (const xmlTransform of xmlManifestReference?.Transforms[0]
+              ?.Transform) {
+              transforms.push(xmlTransform.attr.algorithm);
+            }
+            const digestMethod =
+              xmlManifestReference?.DigestMethod[0].attr.algorithm;
+            const digestValue = xmlManifestReference?.DigestValue[0].value;
 
-      // add SignatureValue
-      const signatureValueValue = xmlSig?.signaturevalue[0]?.value;
-      if (signatureValueValue) {
-        signature.signatureValue.value = signatureValueValue;
-      }
-
-      // add KeyInfo
-
-      // add object > manifest attributes
-      if (xmlSig?.object[0].manifest[0]?.attr) {
-        signature.object.manifest.addAttributes(
-          xmlSig.object[0].manifest[0].attr
-        );
-      }
-
-      // get the object > manifest > references
-      for (const xmlManifestReference of xmlSig?.object[0].manifest[0]
-        .reference) {
-        const uri = xmlManifestReference.attr.uri;
-
-        let transforms = [];
-        for (const xmlTransform of xmlManifestReference?.transforms[0]
-          ?.transform) {
-          transforms.push(xmlTransform.attr.algorithm);
+            await signature.addManifestReference(
+              uri,
+              transforms,
+              digestMethod,
+              digestValue
+            );
+          }
+        } else {
+          // parse all other data with generic data-elements
+          if (Array.isArray(value)) {
+            signature[key] = await Promise.all(
+              value.map(async (val) => {
+                const dataElement = new DataElement(`${key}`);
+                await dataElement.parseXmlObj(val, true);
+                return dataElement;
+              })
+            );
+          } else {
+            signature[key] = new DataElement(key);
+            await signature[key].parseXmlObj(value, true);
+          }
+          // if (this[key] && Array.isArray(this[key])) {
+          //   const length = this[key].push(new DataElement(key));
+          //   await this[key][length - 1].parseXmlObj(value, true);
+          // } else if (this[key]) {
+          //   this[key] = [this[key]];
+          //   const length = this[key].push(new DataElement(key));
+          //   await this[key][length - 1].parseXmlObj(value, true);
+          // } else {
+          //   this[key] = new DataElement(key);
+          //   await this[key].parseXmlObj(value, true);
+          // }
         }
-        const digestMethod =
-          xmlManifestReference?.digestmethod[0].attr.algorithm;
-        const digestValue = xmlManifestReference?.digestvalue[0].value;
-
-        await signature.addManifestReference(
-          uri,
-          transforms,
-          digestMethod,
-          digestValue
-        );
       }
       this.signatures.push(signature);
     }
+
     return this._rawData;
   }
 

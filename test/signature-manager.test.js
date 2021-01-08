@@ -26,6 +26,7 @@ test("can parse a signature.xml file", async () => {
   const result = await signatureManager.loadXml(xmlData);
   console.log("xml2js signatures", signatureManager.signatures);
   const signatureManagerXml = await signatureManager.getXml();
+  console.log("signatureManagerXmls", signatureManagerXml);
   await expect(signatureManagerXml).toBeEqualXml(xmlData);
 });
 

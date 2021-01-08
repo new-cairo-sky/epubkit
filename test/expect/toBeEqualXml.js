@@ -6,7 +6,10 @@ expect.extend({
   async toBeEqualXml(receivedXml, expectedXml) {
     const normalizedReceivedXml = await normalizeXml(receivedXml);
     const normalizedExpectedXml = await normalizeXml(expectedXml);
-    const differencesChecker = new DiffChecker(receivedXml, expectedXml);
+    const differencesChecker = new DiffChecker(
+      normalizedReceivedXml,
+      normalizedExpectedXml
+    );
 
     if (!differencesChecker.hasDifferences) {
       return {
