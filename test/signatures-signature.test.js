@@ -9,7 +9,7 @@
  */
 import SignaturesManager from "../src/signatures-manager";
 import Signature from "../src/signature";
-import { text } from "express";
+import * as xmldsigjs from "xmldsigjs";
 
 test("can hash an xml file using xmldsig.js", async () => {
   const signatureManager = new SignaturesManager();
@@ -64,13 +64,24 @@ test("test can add signature.xml to manifest with enveloped transform", async ()
 test("can generate a signature", async () => {
   const signatureManager = new SignaturesManager();
   signatureManager.initCrypto();
+
+  // generate keys
+  const Crypto = xmldsigjs.Application.crypto; // get's the web-crypto instance
+  const alg = {
+    name: "RSASSA-PKCS1-v1_5",
+    hash: "SHA-256",
+    modulusLength: 1024,
+    publicExponent: new Uint8Array([1, 0, 1]),
+  };
+  const keys = await Crypto.subtle.generateKey(alg, false, ["sign", "verify"]);
+
   const signaturesSignature = new Signature();
   await signaturesSignature.addManifestReference(
     "./test/fixtures/alice/OPS/css/stylesheet.css"
   );
   console.log("before signed", await signaturesSignature.getXml());
   try {
-    await signaturesSignature.sign();
+    await signaturesSignature.sign(keys.privateKey, keys.publicKey);
     console.log("signed?", await signaturesSignature.getXml());
   } catch (e) {
     console.log("error", e);

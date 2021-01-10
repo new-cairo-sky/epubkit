@@ -46,26 +46,27 @@ export default class Signature extends DataElement {
    * signature history, recording a secure chain of signatures.
    */
 
-  async sign() {
+  /**
+   * Sign the signature
+   * Signing with a privateKey should only be allowed in a node environment
+   * https://github.com/PeculiarVentures/xmldsigjs#creating-a-xmldsig-signature
+   * https://www.w3.org/TR/WebCryptoAPI/#algorithms
+   * https://www.w3.org/TR/xmldsig-core/#sec-KeyValue
+   */
+  async sign(privateKey, publicKey) {
     const signer = new xmldsigjs.SignedXml();
-    const key = await xmldsigjs.Application.crypto.subtle.generateKey(
-      {
-        name: "HMAC",
-        hash: { name: "SHA-256" }, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
-      },
-      false,
-      ["sign", "verify"]
-    );
 
-    const algorithm = {
-      name: "HMAC",
-    };
+    // https://nodejs.org/api/crypto.html#crypto_crypto_generatekeypair_type_options_callback
+    // see https://www.w3.org/TR/xmldsig-core/#sec-KeyValue
+    // const privateKey = undefined;
+    // const publicKey = undefined;
 
     const rawXml = await this.object.manifest.getXml();
     const xmlData = xmldsigjs.Parse(rawXml);
-
+    const algorithm = { name: "RSASSA-PKCS1-v1_5" };
     const options = {
       id: this.id, // id of signature
+      keyValue: publicKey,
       references: [
         {
           id: "ref_id", // ref id,
@@ -75,7 +76,7 @@ export default class Signature extends DataElement {
         },
       ],
     };
-    await signer.Sign(algorithm, key, xmlData, options);
+    await signer.Sign(algorithm, privateKey, xmlData, options);
     console.log("Sign result", signer.toString());
   }
 

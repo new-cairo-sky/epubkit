@@ -23,6 +23,7 @@ test("can parse a signature.xml file", async () => {
   await signatureManager.initCrypto();
 
   const xmlData = await FileManager.readFile(signaturesFilePath, "utf8");
+  const 
   const result = await signatureManager.loadXml(xmlData);
   console.log("xml2js signatures", signatureManager.signatures);
   const signatureManagerXml = await signatureManager.getXml();

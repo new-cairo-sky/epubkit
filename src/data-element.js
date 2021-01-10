@@ -3,7 +3,12 @@ import { generateXml, parseXml } from "./utils/xml";
 export default class DataElement {
   constructor(element, value = undefined, attributes = {}) {
     this._attributes = {};
+
+    // organizes children data-elements by element type
     this._childen = {};
+
+    // organizes flat list of children by absolut order
+    this._orderedChildren = [];
 
     this.addAttributes(attributes);
 
@@ -68,37 +73,39 @@ export default class DataElement {
     });
     const actualName = foundNames.length > 0 ? foundNames[0] : name;
 
-    if (foundNames.length < 1) {
+    this._orderedChildren.push(child);
+
+    if (this[safeName]) {
+      // already exists
+      this._children[actualName].push(val);
+    } else {
       // does not already exist
-      Object.defineProperty(this, actualName, {
+      Object.defineProperty(this, safeName, {
         configurable: true,
         get() {
-          const foundChild = this._children[actualName];
+          const foundChild = this._children[safeName];
           if (foundChild.length === 1) {
             // if there is only one element, return the single item instead of array
-            return this._children[actualName][0];
+            return this._children[safeName][0];
           } else {
-            return this._children[actualName];
+            return this._children[safeName];
           }
         },
         set(val) {
           // is val is an array, assume that is meant to replace existing array
           if (Array.isArray(val)) {
-            this._children[actualName] = val;
+            this._children[safeName] = val;
           } else {
             // otherwise add it the the array
-            this._children[actualName] = [val];
+            this._children[safeName] = [val];
           }
         },
       });
-    } else {
-      // already exists
-      this._children[actualName].push(val);
     }
   }
 
   get children() {
-    return this._children;
+    return this._orderedChildren;
   }
 
   /**
