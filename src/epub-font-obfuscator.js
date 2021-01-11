@@ -1,5 +1,6 @@
 import jsSHA from "jssha";
 import utf8 from "utf8";
+import { parseXml } from "./utils/xml";
 
 /**
  * The Epub font obfuscation spec is a self-inverting XOR process.
@@ -14,8 +15,37 @@ import utf8 from "utf8";
  */
 
 /**
- * Obfuscates the provided font data using the IDPF method.
- * @param {Buffer or Uint8Array} fontData - source data
+ * Uses the data from the package Opf and encryption.xml to find obfuscation method and key
+ * @param {Buffer | Uint8Array} fontData - source font data
+ * @param {string} opfXml - xml of opf file
+ * @param {string} encryptionXml - xml of encryption.xml file
+ */
+export async function fontObfuscation(fontData, opfXml, encryptionXml) {
+  const parsedOpfXml = await parseXml(opfXml);
+  const parsedEncryptionXml = await parseXml(encryptionXml);
+  const packageUniqueIdName = parsedOpfXml.package.attr["unique-identifier"];
+  const uniqueIdEl = parsedOpfXml.package.metadata[0]["dc:identifier"].find(
+    (idEl) => {
+      return idEl.attr.id === packageUniqueIdName;
+    }
+  );
+  const uniqueId = uniqueIdEl.val;
+  const obfMethod =
+    parsedEncryptionXml.encryption["enc:encrypteddata"][0][
+      "enc:encryptionmethod"
+    ][0].attr.algorithm;
+  if (obfMethod.indexOf("adobe")) {
+    return adobeFontObfuscation(fontData, uniqueId);
+  } else if (obfMethod.indexOf("idpf")) {
+    return idpfFontObfuscation(fontData, uniqueId);
+  }
+}
+
+/**
+ * Obfuscates/Unobfuscates the provided font data using the IDPF method.
+ * The Obfuscation process is a self-inverting XOR process. Running this
+ * method on an onfuscated font will unobfuscate it and vice-versa
+ * @param {Buffer | Uint8Array} fontData - source data
  * @param {string} identifier - the opf id used to produce the sha-1 key
  * @returns {Uint8array} - the output data
  */
@@ -36,7 +66,9 @@ export function idpfFontObfuscation(fontData, identifier) {
 
 /**
  * Obfuscates the provided font data using the Adobe method.
- * @param {Buffer or Uint8Array} fontData - source data
+ * The Obfuscation process is a self-inverting XOR process. Running this
+ * method on an onfuscated font will unobfuscate it and vice-versa
+ * @param {Buffer | Uint8Array} fontData - source data
  * @param {string} identifier - the opf id used to produce the sha-1 key
  * @returns {Uint8array} - the output data
  */

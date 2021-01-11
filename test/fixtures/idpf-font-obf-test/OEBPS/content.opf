@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package version="2.0" unique-identifier="BookId" xmlns="http://www.idpf.org/2007/opf">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+    <dc:identifier opf:scheme="UUID" id="BookId">urn:uuid:9a3f56cd-bf94-4baa-bf82-e9cd1fe4d30a</dc:identifier>
+    <dc:language>en</dc:language>
+    <dc:title>[Title here]</dc:title>
+    <meta name="Sigil version" content="1.2.0" />
+    <dc:date xmlns:opf="http://www.idpf.org/2007/opf" opf:event="modification">2020-04-29</dc:date>
+  </metadata>
+  <manifest>
+    <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
+    <item id="Section0001.xhtml" href="Text/Section0001.xhtml" media-type="application/xhtml+xml"/>
+    <item id="Roboto-Regular.ttf" href="Fonts/Roboto-Regular.ttf" media-type="font/ttf"/>
+  </manifest>
+  <spine toc="ncx">
+    <itemref idref="Section0001.xhtml"/>
+  </spine>
+</package>

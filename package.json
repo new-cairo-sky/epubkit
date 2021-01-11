@@ -1,8 +1,14 @@
 {
-  "name": "epubkit",
+  "name": "epubkit.js",
   "version": "1.0.0",
-  "description": "A Node library for parsing and editing epubs.",
-  "main": "dist/main.js",
+  "description": "A universal js library for parsing and editing epubs.",
+  "main": "src/index.js",
+  "browser": "dist/main.js",
+  "homepage": "https://github.com/new-cairo-sky/epubkit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/new-cairo-sky/epubkit"
+  },
   "directories": {
     "test": "test"
   },
@@ -12,7 +18,7 @@
     "build:client": "webpack --progress --mode=production",
     "start": "babel-node ./test/dev-server.js"
   },
-  "author": "Erik Wysocan",
+  "author": "New Cairo Sky",
   "license": "Hippocratic-2.1",
   "jest": {
     "globalSetup": "jest-environment-puppeteer-jsdom/setup",

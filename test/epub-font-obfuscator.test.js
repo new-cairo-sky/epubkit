@@ -1,9 +1,10 @@
 import { promises as fs } from "fs";
 import path from "path";
 import epubFontObfuscator, {
+  fontObfuscation,
   idpfFontObfuscation,
   adobeFontObfuscation,
-} from "../src/epub-font-obfuscator";
+} from "../src/index.js";
 
 const referenceFontPath = path.resolve("./test/fixtures/Roboto-Regular.ttf");
 
@@ -15,6 +16,34 @@ const idpfObfFontId = "urn:uuid:9a3f56cd-bf94-4baa-bf82-e9cd1fe4d30a";
 const idpfObfFontPath = path.resolve(
   "./test/fixtures/Roboto-Regular--idpf-obf.ttf"
 );
+
+const adobeObfOpfXmlPath = path.resolve(
+  "./test/fixtures/adobe-font-obf-test/OEBPS/content.opf"
+);
+const adobeObEncryptionXmlPath = path.resolve(
+  "./test/fixtures/adobe-font-obf-test/META-INF/encryption.xml"
+);
+
+test("can find obfuscation method and id from xml", async () => {
+  let expectedFontData, sourceFontData;
+  let adobeObfOpfXml, adobeObfEncryptionXml;
+  try {
+    adobeObfOpfXml = await fs.readFile(adobeObfOpfXmlPath);
+    adobeObfEncryptionXml = await fs.readFile(adobeObEncryptionXmlPath);
+    expectedFontData = await fs.readFile(adobeObfFontPath);
+    sourceFontData = await fs.readFile(referenceFontPath);
+  } catch (err) {
+    console.error(err);
+    return;
+  }
+
+  const obfuscatedFontData = await fontObfuscation(
+    sourceFontData,
+    adobeObfOpfXml,
+    adobeObfEncryptionXml
+  );
+  expect(Buffer.compare(expectedFontData, obfuscatedFontData)).toBe(0);
+});
 
 test("can idpf obfuscate font", async () => {
   let expectedFontData, sourceFontData;
