@@ -16,11 +16,19 @@ import { parseXml } from "./utils/xml";
 
 /**
  * Uses the data from the package Opf and encryption.xml to find obfuscation method and key
+ * TODO: this assumes that all fonts are obfuscated with the same method
+ * The fontLocation option should be used to id the font obfuscation method within encrpytion.xml
  * @param {Buffer | Uint8Array} fontData - source font data
  * @param {string} opfXml - xml of opf file
  * @param {string} encryptionXml - xml of encryption.xml file
+ * @param {string} fontLocation - (optional) the location of the font relative to the epub root
  */
-export async function fontObfuscation(fontData, opfXml, encryptionXml) {
+export async function fontObfuscation(
+  fontData,
+  opfXml,
+  encryptionXml,
+  fontLocation = undefined
+) {
   const parsedOpfXml = await parseXml(opfXml);
   const parsedEncryptionXml = await parseXml(encryptionXml);
   const packageUniqueIdName = parsedOpfXml.package.attr["unique-identifier"];
@@ -30,13 +38,41 @@ export async function fontObfuscation(fontData, opfXml, encryptionXml) {
     }
   );
   const uniqueId = uniqueIdEl.val;
+
+  let fontEncryptedData;
+  if (fontLocation) {
+    // if fontLocation is provided, look for it in the encryption references
+    fontEncryptedData = parsedEncryptionXml?.encryption?.[
+      "enc:encrypteddata"
+    ].find((encryptedData) => {
+      const cipherReference = encryptedData?.["enc:cipherdata"]?.[0]?.[
+        "enc:cipherreference"
+      ].find((ref) => ref.attr.uri === fontLocation);
+      if (cipherReference) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+  } else {
+    // otherwise look to see if either adobe or idpf is listed at all and take the first one found
+    fontEncryptedData = parsedEncryptionXml.encryption[
+      "enc:encrypteddata"
+    ].find((encryptedData) => {
+      const method =
+        encryptedData?.["enc:encryptionmethod"]?.[0].attr?.algorithm;
+      return (
+        method.indexOf("ns.adobe.com/pdf/enc") ||
+        method.indexOf("www.idpf.org/2008/embedding")
+      );
+    });
+  }
   const obfMethod =
-    parsedEncryptionXml.encryption["enc:encrypteddata"][0][
-      "enc:encryptionmethod"
-    ][0].attr.algorithm;
-  if (obfMethod.indexOf("adobe")) {
+    fontEncryptedData?.["enc:encryptionmethod"]?.[0].attr?.algorithm;
+
+  if (obfMethod && obfMethod.indexOf("ns.adobe.com/pdf/enc")) {
     return adobeFontObfuscation(fontData, uniqueId);
-  } else if (obfMethod.indexOf("idpf")) {
+  } else if (obfMethod && obfMethod.indexOf("www.idpf.org/2008/embedding")) {
     return idpfFontObfuscation(fontData, uniqueId);
   }
 }

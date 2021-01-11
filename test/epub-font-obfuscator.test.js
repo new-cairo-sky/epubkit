@@ -37,12 +37,13 @@ test("can find obfuscation method and id from xml", async () => {
     return;
   }
 
-  const obfuscatedFontData = await fontObfuscation(
+  const unobfuscatedFontData = await fontObfuscation(
     sourceFontData,
     adobeObfOpfXml,
-    adobeObfEncryptionXml
+    adobeObfEncryptionXml,
+    "OEBPS/Fonts/Roboto-Regular.ttf"
   );
-  expect(Buffer.compare(expectedFontData, obfuscatedFontData)).toBe(0);
+  expect(Buffer.compare(expectedFontData, unobfuscatedFontData)).toBe(0);
 });
 
 test("can idpf obfuscate font", async () => {
