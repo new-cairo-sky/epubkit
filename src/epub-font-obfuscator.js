@@ -1,6 +1,6 @@
 import jsSHA from "jssha";
 import utf8 from "utf8";
-import { parseXml } from "./utils/xml";
+import { parseXml } from "./utils/xml.js";
 
 /**
  * The Epub font obfuscation spec is a self-inverting XOR process.
@@ -70,9 +70,12 @@ export async function fontObfuscation(
   const obfMethod =
     fontEncryptedData?.["enc:encryptionmethod"]?.[0].attr?.algorithm;
 
-  if (obfMethod && obfMethod.indexOf("ns.adobe.com/pdf/enc")) {
+  if (obfMethod && obfMethod.indexOf("ns.adobe.com/pdf/enc") !== -1) {
     return adobeFontObfuscation(fontData, uniqueId);
-  } else if (obfMethod && obfMethod.indexOf("www.idpf.org/2008/embedding")) {
+  } else if (
+    obfMethod &&
+    obfMethod.indexOf("www.idpf.org/2008/embedding") !== -1
+  ) {
     return idpfFontObfuscation(fontData, uniqueId);
   }
 }
