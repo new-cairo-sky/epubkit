@@ -1,16 +1,34 @@
 import { generateXml, parseXml } from "./utils/xml";
 
+interface _children {
+  [key: string]: DataElement[];
+}
+
+interface Attributes {
+  [key: string]: string | undefined;
+}
+
 export default class DataElement {
-  constructor(element, value = undefined, attributes = {}) {
+  _attributes: Attributes;
+  _children: _children;
+  _orderedChildren: DataElement[];
+  element: string;
+  value: string | undefined;
+  // TODO this should be removed once object properties are refactored as members of children
+  [key: string]: any;
+
+  constructor(element: string, value?: string, attributes?: object) {
     this._attributes = {};
 
     // organizes children data-elements by element type
-    this._childen = {};
+    this._children = {};
 
     // organizes flat list of children by absolut order
     this._orderedChildren = [];
 
-    this.addAttributes(attributes);
+    if (attributes) {
+      this.addAttributes(attributes);
+    }
 
     this.element = element;
     this.value = value;
@@ -25,7 +43,7 @@ export default class DataElement {
    * @param {string} xml - the xml to parse
    * @param {boolean} recursive - set true to recursively parse children elements
    */
-  async loadXml(xml, recursive = true) {
+  async loadXml(xml: string, recursive: boolean = true) {
     const xmlObj = await parseXml(xml);
 
     for (let [key, value] of Object.entries(xmlObj)) {
@@ -42,7 +60,7 @@ export default class DataElement {
    * @param {object} xmlObj - an xml2js object
    * @param {boolean} recursive - if it should recurse through the children
    */
-  async parseXmlObj(xmlObj, recursive = true) {
+  async parseXmlObj(xmlObj: object, recursive: boolean = true) {
     for (let [valKey, valValue] of Object.entries(xmlObj)) {
       if (valKey === "attr") {
         this.addAttributes(valValue);
@@ -66,7 +84,7 @@ export default class DataElement {
     }
   }
 
-  addChild(name, child) {
+  addChild(name: string, child: DataElement) {
     const safeName = name.toLowerCase();
     const foundNames = Object.keys(this).filter(function (key) {
       return key.toLowerCase() === safeName;
@@ -77,7 +95,7 @@ export default class DataElement {
 
     if (this[safeName]) {
       // already exists
-      this._children[actualName].push(val);
+      this._children[actualName].push(child);
     } else {
       // does not already exist
       Object.defineProperty(this, safeName, {
@@ -111,7 +129,7 @@ export default class DataElement {
   /**
    * Get the attributes, filtering out any that are empty
    */
-  getFilteredAttributes() {
+  getFilteredAttributes(): Attributes | void {
     const attributes = this._attributes;
     if (Object.keys(attributes).length) {
       const attr = Object.entries(attributes)
@@ -121,16 +139,16 @@ export default class DataElement {
         .reduce((obj, [key, value]) => {
           obj[key] = attributes[key];
           return obj;
-        }, {});
+        }, {} as Attributes);
 
       if (Object.keys(attr).length) {
         return attr;
       }
     }
-    return undefined;
+    return;
   }
 
-  removeAttribute(key, value = undefined) {
+  removeAttribute(key: string, value = undefined) {
     if (this._attributes[key]) {
       if (value && this._attributes[key] === value) {
         delete this._attributes[key];
@@ -148,7 +166,7 @@ export default class DataElement {
     }
   }
 
-  addAttributes(attributes) {
+  addAttributes(attributes: object) {
     Object.assign(this._attributes, attributes);
     Object.entries(attributes).forEach(([key, value]) => {
       //this._attributes[key] = value;
@@ -180,8 +198,8 @@ export default class DataElement {
    * Convert self into a plain data object, recursing children as needed.
    * This data can be passed to xml2Js builder method to convert to xml
    */
-  prepareForXml() {
-    let data = {};
+  prepareForXml(): object {
+    let data: { [key: string]: any } = {};
 
     const dataElement = this;
 
@@ -195,11 +213,11 @@ export default class DataElement {
         data.val = value;
       } else if (value instanceof DataElement) {
         // this is a child dataElement
-        const childData = value.prepareForXml();
+        const childData: { [key: string]: any } = value.prepareForXml();
         data[value.element] = childData[value.element];
       } else if (Array.isArray(value) && value.length > 0) {
         // if entry is an array, recurse through it as children objects
-        const children = {};
+        const children: { [key: string]: any } = {};
         value.forEach((child) => {
           const childData = child.prepareForXml();
 

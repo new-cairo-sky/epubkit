@@ -101,41 +101,41 @@ export function prepareItemsForXml(items) {
   return dataList;
 }
 
-export function prepareItemForXml(item) {
-  let data = {};
+// export function prepareItemForXml(item) {
+//   let data = {};
 
-  const entries = Object.entries(item);
+//   const entries = Object.entries(item);
 
-  for (let [key, value] of Object.entries(item)) {
-    //if (item.hasOwnProperty(key)) {
-    if (key === "_attributes") {
-      const attr = filterAttributes(value);
-      if (attr) {
-        data.attr = attr;
-      }
-    } else if (key === "value" && value) {
-      data.val = value;
-    } else if (value instanceof DataElement) {
-      // this is a child dataelement
-      // TODO: handle recursion...
-      //const child = value;
+//   for (let [key, value] of Object.entries(item)) {
+//     //if (item.hasOwnProperty(key)) {
+//     if (key === "_attributes") {
+//       const attr = filterAttributes(value);
+//       if (attr) {
+//         data.attr = attr;
+//       }
+//     } else if (key === "value" && value) {
+//       data.val = value;
+//     } else if (value instanceof DataElement) {
+//       // this is a child dataelement
+//       // TODO: handle recursion...
+//       //const child = value;
 
-      data[value.element] = prepareItemForXml(value);
-    } else if (Array.isArray(value) && value.length > 0) {
-      const children = prepareItemsForXml(value);
-      Object.assign(data, children);
-    }
-    //}
-  }
-  // if (item.attributes) {
-  //   const attr = filterAttributes(item.attributes);
-  //   if (attr) {
-  //     data.attr = attr;
-  //   }
-  // }
-  // if (item.value) {
-  //   data.val = item.value;
-  // }
+//       data[value.element] = prepareItemForXml(value);
+//     } else if (Array.isArray(value) && value.length > 0) {
+//       const children = prepareItemsForXml(value);
+//       Object.assign(data, children);
+//     }
+//     //}
+//   }
+//   // if (item.attributes) {
+//   //   const attr = filterAttributes(item.attributes);
+//   //   if (attr) {
+//   //     data.attr = attr;
+//   //   }
+//   // }
+//   // if (item.value) {
+//   //   data.val = item.value;
+//   // }
 
-  return data;
-}
+//   return data;
+// }
