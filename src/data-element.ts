@@ -95,7 +95,7 @@ export default class DataElement {
 
     if (this[safeName]) {
       // already exists
-      this._children[actualName].push(child);
+      this._children[safeName].push(child);
     } else {
       // does not already exist
       Object.defineProperty(this, safeName, {
