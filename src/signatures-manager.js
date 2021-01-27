@@ -154,16 +154,19 @@ export default class SignaturesManager extends DataElement {
     return this.signatures.find((signature) => signature.id === id);
   }
 
+
   /**
-   * The signatures.xml file should be included in the signature manifest, but it requires
-   * an envelopedTransform.
-   */
+  * The signatures.xml file should be included in the signature manifest, but it requires
+  * an envelopedTransform. Ie. this will add signatures.xml file to the given signature's manifest.
+  * 
+  * @param {object} signature - a target signature data-element instance to add file into manifest. 
+  */
   async addSelfToSignatureManifest(signature) {
     // get the enveloped transfromed xml for this signatures xml
     // note: we don't use the xmldsigjs XmlDsigEnvelopedSignatureTransform
     // because of issue https://github.com/PeculiarVentures/xmldsigjs/issues/49
     // TODO: patch when issue is fixed.
-    const xml = this.getEnvelopedSignatureTransformedXml(signature);
+    const xml = await this.getEnvelopedSignatureTransformedXml(signature);
 
     // get the C14N Normalized xml
     const C14NTransform = new xmldsigjs.XmlDsigC14NTransform();

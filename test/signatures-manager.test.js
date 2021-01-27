@@ -23,7 +23,7 @@ test("can parse a signature.xml file", async () => {
   await signatureManager.initCrypto();
 
   const xmlData = await FileManager.readFile(signaturesFilePath, "utf8");
-  const 
+
   const result = await signatureManager.loadXml(xmlData);
   console.log("xml2js signatures", signatureManager.signatures);
   const signatureManagerXml = await signatureManager.getXml();
@@ -36,23 +36,40 @@ test("can generate properly formed xml", async () => {
   await signatureManager.initCrypto();
   signatureManager.addSignature("newsig");
   const xml = await signatureManager.getXml();
-  console.log("xml", xml);
+
+  const expectedXml = `
+  <?xml version="1.0" encoding="UTF-8"?>
+  <signatures xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+    <Signature id="newsig" xmlns="http://www.w3.org/2000/09/xmldsig#">
+      <SignedInfo>
+        <CanonicalizationMethod algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+        <SignatureMethod algorithm="http://www.w3.org/2000/09/xmldsig#dsa-sha1"/>
+      </SignedInfo>
+      <SignatureValue/>
+      <KeyInfo/>
+      <Object>
+        <Manifest id="manifest"/>
+      </Object>
+    </Signature>
+  </signatures>
+  `;
+  await expect(expectedXml).toBeEqualXml(xml);
 });
 
 test("can get enveloped transform xml of signatures", async () => {
   const signatureManager = new SignaturesManager(signaturesEpubFixture);
   await signatureManager.initCrypto();
 
-  // const xmlData = await FileManager.readFile(signaturesFilePath);
-  // const result = await signatureManager.loadXml(xmlData);
-
   signatureManager.addSignature("prevsig");
+  const expectedXml = await signatureManager.getXml();
   signatureManager.addSignature("newsig");
   const newsig = signatureManager.getSignature("newsig");
   const envelopedXml = await signatureManager.getEnvelopedSignatureTransformedXml(
     newsig
   );
+
   console.log("envelopedXml", envelopedXml);
+  await expect(expectedXml).toBeEqualXml(envelopedXml);
 });
 
 test("can add self to signature manifest", async () => {
@@ -62,6 +79,7 @@ test("can add self to signature manifest", async () => {
   await signatureManager.loadXml(data);
   signatureManager.addSignature("newsig");
   const newsig = signatureManager.getSignature("newsig");
+  
   await signatureManager.addSelfToSignatureManifest(newsig);
   const xml = await signatureManager.getXml();
   console.log("xml", xml);
