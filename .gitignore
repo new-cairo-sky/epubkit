@@ -2,7 +2,7 @@
 node_modules
 node_modules/
 dist/
-public/assets/
+public/**
 node_modules/
 test/output/
 coverage/

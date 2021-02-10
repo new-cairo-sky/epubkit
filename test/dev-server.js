@@ -12,14 +12,14 @@ let dirname = path.resolve('./');
 console.log('./', path.resolve('./'));
 console.log('process.cwd()', process.cwd());
 
-const compiler = webpack(webpackConfig);
+const compiler = webpack(webpackConfig(undefined, {mode: 'development'}));
 
 
 const app = express();
 // app.use("/", express.static(__dirname + "../public"));
 app.use(
   webpackDevMiddleware(compiler, {
-    publicPath: webpackConfig.output.publicPath,
+    publicPath: '/public/',
   })
 );
 app.use(webpackHotMiddleware(compiler));

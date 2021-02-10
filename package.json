@@ -3,9 +3,9 @@
   "type": "module",
   "version": "1.0.0",
   "description": "A universal js library for parsing and editing epubs.",
-  "main": "dist/index.js",
+  "main": "dist/main.node.js",
   "types": "dist/index.d.ts",
-  "browser": "dist/main.js",
+  "browser": "dist/main.client.js",
   "homepage": "https://github.com/new-cairo-sky/epubkit",
   "repository": {
     "type": "git",
@@ -17,7 +17,7 @@
   "scripts": {
     "test": "jest",
     "build": "npm run build:client && npm run build:node",
-    "build:node": "babel ./src/index.js --out-file ./dist/node-main.js && ./node_modules/typescript/bin/tsc --emitDeclarationOnly",
+    "build:node": "babel ./src/index.js --out-file ./dist/main.node.js && ./node_modules/typescript/bin/tsc --emitDeclarationOnly",
     "build:client": "webpack --progress --mode=production --config webpack.config.cjs",
     "start": "babel-node ./test/dev-server.js",
     "check-types": "tsc"

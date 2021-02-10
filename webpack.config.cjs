@@ -4,33 +4,32 @@ const AssetsPlugin = require("assets-webpack-plugin");
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
   .BundleAnalyzerPlugin;
 
-// import path from 'path';
-// import webpack from 'webpack';
-// import AssetsPlugin from 'assets-webpack-plugin';
+/**
+ * Webpack config for Browser.
+ * Note that node build is configured by tsconfig.json
+ */
 
-const isProd = false;
-
-module.exports = {
+const config =  {
   /**
    * Web Target
    */
   target: "web",
-  entry: {
-    main: isProd
-      ? ["./src/index.js"]
-      : [
-          "webpack-hot-middleware/client?path=/__webpack_hmr&timeout=20000",
-          "./test/client.js",
-        ],
-  },
+  // entry: {
+  //   main: isProd
+  //     ? ["./src/index.js"]
+  //     : [
+  //         "webpack-hot-middleware/client?path=/__webpack_hmr&timeout=20000",
+  //         "./test/client.js",
+  //       ],
+  // },
   output: {
-    filename: `bundle.[name]${isProd ? ".[chunkhash]" : ""}.js`,
-    path: path.resolve(__dirname, "dist/assets/"),
-    publicPath: "/assets/",
+    // filename: `[name].client${isProd ? ".[chunkhash]" : ""}.js`,
+    // path: isProd ? path.resolve(__dirname, "dist/") : path.resolve(__dirname, "public/"),
+    publicPath: "/public/",
     hotUpdateChunkFilename: "hot/[id].[hash].hot-update.js",
     hotUpdateMainFilename: "hot/[hash].hot-update.json",
   },
-  devtool: isProd ? undefined : "cheap-module-eval-source-map",
+  // devtool: isProd ? undefined : "cheap-module-eval-source-map",
   resolve: {
     // Use our versions of Node modules.
     alias: {
@@ -81,14 +80,14 @@ module.exports = {
       process: "processGlobal",
       Buffer: "bufferGlobal",
     }),
-    isProd ? null : new webpack.HotModuleReplacementPlugin(),
+    // isProd ? null : new webpack.HotModuleReplacementPlugin(),
     new AssetsPlugin({
       filename: "bundle-manifest.json",
       fullPath: false,
       path: path.resolve(__dirname, "dist/assets/"),
       prettyPrint: true,
     }),
-    isProd ? new BundleAnalyzerPlugin() : null,
+    // isProd ? new BundleAnalyzerPlugin() : null,
   ].filter(Boolean),
   // DISABLE Webpack's built-in process and Buffer polyfills!
   node: {
@@ -97,3 +96,42 @@ module.exports = {
     __dirname: true
   },
 };
+
+
+
+module.exports = (env, argv) => {
+  /**
+   * Add development-specific settings
+   */
+  if (argv.mode === 'development') {
+    config.entry = {
+      main: [
+            "webpack-hot-middleware/client?path=/__webpack_hmr&timeout=20000",
+            // client.js is the test server setup
+            "./test/client.js",
+          ],
+    };
+    
+    config.output.filename = `[name].client.js`;
+    config.output.path = path.resolve(__dirname, "public/");
+
+    config.devtool = "cheap-module-eval-source-map";
+
+    config.plugins.push(
+      new webpack.HotModuleReplacementPlugin()
+    );
+
+  }
+
+  /**
+   * Add production-specific settings
+   */
+  if (argv.mode === 'production') {
+    config.entry = {main: ["./src/index.js"]};
+    config.output.filename = `[name].client.[chunkhash].js`;
+    config.output.path = path.resolve(__dirname, "dist/");
+    config.plugins.push(new BundleAnalyzerPlugin());
+  }
+
+  return config;
+}
