@@ -54,6 +54,7 @@ or
 npm test -- [test-file-name].test.js
 ```
 
+The testing server can be viewed at `http://localhost:3000/`
 ## Notes
 
 All xml attributes are normalized to lower case. Although XML _should_ be case-sensitive, in practice, attributes cases are not consistently implemented. See, for example: https://stackoverflow.com/questions/2477653/the-case-of-id-attribute-when-signing-an-element-in-a-xml-file. Furthermore, the case style of attributes is not consistent accross w3c specs - epub xml attr tend to be kebab-case, while Signature xml tends to PascalCase.

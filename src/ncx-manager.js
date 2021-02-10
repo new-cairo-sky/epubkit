@@ -1,7 +1,6 @@
 import { promisify } from "es6-promisify";
 import xml2js from "xml2js";
 import FileManager from "./file-manager";
-import DataElement from "./data-element";
 import { parseXml } from "./utils/xml";
 
 class NcxManager {
