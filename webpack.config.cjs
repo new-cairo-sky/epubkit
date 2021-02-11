@@ -23,7 +23,7 @@ const config =  {
   //       ],
   // },
   output: {
-    // filename: `[name].client${isProd ? ".[chunkhash]" : ""}.js`,
+    filename: `[name].client.js`,
     // path: isProd ? path.resolve(__dirname, "dist/") : path.resolve(__dirname, "public/"),
     publicPath: "/public/",
     hotUpdateChunkFilename: "hot/[id].[hash].hot-update.js",
@@ -55,7 +55,7 @@ const config =  {
             loader: "babel-loader",
             options: {
               sourceMap: "both",
-              presets: ["@babel/typescript"],
+              presets: ["@babel/preset-env","@babel/typescript"],
               plugins: [
                 "@babel/plugin-syntax-dynamic-import",
                 "@babel/plugin-transform-async-to-generator",
@@ -81,12 +81,12 @@ const config =  {
       Buffer: "bufferGlobal",
     }),
     // isProd ? null : new webpack.HotModuleReplacementPlugin(),
-    new AssetsPlugin({
-      filename: "bundle-manifest.json",
-      fullPath: false,
-      path: path.resolve(__dirname, "dist/assets/"),
-      prettyPrint: true,
-    }),
+    // new AssetsPlugin({
+    //   filename: "bundle-manifest.json",
+    //   fullPath: false,
+    //   path: path.resolve(__dirname, "dist/assets/"),
+    //   prettyPrint: true,
+    // }),
     // isProd ? new BundleAnalyzerPlugin() : null,
   ].filter(Boolean),
   // DISABLE Webpack's built-in process and Buffer polyfills!
@@ -112,7 +112,6 @@ module.exports = (env, argv) => {
           ],
     };
     
-    config.output.filename = `[name].client.js`;
     config.output.path = path.resolve(__dirname, "public/");
 
     config.devtool = "cheap-module-eval-source-map";
@@ -128,7 +127,6 @@ module.exports = (env, argv) => {
    */
   if (argv.mode === 'production') {
     config.entry = {main: ["./src/index.js"]};
-    config.output.filename = `[name].client.[chunkhash].js`;
     config.output.path = path.resolve(__dirname, "dist/");
     config.plugins.push(new BundleAnalyzerPlugin());
   }

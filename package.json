@@ -16,9 +16,11 @@
   },
   "scripts": {
     "test": "jest",
-    "build": "npm run build:client && npm run build:node",
-    "build:node": "babel ./src/index.js --out-file ./dist/main.node.js && ./node_modules/typescript/bin/tsc --emitDeclarationOnly",
+    "build": "npm run clean-dist && npm run build:node && npm run build:client",
+    "build:node": "babel ./src --out-dir ./dist --extensions '.ts,.tsx,.js,.jsx' && npm run build:typedefs",
     "build:client": "webpack --progress --mode=production --config webpack.config.cjs",
+    "build:typedefs": "./node_modules/typescript/bin/tsc --emitDeclarationOnly",
+    "clean-dist": "rm -r ./dist/*",
     "start": "babel-node ./test/dev-server.js",
     "check-types": "tsc"
   },
