@@ -1,4 +1,4 @@
-"use strict";Object.defineProperty(exports, "__esModule", { value: true });exports["default"] = void 0;var _xml = require("./utils/xml");
+"use strict";Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _xml = require("./utils/xml");
 
 
 
@@ -6,102 +6,102 @@
 
 var _dataElement = _interopRequireDefault(require("./data-element"));
 var _containerRootfiles = _interopRequireDefault(require("./container-rootfiles"));
-var _containerRootfilesRootfile = _interopRequireDefault(require("./container-rootfiles-rootfile"));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { "default": obj };}function _typeof(obj) {"@babel/helpers - typeof";if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {_typeof = function _typeof(obj) {return typeof obj;};} else {_typeof = function _typeof(obj) {return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;};}return _typeof(obj);}function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {try {var info = gen[key](arg);var value = info.value;} catch (error) {reject(error);return;}if (info.done) {resolve(value);} else {Promise.resolve(value).then(_next, _throw);}}function _asyncToGenerator(fn) {return function () {var self = this,args = arguments;return new Promise(function (resolve, reject) {var gen = fn.apply(self, args);function _next(value) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);}function _throw(err) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);}_next(undefined);});};}function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target, props) {for (var i = 0; i < props.length; i++) {var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);}}function _createClass(Constructor, protoProps, staticProps) {if (protoProps) _defineProperties(Constructor.prototype, protoProps);if (staticProps) _defineProperties(Constructor, staticProps);return Constructor;}function _inherits(subClass, superClass) {if (typeof superClass !== "function" && superClass !== null) {throw new TypeError("Super expression must either be null or a function");}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } });if (superClass) _setPrototypeOf(subClass, superClass);}function _setPrototypeOf(o, p) {_setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {o.__proto__ = p;return o;};return _setPrototypeOf(o, p);}function _createSuper(Derived) {var hasNativeReflectConstruct = _isNativeReflectConstruct();return function _createSuperInternal() {var Super = _getPrototypeOf(Derived),result;if (hasNativeReflectConstruct) {var NewTarget = _getPrototypeOf(this).constructor;result = Reflect.construct(Super, arguments, NewTarget);} else {result = Super.apply(this, arguments);}return _possibleConstructorReturn(this, result);};}function _possibleConstructorReturn(self, call) {if (call && (_typeof(call) === "object" || typeof call === "function")) {return call;}return _assertThisInitialized(self);}function _assertThisInitialized(self) {if (self === void 0) {throw new ReferenceError("this hasn't been initialised - super() hasn't been called");}return self;}function _isNativeReflectConstruct() {if (typeof Reflect === "undefined" || !Reflect.construct) return false;if (Reflect.construct.sham) return false;if (typeof Proxy === "function") return true;try {Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));return true;} catch (e) {return false;}}function _getPrototypeOf(o) {_getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {return o.__proto__ || Object.getPrototypeOf(o);};return _getPrototypeOf(o);}
+var _containerRootfilesRootfile = _interopRequireDefault(require("./container-rootfiles-rootfile"));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}
 
 /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * Manager for the container.xml file
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * https://www.w3.org/publishing/epub32/epub-ocf.html#sec-container-metainf-container.xml
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            */var
-ContainerManager = /*#__PURE__*/function (_DataElement) {_inherits(ContainerManager, _DataElement);var _super = _createSuper(ContainerManager);
-  function ContainerManager() {var _this;_classCallCheck(this, ContainerManager);
-    _this = _super.call(this, "container", {
+ * Manager for the container.xml file
+ * https://www.w3.org/publishing/epub32/epub-ocf.html#sec-container-metainf-container.xml
+ */
+class ContainerManager extends _dataElement.default {
+  constructor() {
+    super("container", {
       xmlns: "urn:oasis:names:tc:opendocument:xmlns:container",
       version: "1.0" });
 
 
-    _this._rawData = undefined;
+    this._rawData = undefined;
 
-    _this.rootfiles = undefined;return _this;
+    this.rootfiles = undefined;
   }
 
   /**
-     * Inititialize a new empty container
-     * @param {string} opfLocation - path the opf file
-     */_createClass(ContainerManager, [{ key: "create", value: function create()
-    {var opfLocation = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "package.opf";
-      var defaultRootfile = new _containerRootfilesRootfile["default"](
-      opfLocation,
-      "application/oebps-package+xml");
+   * Inititialize a new empty container
+   * @param {string} opfLocation - path the opf file
+   */
+  create(opfLocation = "package.opf") {
+    const defaultRootfile = new _containerRootfilesRootfile.default(
+    opfLocation,
+    "application/oebps-package+xml");
 
-      this.rootfiles = new _containerRootfiles["default"]([defaultRootfile]);
-    }
+    this.rootfiles = new _containerRootfiles.default([defaultRootfile]);
+  }
 
-    /**
-       * Load and parse the provided xml
-       * @param {string | buffer} data
-       * @returns {object} - the resulting parsed xml object
-       */ }, { key: "loadXml", value: function () {var _loadXml = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(
-      data) {var result, rawRootfiles, rootfileDataList;return regeneratorRuntime.wrap(function _callee$(_context) {while (1) {switch (_context.prev = _context.next) {case 0:_context.next = 2;return (
-                  (0, _xml.parseXml)(data));case 2:result = _context.sent;
-                if (result) {
-                  this._rawData = result;
+  /**
+   * Load and parse the provided xml
+   * @param {string | buffer} data
+   * @returns {object} - the resulting parsed xml object
+   */
+  async loadXml(data) {
+    const result = await (0, _xml.parseXml)(data);
+    if (result) {
+      this._rawData = result;
 
-                  if (this._rawData.container.attr) {
-                    this.addAttributes(this._rawData.container.attr);
-                  }
-
-                  // construct the rootfiles section
-                  rawRootfiles = result.container.rootfiles[0].rootfile;
-
-                  rootfileDataList = rawRootfiles.map(function (rootfile) {
-                    return rootfile.attr;
-                  });
-
-                  this.rootfiles = new _containerRootfiles["default"](rootfileDataList);
-                }return _context.abrupt("return",
-
-                this._rawData);case 5:case "end":return _context.stop();}}}, _callee, this);}));function loadXml(_x) {return _loadXml.apply(this, arguments);}return loadXml;}()
-
-
-    /**
-                                                                                                                                                                                  * Get the xml string data
-                                                                                                                                                                                  * @returns {string}
-                                                                                                                                                                                  */ }, { key: "getXml", value: function () {var _getXml = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {var xml;return regeneratorRuntime.wrap(function _callee2$(_context2) {while (1) {switch (_context2.prev = _context2.next) {case 0:_context2.next = 2;return (
-
-                  (0, _xml.generateXml)(this.getXml2JsObject()));case 2:xml = _context2.sent;return _context2.abrupt("return",
-                xml);case 4:case "end":return _context2.stop();}}}, _callee2, this);}));function getXml() {return _getXml.apply(this, arguments);}return getXml;}()
-
-
-    /**
-                                                                                                                                                                     * Build the xml2Js object for conversion to raw xml
-                                                                                                                                                                     * @returns {object}
-                                                                                                                                                                     */ }, { key: "getXml2JsObject", value: function getXml2JsObject()
-    {
-      var xmlJsRootfiles = (0, _xml.prepareItemsForXml)(this.rootfiles.items);
-      var rootfilesAttr = (0, _xml.filterAttributes)(this.rootfiles.attributes);
-      if (rootfilesAttr) {
-        xmlJsRootfiles.attr = rootfilesAttr;
+      if (this._rawData.container.attr) {
+        this.addAttributes(this._rawData.container.attr);
       }
 
-      var containerXmlJsData = {
-        container: {
-          attr: (0, _xml.filterAttributes)(this.attributes),
-          rootfiles: [xmlJsRootfiles] } };
+      // construct the rootfiles section
+      const rawRootfiles = result.container.rootfiles[0].rootfile;
 
+      const rootfileDataList = rawRootfiles.map(rootfile => {
+        return rootfile.attr;
+      });
 
-
-      return containerXmlJsData;
+      this.rootfiles = new _containerRootfiles.default(rootfileDataList);
     }
 
-    /**
-       * Find the first rootfile element's full-path value.
-       * @returns {string} - package file's location relative to the epub's root.
-       */ }, { key: "rootFilePath", get: function get()
-    {var _this$rootfiles;
-      var rootPath = (_this$rootfiles = this.rootfiles) === null || _this$rootfiles === void 0 ? void 0 : _this$rootfiles.items[0]["full-path"];
-      return rootPath;
-    } }]);return ContainerManager;}(_dataElement["default"]);var _default =
+    return this._rawData;
+  }
+
+  /**
+   * Get the xml string data
+   * @returns {string}
+   */
+  async getXml() {
+    const xml = await (0, _xml.generateXml)(this.getXml2JsObject());
+    return xml;
+  }
+
+  /**
+   * Build the xml2Js object for conversion to raw xml
+   * @returns {object}
+   */
+  getXml2JsObject() {
+    const xmlJsRootfiles = (0, _xml.prepareItemsForXml)(this.rootfiles.items);
+    const rootfilesAttr = (0, _xml.filterAttributes)(this.rootfiles.attributes);
+    if (rootfilesAttr) {
+      xmlJsRootfiles.attr = rootfilesAttr;
+    }
+
+    const containerXmlJsData = {
+      container: {
+        attr: (0, _xml.filterAttributes)(this.attributes),
+        rootfiles: [xmlJsRootfiles] } };
 
 
-ContainerManager;exports["default"] = _default;
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uL3NyYy9jb250YWluZXItbWFuYWdlci5qcyJdLCJuYW1lcyI6WyJDb250YWluZXJNYW5hZ2VyIiwieG1sbnMiLCJ2ZXJzaW9uIiwiX3Jhd0RhdGEiLCJ1bmRlZmluZWQiLCJyb290ZmlsZXMiLCJvcGZMb2NhdGlvbiIsImRlZmF1bHRSb290ZmlsZSIsIkNvbnRhaW5lclJvb3RmaWxlc1Jvb3RmaWxlIiwiQ29udGFpbmVyUm9vdGZpbGVzIiwiZGF0YSIsInJlc3VsdCIsImNvbnRhaW5lciIsImF0dHIiLCJhZGRBdHRyaWJ1dGVzIiwicmF3Um9vdGZpbGVzIiwicm9vdGZpbGUiLCJyb290ZmlsZURhdGFMaXN0IiwibWFwIiwiZ2V0WG1sMkpzT2JqZWN0IiwieG1sIiwieG1sSnNSb290ZmlsZXMiLCJpdGVtcyIsInJvb3RmaWxlc0F0dHIiLCJhdHRyaWJ1dGVzIiwiY29udGFpbmVyWG1sSnNEYXRhIiwicm9vdFBhdGgiLCJEYXRhRWxlbWVudCJdLCJtYXBwaW5ncyI6InVHQUFBOzs7Ozs7QUFNQTtBQUNBO0FBQ0Esb0c7O0FBRUE7Ozs7QUFJTUEsZ0I7QUFDSiw4QkFBYztBQUNaLDhCQUFNLFdBQU4sRUFBbUI7QUFDakJDLE1BQUFBLEtBQUssRUFBRSxpREFEVTtBQUVqQkMsTUFBQUEsT0FBTyxFQUFFLEtBRlEsRUFBbkI7OztBQUtBLFVBQUtDLFFBQUwsR0FBZ0JDLFNBQWhCOztBQUVBLFVBQUtDLFNBQUwsR0FBaUJELFNBQWpCLENBUlk7QUFTYjs7QUFFRDs7OztBQUlvQyxTQUE3QkUsV0FBNkIsdUVBQWYsYUFBZTtBQUNsQyxVQUFNQyxlQUFlLEdBQUcsSUFBSUMsc0NBQUo7QUFDdEJGLE1BQUFBLFdBRHNCO0FBRXRCLHFDQUZzQixDQUF4Qjs7QUFJQSxXQUFLRCxTQUFMLEdBQWlCLElBQUlJLDhCQUFKLENBQXVCLENBQUNGLGVBQUQsQ0FBdkIsQ0FBakI7QUFDRDs7QUFFRDs7Ozs7QUFLY0csTUFBQUEsSTtBQUNTLHFDQUFTQSxJQUFULEMsU0FBZkMsTTtBQUNOLG9CQUFJQSxNQUFKLEVBQVk7QUFDVix1QkFBS1IsUUFBTCxHQUFnQlEsTUFBaEI7O0FBRUEsc0JBQUksS0FBS1IsUUFBTCxDQUFjUyxTQUFkLENBQXdCQyxJQUE1QixFQUFrQztBQUNoQyx5QkFBS0MsYUFBTCxDQUFtQixLQUFLWCxRQUFMLENBQWNTLFNBQWQsQ0FBd0JDLElBQTNDO0FBQ0Q7O0FBRUQ7QUFDTUUsa0JBQUFBLFlBUkksR0FRV0osTUFBTSxDQUFDQyxTQUFQLENBQWlCUCxTQUFqQixDQUEyQixDQUEzQixFQUE4QlcsUUFSekM7O0FBVUpDLGtCQUFBQSxnQkFWSSxHQVVlRixZQUFZLENBQUNHLEdBQWIsQ0FBaUIsVUFBQ0YsUUFBRCxFQUFjO0FBQ3RELDJCQUFPQSxRQUFRLENBQUNILElBQWhCO0FBQ0QsbUJBRndCLENBVmY7O0FBY1YsdUJBQUtSLFNBQUwsR0FBaUIsSUFBSUksOEJBQUosQ0FBdUJRLGdCQUF2QixDQUFqQjtBQUNELGlCOztBQUVNLHFCQUFLZCxROzs7QUFHZDs7Ozs7QUFLb0Isd0NBQVksS0FBS2dCLGVBQUwsRUFBWixDLFNBQVpDLEc7QUFDQ0EsZ0JBQUFBLEc7OztBQUdUOzs7O0FBSWtCO0FBQ2hCLFVBQU1DLGNBQWMsR0FBRyw2QkFBbUIsS0FBS2hCLFNBQUwsQ0FBZWlCLEtBQWxDLENBQXZCO0FBQ0EsVUFBTUMsYUFBYSxHQUFHLDJCQUFpQixLQUFLbEIsU0FBTCxDQUFlbUIsVUFBaEMsQ0FBdEI7QUFDQSxVQUFJRCxhQUFKLEVBQW1CO0FBQ2pCRixRQUFBQSxjQUFjLENBQUNSLElBQWYsR0FBc0JVLGFBQXRCO0FBQ0Q7O0FBRUQsVUFBTUUsa0JBQWtCLEdBQUc7QUFDekJiLFFBQUFBLFNBQVMsRUFBRTtBQUNUQyxVQUFBQSxJQUFJLEVBQUUsMkJBQWlCLEtBQUtXLFVBQXRCLENBREc7QUFFVG5CLFVBQUFBLFNBQVMsRUFBRSxDQUFDZ0IsY0FBRCxDQUZGLEVBRGMsRUFBM0I7Ozs7QUFPQSxhQUFPSSxrQkFBUDtBQUNEOztBQUVEOzs7O0FBSW1CO0FBQ2pCLFVBQU1DLFFBQVEsc0JBQUcsS0FBS3JCLFNBQVIsb0RBQUcsZ0JBQWdCaUIsS0FBaEIsQ0FBc0IsQ0FBdEIsRUFBeUIsV0FBekIsQ0FBakI7QUFDQSxhQUFPSSxRQUFQO0FBQ0QsSywrQkF4RjRCQyx1Qjs7O0FBMkZoQjNCLGdCIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHtcbiAgcGFyc2VYbWwsXG4gIGdlbmVyYXRlWG1sLFxuICBmaWx0ZXJBdHRyaWJ1dGVzLFxuICBwcmVwYXJlSXRlbXNGb3JYbWwsXG59IGZyb20gXCIuL3V0aWxzL3htbFwiO1xuaW1wb3J0IERhdGFFbGVtZW50IGZyb20gXCIuL2RhdGEtZWxlbWVudFwiO1xuaW1wb3J0IENvbnRhaW5lclJvb3RmaWxlcyBmcm9tIFwiLi9jb250YWluZXItcm9vdGZpbGVzXCI7XG5pbXBvcnQgQ29udGFpbmVyUm9vdGZpbGVzUm9vdGZpbGUgZnJvbSBcIi4vY29udGFpbmVyLXJvb3RmaWxlcy1yb290ZmlsZVwiO1xuXG4vKipcbiAqIE1hbmFnZXIgZm9yIHRoZSBjb250YWluZXIueG1sIGZpbGVcbiAqIGh0dHBzOi8vd3d3LnczLm9yZy9wdWJsaXNoaW5nL2VwdWIzMi9lcHViLW9jZi5odG1sI3NlYy1jb250YWluZXItbWV0YWluZi1jb250YWluZXIueG1sXG4gKi9cbmNsYXNzIENvbnRhaW5lck1hbmFnZXIgZXh0ZW5kcyBEYXRhRWxlbWVudCB7XG4gIGNvbnN0cnVjdG9yKCkge1xuICAgIHN1cGVyKFwiY29udGFpbmVyXCIsIHtcbiAgICAgIHhtbG5zOiBcInVybjpvYXNpczpuYW1lczp0YzpvcGVuZG9jdW1lbnQ6eG1sbnM6Y29udGFpbmVyXCIsXG4gICAgICB2ZXJzaW9uOiBcIjEuMFwiLFxuICAgIH0pO1xuXG4gICAgdGhpcy5fcmF3RGF0YSA9IHVuZGVmaW5lZDtcblxuICAgIHRoaXMucm9vdGZpbGVzID0gdW5kZWZpbmVkO1xuICB9XG5cbiAgLyoqXG4gICAqIEluaXRpdGlhbGl6ZSBhIG5ldyBlbXB0eSBjb250YWluZXJcbiAgICogQHBhcmFtIHtzdHJpbmd9IG9wZkxvY2F0aW9uIC0gcGF0aCB0aGUgb3BmIGZpbGVcbiAgICovXG4gIGNyZWF0ZShvcGZMb2NhdGlvbiA9IFwicGFja2FnZS5vcGZcIikge1xuICAgIGNvbnN0IGRlZmF1bHRSb290ZmlsZSA9IG5ldyBDb250YWluZXJSb290ZmlsZXNSb290ZmlsZShcbiAgICAgIG9wZkxvY2F0aW9uLFxuICAgICAgXCJhcHBsaWNhdGlvbi9vZWJwcy1wYWNrYWdlK3htbFwiXG4gICAgKTtcbiAgICB0aGlzLnJvb3RmaWxlcyA9IG5ldyBDb250YWluZXJSb290ZmlsZXMoW2RlZmF1bHRSb290ZmlsZV0pO1xuICB9XG5cbiAgLyoqXG4gICAqIExvYWQgYW5kIHBhcnNlIHRoZSBwcm92aWRlZCB4bWxcbiAgICogQHBhcmFtIHtzdHJpbmcgfCBidWZmZXJ9IGRhdGFcbiAgICogQHJldHVybnMge29iamVjdH0gLSB0aGUgcmVzdWx0aW5nIHBhcnNlZCB4bWwgb2JqZWN0XG4gICAqL1xuICBhc3luYyBsb2FkWG1sKGRhdGEpIHtcbiAgICBjb25zdCByZXN1bHQgPSBhd2FpdCBwYXJzZVhtbChkYXRhKTtcbiAgICBpZiAocmVzdWx0KSB7XG4gICAgICB0aGlzLl9yYXdEYXRhID0gcmVzdWx0O1xuXG4gICAgICBpZiAodGhpcy5fcmF3RGF0YS5jb250YWluZXIuYXR0cikge1xuICAgICAgICB0aGlzLmFkZEF0dHJpYnV0ZXModGhpcy5fcmF3RGF0YS5jb250YWluZXIuYXR0cik7XG4gICAgICB9XG5cbiAgICAgIC8vIGNvbnN0cnVjdCB0aGUgcm9vdGZpbGVzIHNlY3Rpb25cbiAgICAgIGNvbnN0IHJhd1Jvb3RmaWxlcyA9IHJlc3VsdC5jb250YWluZXIucm9vdGZpbGVzWzBdLnJvb3RmaWxlO1xuXG4gICAgICBjb25zdCByb290ZmlsZURhdGFMaXN0ID0gcmF3Um9vdGZpbGVzLm1hcCgocm9vdGZpbGUpID0+IHtcbiAgICAgICAgcmV0dXJuIHJvb3RmaWxlLmF0dHI7XG4gICAgICB9KTtcblxuICAgICAgdGhpcy5yb290ZmlsZXMgPSBuZXcgQ29udGFpbmVyUm9vdGZpbGVzKHJvb3RmaWxlRGF0YUxpc3QpO1xuICAgIH1cblxuICAgIHJldHVybiB0aGlzLl9yYXdEYXRhO1xuICB9XG5cbiAgLyoqXG4gICAqIEdldCB0aGUgeG1sIHN0cmluZyBkYXRhXG4gICAqIEByZXR1cm5zIHtzdHJpbmd9XG4gICAqL1xuICBhc3luYyBnZXRYbWwoKSB7XG4gICAgY29uc3QgeG1sID0gYXdhaXQgZ2VuZXJhdGVYbWwodGhpcy5nZXRYbWwySnNPYmplY3QoKSk7XG4gICAgcmV0dXJuIHhtbDtcbiAgfVxuXG4gIC8qKlxuICAgKiBCdWlsZCB0aGUgeG1sMkpzIG9iamVjdCBmb3IgY29udmVyc2lvbiB0byByYXcgeG1sXG4gICAqIEByZXR1cm5zIHtvYmplY3R9XG4gICAqL1xuICBnZXRYbWwySnNPYmplY3QoKSB7XG4gICAgY29uc3QgeG1sSnNSb290ZmlsZXMgPSBwcmVwYXJlSXRlbXNGb3JYbWwodGhpcy5yb290ZmlsZXMuaXRlbXMpO1xuICAgIGNvbnN0IHJvb3RmaWxlc0F0dHIgPSBmaWx0ZXJBdHRyaWJ1dGVzKHRoaXMucm9vdGZpbGVzLmF0dHJpYnV0ZXMpO1xuICAgIGlmIChyb290ZmlsZXNBdHRyKSB7XG4gICAgICB4bWxKc1Jvb3RmaWxlcy5hdHRyID0gcm9vdGZpbGVzQXR0cjtcbiAgICB9XG5cbiAgICBjb25zdCBjb250YWluZXJYbWxKc0RhdGEgPSB7XG4gICAgICBjb250YWluZXI6IHtcbiAgICAgICAgYXR0cjogZmlsdGVyQXR0cmlidXRlcyh0aGlzLmF0dHJpYnV0ZXMpLFxuICAgICAgICByb290ZmlsZXM6IFt4bWxKc1Jvb3RmaWxlc10sXG4gICAgICB9LFxuICAgIH07XG5cbiAgICByZXR1cm4gY29udGFpbmVyWG1sSnNEYXRhO1xuICB9XG5cbiAgLyoqXG4gICAqIEZpbmQgdGhlIGZpcnN0IHJvb3RmaWxlIGVsZW1lbnQncyBmdWxsLXBhdGggdmFsdWUuXG4gICAqIEByZXR1cm5zIHtzdHJpbmd9IC0gcGFja2FnZSBmaWxlJ3MgbG9jYXRpb24gcmVsYXRpdmUgdG8gdGhlIGVwdWIncyByb290LlxuICAgKi9cbiAgZ2V0IHJvb3RGaWxlUGF0aCgpIHtcbiAgICBjb25zdCByb290UGF0aCA9IHRoaXMucm9vdGZpbGVzPy5pdGVtc1swXVtcImZ1bGwtcGF0aFwiXTtcbiAgICByZXR1cm4gcm9vdFBhdGg7XG4gIH1cbn1cblxuZXhwb3J0IGRlZmF1bHQgQ29udGFpbmVyTWFuYWdlcjtcbiJdfQ==
+
+    return containerXmlJsData;
+  }
+
+  /**
+   * Find the first rootfile element's full-path value.
+   * @returns {string} - package file's location relative to the epub's root.
+   */
+  get rootFilePath() {var _this$rootfiles;
+    const rootPath = (_this$rootfiles = this.rootfiles) === null || _this$rootfiles === void 0 ? void 0 : _this$rootfiles.items[0]["full-path"];
+    return rootPath;
+  }}var _default =
+
+
+ContainerManager;exports.default = _default;module.exports = exports.default;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uL3NyYy9jb250YWluZXItbWFuYWdlci5qcyJdLCJuYW1lcyI6WyJDb250YWluZXJNYW5hZ2VyIiwiRGF0YUVsZW1lbnQiLCJjb25zdHJ1Y3RvciIsInhtbG5zIiwidmVyc2lvbiIsIl9yYXdEYXRhIiwidW5kZWZpbmVkIiwicm9vdGZpbGVzIiwiY3JlYXRlIiwib3BmTG9jYXRpb24iLCJkZWZhdWx0Um9vdGZpbGUiLCJDb250YWluZXJSb290ZmlsZXNSb290ZmlsZSIsIkNvbnRhaW5lclJvb3RmaWxlcyIsImxvYWRYbWwiLCJkYXRhIiwicmVzdWx0IiwiY29udGFpbmVyIiwiYXR0ciIsImFkZEF0dHJpYnV0ZXMiLCJyYXdSb290ZmlsZXMiLCJyb290ZmlsZSIsInJvb3RmaWxlRGF0YUxpc3QiLCJtYXAiLCJnZXRYbWwiLCJ4bWwiLCJnZXRYbWwySnNPYmplY3QiLCJ4bWxKc1Jvb3RmaWxlcyIsIml0ZW1zIiwicm9vdGZpbGVzQXR0ciIsImF0dHJpYnV0ZXMiLCJjb250YWluZXJYbWxKc0RhdGEiLCJyb290RmlsZVBhdGgiLCJyb290UGF0aCJdLCJtYXBwaW5ncyI6Im9HQUFBOzs7Ozs7QUFNQTtBQUNBO0FBQ0Esb0c7O0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQSxNQUFNQSxnQkFBTixTQUErQkMsb0JBQS9CLENBQTJDO0FBQ3pDQyxFQUFBQSxXQUFXLEdBQUc7QUFDWixVQUFNLFdBQU4sRUFBbUI7QUFDakJDLE1BQUFBLEtBQUssRUFBRSxpREFEVTtBQUVqQkMsTUFBQUEsT0FBTyxFQUFFLEtBRlEsRUFBbkI7OztBQUtBLFNBQUtDLFFBQUwsR0FBZ0JDLFNBQWhCOztBQUVBLFNBQUtDLFNBQUwsR0FBaUJELFNBQWpCO0FBQ0Q7O0FBRUQ7QUFDRjtBQUNBO0FBQ0E7QUFDRUUsRUFBQUEsTUFBTSxDQUFDQyxXQUFXLEdBQUcsYUFBZixFQUE4QjtBQUNsQyxVQUFNQyxlQUFlLEdBQUcsSUFBSUMsbUNBQUo7QUFDdEJGLElBQUFBLFdBRHNCO0FBRXRCLG1DQUZzQixDQUF4Qjs7QUFJQSxTQUFLRixTQUFMLEdBQWlCLElBQUlLLDJCQUFKLENBQXVCLENBQUNGLGVBQUQsQ0FBdkIsQ0FBakI7QUFDRDs7QUFFRDtBQUNGO0FBQ0E7QUFDQTtBQUNBO0FBQ2UsUUFBUEcsT0FBTyxDQUFDQyxJQUFELEVBQU87QUFDbEIsVUFBTUMsTUFBTSxHQUFHLE1BQU0sbUJBQVNELElBQVQsQ0FBckI7QUFDQSxRQUFJQyxNQUFKLEVBQVk7QUFDVixXQUFLVixRQUFMLEdBQWdCVSxNQUFoQjs7QUFFQSxVQUFJLEtBQUtWLFFBQUwsQ0FBY1csU0FBZCxDQUF3QkMsSUFBNUIsRUFBa0M7QUFDaEMsYUFBS0MsYUFBTCxDQUFtQixLQUFLYixRQUFMLENBQWNXLFNBQWQsQ0FBd0JDLElBQTNDO0FBQ0Q7O0FBRUQ7QUFDQSxZQUFNRSxZQUFZLEdBQUdKLE1BQU0sQ0FBQ0MsU0FBUCxDQUFpQlQsU0FBakIsQ0FBMkIsQ0FBM0IsRUFBOEJhLFFBQW5EOztBQUVBLFlBQU1DLGdCQUFnQixHQUFHRixZQUFZLENBQUNHLEdBQWIsQ0FBa0JGLFFBQUQsSUFBYztBQUN0RCxlQUFPQSxRQUFRLENBQUNILElBQWhCO0FBQ0QsT0FGd0IsQ0FBekI7O0FBSUEsV0FBS1YsU0FBTCxHQUFpQixJQUFJSywyQkFBSixDQUF1QlMsZ0JBQXZCLENBQWpCO0FBQ0Q7O0FBRUQsV0FBTyxLQUFLaEIsUUFBWjtBQUNEOztBQUVEO0FBQ0Y7QUFDQTtBQUNBO0FBQ2MsUUFBTmtCLE1BQU0sR0FBRztBQUNiLFVBQU1DLEdBQUcsR0FBRyxNQUFNLHNCQUFZLEtBQUtDLGVBQUwsRUFBWixDQUFsQjtBQUNBLFdBQU9ELEdBQVA7QUFDRDs7QUFFRDtBQUNGO0FBQ0E7QUFDQTtBQUNFQyxFQUFBQSxlQUFlLEdBQUc7QUFDaEIsVUFBTUMsY0FBYyxHQUFHLDZCQUFtQixLQUFLbkIsU0FBTCxDQUFlb0IsS0FBbEMsQ0FBdkI7QUFDQSxVQUFNQyxhQUFhLEdBQUcsMkJBQWlCLEtBQUtyQixTQUFMLENBQWVzQixVQUFoQyxDQUF0QjtBQUNBLFFBQUlELGFBQUosRUFBbUI7QUFDakJGLE1BQUFBLGNBQWMsQ0FBQ1QsSUFBZixHQUFzQlcsYUFBdEI7QUFDRDs7QUFFRCxVQUFNRSxrQkFBa0IsR0FBRztBQUN6QmQsTUFBQUEsU0FBUyxFQUFFO0FBQ1RDLFFBQUFBLElBQUksRUFBRSwyQkFBaUIsS0FBS1ksVUFBdEIsQ0FERztBQUVUdEIsUUFBQUEsU0FBUyxFQUFFLENBQUNtQixjQUFELENBRkYsRUFEYyxFQUEzQjs7OztBQU9BLFdBQU9JLGtCQUFQO0FBQ0Q7O0FBRUQ7QUFDRjtBQUNBO0FBQ0E7QUFDa0IsTUFBWkMsWUFBWSxHQUFHO0FBQ2pCLFVBQU1DLFFBQVEsc0JBQUcsS0FBS3pCLFNBQVIsb0RBQUcsZ0JBQWdCb0IsS0FBaEIsQ0FBc0IsQ0FBdEIsRUFBeUIsV0FBekIsQ0FBakI7QUFDQSxXQUFPSyxRQUFQO0FBQ0QsR0F4RndDLEM7OztBQTJGNUJoQyxnQiIsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7XG4gIHBhcnNlWG1sLFxuICBnZW5lcmF0ZVhtbCxcbiAgZmlsdGVyQXR0cmlidXRlcyxcbiAgcHJlcGFyZUl0ZW1zRm9yWG1sLFxufSBmcm9tIFwiLi91dGlscy94bWxcIjtcbmltcG9ydCBEYXRhRWxlbWVudCBmcm9tIFwiLi9kYXRhLWVsZW1lbnRcIjtcbmltcG9ydCBDb250YWluZXJSb290ZmlsZXMgZnJvbSBcIi4vY29udGFpbmVyLXJvb3RmaWxlc1wiO1xuaW1wb3J0IENvbnRhaW5lclJvb3RmaWxlc1Jvb3RmaWxlIGZyb20gXCIuL2NvbnRhaW5lci1yb290ZmlsZXMtcm9vdGZpbGVcIjtcblxuLyoqXG4gKiBNYW5hZ2VyIGZvciB0aGUgY29udGFpbmVyLnhtbCBmaWxlXG4gKiBodHRwczovL3d3dy53My5vcmcvcHVibGlzaGluZy9lcHViMzIvZXB1Yi1vY2YuaHRtbCNzZWMtY29udGFpbmVyLW1ldGFpbmYtY29udGFpbmVyLnhtbFxuICovXG5jbGFzcyBDb250YWluZXJNYW5hZ2VyIGV4dGVuZHMgRGF0YUVsZW1lbnQge1xuICBjb25zdHJ1Y3RvcigpIHtcbiAgICBzdXBlcihcImNvbnRhaW5lclwiLCB7XG4gICAgICB4bWxuczogXCJ1cm46b2FzaXM6bmFtZXM6dGM6b3BlbmRvY3VtZW50OnhtbG5zOmNvbnRhaW5lclwiLFxuICAgICAgdmVyc2lvbjogXCIxLjBcIixcbiAgICB9KTtcblxuICAgIHRoaXMuX3Jhd0RhdGEgPSB1bmRlZmluZWQ7XG5cbiAgICB0aGlzLnJvb3RmaWxlcyA9IHVuZGVmaW5lZDtcbiAgfVxuXG4gIC8qKlxuICAgKiBJbml0aXRpYWxpemUgYSBuZXcgZW1wdHkgY29udGFpbmVyXG4gICAqIEBwYXJhbSB7c3RyaW5nfSBvcGZMb2NhdGlvbiAtIHBhdGggdGhlIG9wZiBmaWxlXG4gICAqL1xuICBjcmVhdGUob3BmTG9jYXRpb24gPSBcInBhY2thZ2Uub3BmXCIpIHtcbiAgICBjb25zdCBkZWZhdWx0Um9vdGZpbGUgPSBuZXcgQ29udGFpbmVyUm9vdGZpbGVzUm9vdGZpbGUoXG4gICAgICBvcGZMb2NhdGlvbixcbiAgICAgIFwiYXBwbGljYXRpb24vb2VicHMtcGFja2FnZSt4bWxcIlxuICAgICk7XG4gICAgdGhpcy5yb290ZmlsZXMgPSBuZXcgQ29udGFpbmVyUm9vdGZpbGVzKFtkZWZhdWx0Um9vdGZpbGVdKTtcbiAgfVxuXG4gIC8qKlxuICAgKiBMb2FkIGFuZCBwYXJzZSB0aGUgcHJvdmlkZWQgeG1sXG4gICAqIEBwYXJhbSB7c3RyaW5nIHwgYnVmZmVyfSBkYXRhXG4gICAqIEByZXR1cm5zIHtvYmplY3R9IC0gdGhlIHJlc3VsdGluZyBwYXJzZWQgeG1sIG9iamVjdFxuICAgKi9cbiAgYXN5bmMgbG9hZFhtbChkYXRhKSB7XG4gICAgY29uc3QgcmVzdWx0ID0gYXdhaXQgcGFyc2VYbWwoZGF0YSk7XG4gICAgaWYgKHJlc3VsdCkge1xuICAgICAgdGhpcy5fcmF3RGF0YSA9IHJlc3VsdDtcblxuICAgICAgaWYgKHRoaXMuX3Jhd0RhdGEuY29udGFpbmVyLmF0dHIpIHtcbiAgICAgICAgdGhpcy5hZGRBdHRyaWJ1dGVzKHRoaXMuX3Jhd0RhdGEuY29udGFpbmVyLmF0dHIpO1xuICAgICAgfVxuXG4gICAgICAvLyBjb25zdHJ1Y3QgdGhlIHJvb3RmaWxlcyBzZWN0aW9uXG4gICAgICBjb25zdCByYXdSb290ZmlsZXMgPSByZXN1bHQuY29udGFpbmVyLnJvb3RmaWxlc1swXS5yb290ZmlsZTtcblxuICAgICAgY29uc3Qgcm9vdGZpbGVEYXRhTGlzdCA9IHJhd1Jvb3RmaWxlcy5tYXAoKHJvb3RmaWxlKSA9PiB7XG4gICAgICAgIHJldHVybiByb290ZmlsZS5hdHRyO1xuICAgICAgfSk7XG5cbiAgICAgIHRoaXMucm9vdGZpbGVzID0gbmV3IENvbnRhaW5lclJvb3RmaWxlcyhyb290ZmlsZURhdGFMaXN0KTtcbiAgICB9XG5cbiAgICByZXR1cm4gdGhpcy5fcmF3RGF0YTtcbiAgfVxuXG4gIC8qKlxuICAgKiBHZXQgdGhlIHhtbCBzdHJpbmcgZGF0YVxuICAgKiBAcmV0dXJucyB7c3RyaW5nfVxuICAgKi9cbiAgYXN5bmMgZ2V0WG1sKCkge1xuICAgIGNvbnN0IHhtbCA9IGF3YWl0IGdlbmVyYXRlWG1sKHRoaXMuZ2V0WG1sMkpzT2JqZWN0KCkpO1xuICAgIHJldHVybiB4bWw7XG4gIH1cblxuICAvKipcbiAgICogQnVpbGQgdGhlIHhtbDJKcyBvYmplY3QgZm9yIGNvbnZlcnNpb24gdG8gcmF3IHhtbFxuICAgKiBAcmV0dXJucyB7b2JqZWN0fVxuICAgKi9cbiAgZ2V0WG1sMkpzT2JqZWN0KCkge1xuICAgIGNvbnN0IHhtbEpzUm9vdGZpbGVzID0gcHJlcGFyZUl0ZW1zRm9yWG1sKHRoaXMucm9vdGZpbGVzLml0ZW1zKTtcbiAgICBjb25zdCByb290ZmlsZXNBdHRyID0gZmlsdGVyQXR0cmlidXRlcyh0aGlzLnJvb3RmaWxlcy5hdHRyaWJ1dGVzKTtcbiAgICBpZiAocm9vdGZpbGVzQXR0cikge1xuICAgICAgeG1sSnNSb290ZmlsZXMuYXR0ciA9IHJvb3RmaWxlc0F0dHI7XG4gICAgfVxuXG4gICAgY29uc3QgY29udGFpbmVyWG1sSnNEYXRhID0ge1xuICAgICAgY29udGFpbmVyOiB7XG4gICAgICAgIGF0dHI6IGZpbHRlckF0dHJpYnV0ZXModGhpcy5hdHRyaWJ1dGVzKSxcbiAgICAgICAgcm9vdGZpbGVzOiBbeG1sSnNSb290ZmlsZXNdLFxuICAgICAgfSxcbiAgICB9O1xuXG4gICAgcmV0dXJuIGNvbnRhaW5lclhtbEpzRGF0YTtcbiAgfVxuXG4gIC8qKlxuICAgKiBGaW5kIHRoZSBmaXJzdCByb290ZmlsZSBlbGVtZW50J3MgZnVsbC1wYXRoIHZhbHVlLlxuICAgKiBAcmV0dXJucyB7c3RyaW5nfSAtIHBhY2thZ2UgZmlsZSdzIGxvY2F0aW9uIHJlbGF0aXZlIHRvIHRoZSBlcHViJ3Mgcm9vdC5cbiAgICovXG4gIGdldCByb290RmlsZVBhdGgoKSB7XG4gICAgY29uc3Qgcm9vdFBhdGggPSB0aGlzLnJvb3RmaWxlcz8uaXRlbXNbMF1bXCJmdWxsLXBhdGhcIl07XG4gICAgcmV0dXJuIHJvb3RQYXRoO1xuICB9XG59XG5cbmV4cG9ydCBkZWZhdWx0IENvbnRhaW5lck1hbmFnZXI7XG4iXX0=

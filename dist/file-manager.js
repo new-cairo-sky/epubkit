@@ -1,4 +1,4 @@
-"use strict";Object.defineProperty(exports, "__esModule", { value: true });exports["default"] = void 0;var _fs = _interopRequireDefault(require("fs"));
+"use strict";Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _fs = _interopRequireDefault(require("fs"));
 var _os = _interopRequireDefault(require("os"));
 var _path = _interopRequireDefault(require("path"));
 var _fileSaver = _interopRequireDefault(require("file-saver"));
@@ -8,640 +8,638 @@ var _xml2js = _interopRequireDefault(require("xml2js"));
 var _jszip = _interopRequireDefault(require("jszip"));
 
 var _packageManager = _interopRequireDefault(require("./package-manager"));
-var _opfToBrowserFsIndex = require("./utils/opf-to-browser-fs-index");function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { "default": obj };}function _defineProperty(obj, key, value) {if (key in obj) {Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });} else {obj[key] = value;}return obj;}function _createForOfIteratorHelper(o, allowArrayLike) {var it;if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) {if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {if (it) o = it;var i = 0;var F = function F() {};return { s: F, n: function n() {if (i >= o.length) return { done: true };return { done: false, value: o[i++] };}, e: function e(_e) {throw _e;}, f: F };}throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");}var normalCompletion = true,didErr = false,err;return { s: function s() {it = o[Symbol.iterator]();}, n: function n() {var step = it.next();normalCompletion = step.done;return step;}, e: function e(_e2) {didErr = true;err = _e2;}, f: function f() {try {if (!normalCompletion && it["return"] != null) it["return"]();} finally {if (didErr) throw err;}} };}function _unsupportedIterableToArray(o, minLen) {if (!o) return;if (typeof o === "string") return _arrayLikeToArray(o, minLen);var n = Object.prototype.toString.call(o).slice(8, -1);if (n === "Object" && o.constructor) n = o.constructor.name;if (n === "Map" || n === "Set") return Array.from(o);if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);}function _arrayLikeToArray(arr, len) {if (len == null || len > arr.length) len = arr.length;for (var i = 0, arr2 = new Array(len); i < len; i++) {arr2[i] = arr[i];}return arr2;}function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {try {var info = gen[key](arg);var value = info.value;} catch (error) {reject(error);return;}if (info.done) {resolve(value);} else {Promise.resolve(value).then(_next, _throw);}}function _asyncToGenerator(fn) {return function () {var self = this,args = arguments;return new Promise(function (resolve, reject) {var gen = fn.apply(self, args);function _next(value) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);}function _throw(err) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);}_next(undefined);});};}function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target, props) {for (var i = 0; i < props.length; i++) {var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);}}function _createClass(Constructor, protoProps, staticProps) {if (protoProps) _defineProperties(Constructor.prototype, protoProps);if (staticProps) _defineProperties(Constructor, staticProps);return Constructor;}
-
+var _opfToBrowserFsIndex = require("./utils/opf-to-browser-fs-index");function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };} //"../node_modules/file-saver/src/FileSaver.js";
+// NOTE: we cannot use the native fs promises because BrowserFS does not support them yet.
 /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * Most of the nasty details in managing the different environments is
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * contained in here.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * This class wraps a lot of the node fs file system library methods.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * For browser clients, the BroswerFS module is used to emulate Node FS and
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * FileSaver is used to enable client's to download documents for saving.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * BrowserFS does not pollyfill the fs native promises, so many fs methods
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * are wrapped with promisify below.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * see also:
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * https://github.com/jvilk/BrowserFS
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * https://github.com/browserify/path-browserify
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            */var
-FileManager = /*#__PURE__*/function () {function FileManager() {_classCallCheck(this, FileManager);}_createClass(FileManager, null, [{ key: "loadEpub", value: function () {var _loadEpub = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      location) {var fetchOptions,workingPath,_workingPath,_args = arguments;return regeneratorRuntime.wrap(function _callee$(_context) {while (1) {switch (_context.prev = _context.next) {case 0:fetchOptions = _args.length > 1 && _args[1] !== undefined ? _args[1] : {};if (!
-                FileManager.isEpubArchive(location)) {_context.next = 8;break;}_context.next = 4;return (
-                  FileManager.prepareEpubArchive(
-                  location,
-                  fetchOptions));case 4:workingPath = _context.sent;return _context.abrupt("return",
-
-                workingPath);case 8:_context.next = 10;return (
-
-                  FileManager.prepareEpubDir(
-                  location,
-                  fetchOptions));case 10:_workingPath = _context.sent;return _context.abrupt("return",
-
-                _workingPath);case 12:case "end":return _context.stop();}}}, _callee);}));function loadEpub(_x) {return _loadEpub.apply(this, arguments);}return loadEpub;}()
-
-
-
-    /**
-                                                                                                                                                                               * Saves the epub archive to the given location. In the browser,
-                                                                                                                                                                               * the user will be prompted to set the file download location.
-                                                                                                                                                                               * This method relies on JSZip for ziping the archive in both client and node
-                                                                                                                                                                               * TODO: if testing shows that JSZip is not best for node, consider using
-                                                                                                                                                                               * archiver: https://github.com/archiverjs/node-archiver
-                                                                                                                                                                               * epub zip spec: https://www.w3.org/publishing/epub3/epub-ocf.html#sec-zip-container-zipreqs
-                                                                                                                                                                               * @param {string} location - destination path to save epub to
-                                                                                                                                                                               * @param {boolean} compress - flag to enable archive compression
-                                                                                                                                                                               */ }, { key: "saveEpubArchive", value: function () {var _saveEpubArchive = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(
-      sourceLocation, saveLocation) {var compress,pathInfo,epubName,zip,filePaths,mimeTypeContent,_iterator,_step,filePath,contents,relativePath,zipContent,result,_args2 = arguments;return regeneratorRuntime.wrap(function _callee2$(_context2) {while (1) {switch (_context2.prev = _context2.next) {case 0:compress = _args2.length > 2 && _args2[2] !== undefined ? _args2[2] : false;
-                pathInfo = _path["default"].parse(saveLocation);
-                epubName = pathInfo.name;
-
-                zip = new _jszip["default"]();_context2.next = 6;return (
-                  FileManager.findAllFiles(sourceLocation));case 6:filePaths = _context2.sent;_context2.next = 9;return (
-
-
-                  FileManager.readFile(
-                  _path["default"].resolve(sourceLocation, "mimetype")));case 9:mimeTypeContent = _context2.sent;
-
-                zip.file("mimetype", mimeTypeContent);
-
-                // to run in parallel see: https://stackoverflow.com/a/50874507/7943589
-                _iterator = _createForOfIteratorHelper(filePaths);_context2.prev = 12;_iterator.s();case 14:if ((_step = _iterator.n()).done) {_context2.next = 30;break;}filePath = _step.value;_context2.next = 18;return (
-                  FileManager.readFile(filePath));case 18:contents = _context2.sent;
-                // convert the absolute path to the internal epub path
-                relativePath = filePath.substring(
-                "".concat(_path["default"].normalize(sourceLocation)).length);
-
-                if (relativePath.substring(0, 1) === "/") {
-                  relativePath = relativePath.substring(1);
-                }if (!(
-                relativePath !== "mimetype")) {_context2.next = 28;break;}if (!
-                contents) {_context2.next = 26;break;}
-                zip.file("".concat(relativePath), contents);_context2.next = 28;break;case 26:
-
-                console.error("Could not read contents of file", filePath);return _context2.abrupt("return");case 28:_context2.next = 14;break;case 30:_context2.next = 35;break;case 32:_context2.prev = 32;_context2.t0 = _context2["catch"](12);_iterator.e(_context2.t0);case 35:_context2.prev = 35;_iterator.f();return _context2.finish(35);case 38:_context2.prev = 38;_context2.next = 41;return (
-
-
-
-
-
-
-
-
-                  zip.generateAsync({
-                    type: FileManager.environment === "browser" ? "blob" : "nodebuffer",
-                    compression: compress ? "DEFLATE" : "STORE",
-                    compressionOptions: {
-                      level: compress ?
-                      8 :
-                      0 /* only levels 0 or 8 are allowed in epub spec */ } }));case 41:zipContent = _context2.sent;_context2.next = 47;break;case 44:_context2.prev = 44;_context2.t1 = _context2["catch"](38);
-
-
-
-                console.log("Error at zip.generateAsync ", _context2.t1);case 47:if (!
-
-
-                zipContent) {_context2.next = 70;break;}if (!(
-
-
-                FileManager.environment === "browser")) {_context2.next = 59;break;}_context2.prev = 49;
-
-                result = _fileSaver["default"].saveAs(zipContent, pathInfo.base);_context2.next = 57;break;case 53:_context2.prev = 53;_context2.t2 = _context2["catch"](49);
-
-                console.error("Error saving epub", _context2.t2);return _context2.abrupt("return");case 57:_context2.next = 68;break;case 59:_context2.prev = 59;_context2.next = 62;return (
-
-
-
-
-                  (0, _es6Promisify.promisify)(_fs["default"].writeFile)(saveLocation, zipContent));case 62:_context2.next = 68;break;case 64:_context2.prev = 64;_context2.t3 = _context2["catch"](59);
-
-                console.log("Error writing zip file:", _context2.t3);return _context2.abrupt("return");case 68:_context2.next = 71;break;case 70:
-
-
-
-
-                console.error("Error generating zip file.");case 71:case "end":return _context2.stop();}}}, _callee2, null, [[12, 32, 35, 38], [38, 44], [49, 53], [59, 64]]);}));function saveEpubArchive(_x2, _x3) {return _saveEpubArchive.apply(this, arguments);}return saveEpubArchive;}()
-
-
-
-    /**
-                                                                                                                                                                                                                                                                                                  * When loading an Epub directory in a browser client, the files
-                                                                                                                                                                                                                                                                                                  * are fetched lazily by BrowserFS and saved to localStorage.
-                                                                                                                                                                                                                                                                                                  *
-                                                                                                                                                                                                                                                                                                  * @param {string} location
-                                                                                                                                                                                                                                                                                                  */ }, { key: "prepareEpubDir", value: function () {var _prepareEpubDir = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(
-      location) {var fetchOptions,prefixUrl,containerLocation,containerUrl,response,containerData,manifestPath,_result$container,_result$container$roo,result,opfLocation,opfFetchResponse,opfData,packageManager,manifestItems,fsManifestPath,fileIndex,_options,_result,workingPath,tmpDir,epubDirName,tmpPath,_workingPath2,_args3 = arguments;return regeneratorRuntime.wrap(function _callee3$(_context3) {while (1) {switch (_context3.prev = _context3.next) {case 0:fetchOptions = _args3.length > 1 && _args3[1] !== undefined ? _args3[1] : {};if (!(
-                FileManager.environment === "browser")) {_context3.next = 58;break;}
-                /*
-                                                                                     For the browser we need to build a file index for BrowserFS 
-                                                                                     That index is derived from the OPF file so we must find the opf
-                                                                                     path given in the container.xml file. 
-                                                                                     There is a chicken and egg problem in that BrowserFS can not be 
-                                                                                     initialized without the file index, so we must preload the container.xml
-                                                                                     and OPF file first. 
-                                                                                     */
-                prefixUrl = _path["default"].resolve(location);
-                containerLocation = "./META-INF/container.xml";
-                containerUrl = _path["default"].resolve(location, containerLocation);_context3.next = 7;return (
-                  fetch(containerUrl, fetchOptions));case 7:response = _context3.sent;if (
-
-                response.ok) {_context3.next = 11;break;}
-                console.error("Error fetching container.xml");return _context3.abrupt("return");case 11:_context3.next = 13;return (
-
-
-                  response.text());case 13:containerData = _context3.sent;
-                console.log("containerData", containerData);_context3.prev = 15;_context3.next = 18;return (
-
-
-
-                  (0, _es6Promisify.promisify)(_xml2js["default"].parseString)(containerData));case 18:result = _context3.sent;
-
-                manifestPath =
-                result === null || result === void 0 ? void 0 : (_result$container = result.container) === null || _result$container === void 0 ? void 0 : (_result$container$roo = _result$container.rootfiles[0].rootfile[0]) === null || _result$container$roo === void 0 ? void 0 : _result$container$roo.$["full-path"];if (
-                manifestPath) {_context3.next = 23;break;}
-                console.error("Could not find path to opf file.");return _context3.abrupt("return");case 23:_context3.next = 29;break;case 25:_context3.prev = 25;_context3.t0 = _context3["catch"](15);
-
-
-
-                console.error("Error parsing container.xml file:", _context3.t0);return _context3.abrupt("return");case 29:
-
-
-
-                opfLocation = _path["default"].resolve(location, manifestPath);_context3.next = 32;return (
-                  fetch(opfLocation, fetchOptions));case 32:opfFetchResponse = _context3.sent;_context3.next = 35;return (
-                  opfFetchResponse.text());case 35:opfData = _context3.sent;
-                packageManager = new _packageManager["default"](manifestPath);_context3.next = 39;return (
-                  packageManager.loadXml(opfData));case 39:
-                manifestItems = packageManager.manifest.items;
-
-                fsManifestPath = _path["default"].join(location, manifestPath);
-                fileIndex = (0, _opfToBrowserFsIndex.opfManifestToBrowserFsIndex)(
-                manifestItems,
-                manifestPath);
-
-                console.log("Mounting epub directory with BrowserFS", location);
-                console.log("file index", JSON.parse(JSON.stringify(fileIndex)));_context3.prev = 44;_context3.next = 47;return (
-
-
-                  (0, _es6Promisify.promisify)(BrowserFS.configure)({
-                    fs: "MountableFileSystem",
-                    options: (_options = {}, _defineProperty(_options,
-                    FileManager.virtualPath + "/overlay", {
-                      fs: "OverlayFS",
-                      options: {
-                        readable: {
-                          fs: "HTTPRequest",
-                          options: {
-                            baseUrl: prefixUrl,
-                            index: fileIndex /* a json directory structure */ } },
-
-
-                        writable: {
-                          fs: "LocalStorage" } } }), _defineProperty(_options,
-
-
-
-                    "/tmp", { fs: "InMemory" }), _options) }));case 47:_result = _context3.sent;_context3.next = 54;break;case 50:_context3.prev = 50;_context3.t1 = _context3["catch"](44);
-
-
-
-                console.error("Error configuring BrowserFS:", _context3.t1.message);return _context3.abrupt("return");case 54:
-
-
-                // fs.readdir("./epubkit/overlay/test/alice/META-INF", (err, files) => {
-                //   files.forEach((file) => {
-                //     console.log(":", file);
-                //   });
-                // });
-
-                // return the virtual path to the epub root
-                workingPath = _path["default"].normalize("".concat(FileManager.virtualPath, "/overlay/"));return _context3.abrupt("return",
-                workingPath);case 58:_context3.prev = 58;_context3.next = 61;return (
-
-
-
-
-                  FileManager.getTmpDir());case 61:tmpDir = _context3.sent;_context3.next = 67;break;case 64:_context3.prev = 64;_context3.t2 = _context3["catch"](58);throw _context3.t2;case 67:
-
-
-
-
-                epubDirName = location.split(_path["default"].sep).pop();
-
-                tmpPath = _path["default"].resolve(tmpDir, "".concat(epubDirName, "_").concat(Date.now()));_context3.next = 71;return (
-                  FileManager.dirExists(tmpPath));case 71:if (!_context3.sent) {_context3.next = 81;break;}_context3.prev = 72;_context3.next = 75;return (
-
-                  (0, _es6Promisify.promisify)(_fs["default"].rmdir)(tmpPath, {
-                    recursive: true,
-                    maxRetries: 3 }));case 75:_context3.next = 81;break;case 77:_context3.prev = 77;_context3.t3 = _context3["catch"](72);
-
-
-                console.log("Could not remove dir", tmpPath, _context3.t3.message);throw (
-                  "Could not prepare directory. Tmp director already exists and could not be removed.");case 81:_context3.prev = 81;_context3.next = 84;return (
-
-
-
-                  FileManager.copyDir(location, tmpPath));case 84:_context3.next = 90;break;case 86:_context3.prev = 86;_context3.t4 = _context3["catch"](81);
-
-                console.error(
-                "prepareEpubDir Error: Could not copy dir to",
-                tmpPath,
-                _context3.t4.message);return _context3.abrupt("return");case 90:
-
-
-
-
-                _workingPath2 = _path["default"].normalize(tmpPath);return _context3.abrupt("return",
-                _workingPath2);case 92:case "end":return _context3.stop();}}}, _callee3, null, [[15, 25], [44, 50], [58, 64], [72, 77], [81, 86]]);}));function prepareEpubDir(_x4) {return _prepareEpubDir.apply(this, arguments);}return prepareEpubDir;}()
-
-
-
-    /**
-                                                                                                                                                                                                                                                               * Loads and unarchives an .epub file to a tmp working directory
-                                                                                                                                                                                                                                                               * When in browser client, BrowserFS will unzip the archive to the virtual path `${FileManager.virtualPath}/zip`
-                                                                                                                                                                                                                                                               *
-                                                                                                                                                                                                                                                               * @param {string} location - the url or path to an .epub file
-                                                                                                                                                                                                                                                               * @returns {string} - the path to the tmp location
-                                                                                                                                                                                                                                                               */ }, { key: "prepareEpubArchive", value: function () {var _prepareEpubArchive = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(
-      location) {var fetchOptions,isEpub,_options2,response,zipData,Buffer,workingDir,result,workingPath,tmpDir,tmpPath,AdmZip,_workingPath3,_args4 = arguments;return regeneratorRuntime.wrap(function _callee4$(_context4) {while (1) {switch (_context4.prev = _context4.next) {case 0:fetchOptions = _args4.length > 1 && _args4[1] !== undefined ? _args4[1] : {};
-                isEpub = FileManager.isEpubArchive(location);if (
-
-                isEpub) {_context4.next = 5;break;}
-                console.warn("File is not an epub", location);return _context4.abrupt("return");case 5:if (!(
-
-
-
-                FileManager.environment === "browser")) {_context4.next = 26;break;}
-                // if running in client, use BrowserFS to mount Zip as file system in memory
-                console.log("Mounting epub archive with BrowserFS", location);_context4.next = 9;return (
-                  fetch(location, fetchOptions));case 9:response = _context4.sent;_context4.next = 12;return (
-                  response.arrayBuffer());case 12:zipData = _context4.sent;
-                Buffer = BrowserFS.BFSRequire("buffer").Buffer;
-                workingDir = _path["default"].parse(location).name;_context4.next = 17;return (
-                  (0, _es6Promisify.promisify)(BrowserFS.configure)({
-                    fs: "MountableFileSystem",
-                    options: (_options2 = {}, _defineProperty(_options2, "".concat(
-                    FileManager.virtualPath, "/overlay/").concat(workingDir), {
-                      fs: "OverlayFS",
-                      options: {
-                        readable: {
-                          fs: "ZipFS",
-                          options: {
-                            // Wrap as Buffer object.
-                            zipData: Buffer.from(zipData) } },
-
-
-                        writable: {
-                          fs: "LocalStorage" } } }), _defineProperty(_options2,
-
-
-
-                    "/tmp", { fs: "InMemory" }), _options2) }));case 17:result = _context4.sent;if (!
-
-
-
-                result) {_context4.next = 21;break;}
-                // An error occurred.
-                console.warn("Error at BrowserFS.configure", result.message);throw (
-                  result);case 21:
-
-                _fs["default"].readdir("./epubkit/overlay", function (err, files) {
-                  console.log("files", files);
-                });
-                // return the virtual path to the epub root
-                workingPath = _path["default"].normalize("".concat(
-                FileManager.virtualPath, "/overlay/").concat(workingDir));return _context4.abrupt("return",
-
-                workingPath);case 26:
-
-                // when running in Node, decompress epub to tmp directory.
-                tmpDir = _os["default"].tmpdir();
-                tmpPath = _path["default"].resolve(tmpDir, _path["default"].basename(location));
-                AdmZip = new AdmZip(location);
-                AdmZip.extractAllTo(tmpPath, true);
-                _workingPath3 = tmpPath;return _context4.abrupt("return",
-                _workingPath3);case 32:case "end":return _context4.stop();}}}, _callee4);}));function prepareEpubArchive(_x5) {return _prepareEpubArchive.apply(this, arguments);}return prepareEpubArchive;}()
-
-
-
-    /**
-                                                                                                                                                                                                                 * Test if file is a .epub archive
-                                                                                                                                                                                                                 * @param {string} location - path to file
-                                                                                                                                                                                                                 * @returns {boolean}
-                                                                                                                                                                                                                 */ }, { key: "isEpubArchive", value: function isEpubArchive(
-    location) {
-      var ext = _path["default"].extname(location);
-
-      if (ext === ".epub") {
-        return true;
+ * Most of the nasty details in managing the different environments is
+ * contained in here.
+ * This class wraps a lot of the node fs file system library methods.
+ * For browser clients, the BroswerFS module is used to emulate Node FS and
+ * FileSaver is used to enable client's to download documents for saving.
+ * BrowserFS does not pollyfill the fs native promises, so many fs methods
+ * are wrapped with promisify below.
+ *
+ * see also:
+ * https://github.com/jvilk/BrowserFS
+ * https://github.com/browserify/path-browserify
+ *
+ */
+class FileManager {
+  static get virtualPath() {
+    return "/epubkit";
+  }
+  /**
+   * Public class property environment.
+   * environment indicates if we are running in a browser or not.
+   * @returns {string} - one of "browser" or "node"
+   */
+  static get environment() {var _process, _process$env;
+    // for testing in jest we sometimes need to force the env node_env
+    if ((_process = process) !== null && _process !== void 0 && (_process$env = _process.env) !== null && _process$env !== void 0 && _process$env.MOCK_ENV) {
+      return process.env.MOCK_ENV;
+    }
+    return typeof window === "undefined" ? "node" : "browser";
+  }
+
+  static async loadEpub(location, fetchOptions = {}) {
+    if (FileManager.isEpubArchive(location)) {
+      const workingPath = await FileManager.prepareEpubArchive(
+      location,
+      fetchOptions);
+
+      return workingPath;
+    } else {
+      const workingPath = await FileManager.prepareEpubDir(
+      location,
+      fetchOptions);
+
+      return workingPath;
+    }
+  }
+
+  /**
+   * Saves the epub archive to the given location. In the browser,
+   * the user will be prompted to set the file download location.
+   * This method relies on JSZip for ziping the archive in both client and node
+   * TODO: if testing shows that JSZip is not best for node, consider using
+   * archiver: https://github.com/archiverjs/node-archiver
+   * epub zip spec: https://www.w3.org/publishing/epub3/epub-ocf.html#sec-zip-container-zipreqs
+   * @param {string} location - destination path to save epub to
+   * @param {boolean} compress - flag to enable archive compression
+   */
+  static async saveEpubArchive(sourceLocation, saveLocation, compress = false) {
+    const pathInfo = _path.default.parse(saveLocation);
+    const epubName = pathInfo.name;
+
+    const zip = new _jszip.default();
+    const filePaths = await FileManager.findAllFiles(sourceLocation);
+
+    // mimetime must be first file in the zip;
+    const mimeTypeContent = await FileManager.readFile(
+    _path.default.resolve(sourceLocation, "mimetype"));
+
+    zip.file("mimetype", mimeTypeContent);
+
+    // to run in parallel see: https://stackoverflow.com/a/50874507/7943589
+    for (const filePath of filePaths) {
+      const contents = await FileManager.readFile(filePath);
+      // convert the absolute path to the internal epub path
+      let relativePath = filePath.substring(
+      `${_path.default.normalize(sourceLocation)}`.length);
+
+      if (relativePath.substring(0, 1) === "/") {
+        relativePath = relativePath.substring(1);
+      }
+      if (relativePath !== "mimetype") {
+        if (contents) {
+          zip.file(`${relativePath}`, contents);
+        } else {
+          console.error("Could not read contents of file", filePath);
+          return;
+        }
+      }
+    }
+
+    let zipContent;
+
+    try {
+      zipContent = await zip.generateAsync({
+        type: FileManager.environment === "browser" ? "blob" : "nodebuffer",
+        compression: compress ? "DEFLATE" : "STORE",
+        compressionOptions: {
+          level: compress ?
+          8 :
+          0 /* only levels 0 or 8 are allowed in epub spec */ } });
+
+
+    } catch (err) {
+      console.log("Error at zip.generateAsync ", err);
+    }
+
+    if (zipContent) {
+      // TODO- FileSaver is currently bugged in chrome:
+      // see: https://github.com/eligrey/FileSaver.js/issues/624
+      if (FileManager.environment === "browser") {
+        try {
+          const result = _fileSaver.default.saveAs(zipContent, pathInfo.base);
+        } catch (err) {
+          console.error("Error saving epub", err);
+          return;
+        }
+      } else {
+        try {
+          await (0, _es6Promisify.promisify)(_fs.default.writeFile)(saveLocation, zipContent);
+        } catch (err) {
+          console.log("Error writing zip file:", err);
+          return;
+        }
+      }
+    } else {
+      console.error("Error generating zip file.");
+    }
+  }
+
+  /**
+   * When loading an Epub directory in a browser client, the files
+   * are fetched lazily by BrowserFS and saved to localStorage.
+   *
+   * @param {string} location
+   */
+  static async prepareEpubDir(location, fetchOptions = {}) {
+    if (FileManager.environment === "browser") {
+      /*
+      For the browser we need to build a file index for BrowserFS 
+      That index is derived from the OPF file so we must find the opf
+      path given in the container.xml file. 
+      There is a chicken and egg problem in that BrowserFS can not be 
+      initialized without the file index, so we must preload the container.xml
+      and OPF file first. 
+      */
+      const prefixUrl = _path.default.resolve(location);
+      const containerLocation = "./META-INF/container.xml";
+      const containerUrl = _path.default.resolve(location, containerLocation);
+      const response = await fetch(containerUrl, fetchOptions);
+
+      if (!response.ok) {
+        console.error("Error fetching container.xml");
+        return;
+      }
+      const containerData = await response.text();
+      console.log("containerData", containerData);
+      let manifestPath;
+      try {var _result$container, _result$container$roo;
+        // const parser = new xml2js.Parser();
+        const result = await (0, _es6Promisify.promisify)(_xml2js.default.parseString)(containerData);
+
+        manifestPath =
+        result === null || result === void 0 ? void 0 : (_result$container = result.container) === null || _result$container === void 0 ? void 0 : (_result$container$roo = _result$container.rootfiles[0].rootfile[0]) === null || _result$container$roo === void 0 ? void 0 : _result$container$roo.$["full-path"];
+        if (!manifestPath) {
+          console.error("Could not find path to opf file.");
+          return;
+        }
+      } catch (err) {
+        console.error("Error parsing container.xml file:", err);
+        return;
       }
 
+      const opfLocation = _path.default.resolve(location, manifestPath);
+      const opfFetchResponse = await fetch(opfLocation, fetchOptions);
+      const opfData = await opfFetchResponse.text();
+      const packageManager = new _packageManager.default(manifestPath);
+      await packageManager.loadXml(opfData);
+      const manifestItems = packageManager.manifest.items;
+
+      const fsManifestPath = _path.default.join(location, manifestPath);
+      const fileIndex = (0, _opfToBrowserFsIndex.opfManifestToBrowserFsIndex)(
+      manifestItems,
+      manifestPath);
+
+      console.log("Mounting epub directory with BrowserFS", location);
+      console.log("file index", JSON.parse(JSON.stringify(fileIndex)));
+
+      try {
+        const result = await (0, _es6Promisify.promisify)(BrowserFS.configure)({
+          fs: "MountableFileSystem",
+          options: {
+            [FileManager.virtualPath + "/overlay"]: {
+              fs: "OverlayFS",
+              options: {
+                readable: {
+                  fs: "HTTPRequest",
+                  options: {
+                    baseUrl: prefixUrl,
+                    index: fileIndex /* a json directory structure */ } },
+
+
+                writable: {
+                  fs: "LocalStorage" } } },
+
+
+
+            "/tmp": { fs: "InMemory" } } });
+
+
+      } catch (err) {
+        console.error("Error configuring BrowserFS:", err.message);
+        return;
+      }
+      // fs.readdir("./epubkit/overlay/test/alice/META-INF", (err, files) => {
+      //   files.forEach((file) => {
+      //     console.log(":", file);
+      //   });
+      // });
+
+      // return the virtual path to the epub root
+      const workingPath = _path.default.normalize(`${FileManager.virtualPath}/overlay/`);
+      return workingPath;
+    } else {
+      // when running in Node, copy the epub dir to tmp directory.
+      let tmpDir;
+      try {
+        tmpDir = await FileManager.getTmpDir();
+      } catch (err) {
+        throw err;
+      }
+
+      const epubDirName = location.split(_path.default.sep).pop();
+
+      const tmpPath = _path.default.resolve(tmpDir, `${epubDirName}_${Date.now()}`);
+      if (await FileManager.dirExists(tmpPath)) {
+        try {
+          await (0, _es6Promisify.promisify)(_fs.default.rmdir)(tmpPath, {
+            recursive: true,
+            maxRetries: 3 });
+
+        } catch (err) {
+          console.log("Could not remove dir", tmpPath, err.message);
+          throw "Could not prepare directory. Tmp director already exists and could not be removed.";
+        }
+      }
+      try {
+        await FileManager.copyDir(location, tmpPath);
+      } catch (err) {
+        console.error(
+        "prepareEpubDir Error: Could not copy dir to",
+        tmpPath,
+        err.message);
+
+        return;
+      }
+
+      const workingPath = _path.default.normalize(tmpPath);
+      return workingPath;
+    }
+  }
+
+  /**
+   * Loads and unarchives an .epub file to a tmp working directory
+   * When in browser client, BrowserFS will unzip the archive to the virtual path `${FileManager.virtualPath}/zip`
+   *
+   * @param {string} location - the url or path to an .epub file
+   * @returns {string} - the path to the tmp location
+   */
+  static async prepareEpubArchive(location, fetchOptions = {}) {
+    const isEpub = FileManager.isEpubArchive(location);
+
+    if (!isEpub) {
+      console.warn("File is not an epub", location);
+      return;
+    }
+
+    if (FileManager.environment === "browser") {
+      // if running in client, use BrowserFS to mount Zip as file system in memory
+      console.log("Mounting epub archive with BrowserFS", location);
+      const response = await fetch(location, fetchOptions);
+      const zipData = await response.arrayBuffer();
+      const Buffer = BrowserFS.BFSRequire("buffer").Buffer;
+      const workingDir = _path.default.parse(location).name;
+      const result = await (0, _es6Promisify.promisify)(BrowserFS.configure)({
+        fs: "MountableFileSystem",
+        options: {
+          [`${FileManager.virtualPath}/overlay/${workingDir}`]: {
+            fs: "OverlayFS",
+            options: {
+              readable: {
+                fs: "ZipFS",
+                options: {
+                  // Wrap as Buffer object.
+                  zipData: Buffer.from(zipData) } },
+
+
+              writable: {
+                fs: "LocalStorage" } } },
+
+
+
+          "/tmp": { fs: "InMemory" } } });
+
+
+
+      if (result) {
+        // An error occurred.
+        console.warn("Error at BrowserFS.configure", result.message);
+        throw result;
+      }
+      _fs.default.readdir("./epubkit/overlay", (err, files) => {
+        console.log("files", files);
+      });
+      // return the virtual path to the epub root
+      const workingPath = _path.default.normalize(
+      `${FileManager.virtualPath}/overlay/${workingDir}`);
+
+      return workingPath;
+    } else {
+      // when running in Node, decompress epub to tmp directory.
+      const tmpDir = _os.default.tmpdir();
+      const tmpPath = _path.default.resolve(tmpDir, _path.default.basename(location));
+      const AdmZip = new AdmZip(location);
+      AdmZip.extractAllTo(tmpPath, true);
+      const workingPath = tmpPath;
+      return workingPath;
+    }
+  }
+
+  /**
+   * Test if file is a .epub archive
+   * @param {string} location - path to file
+   * @returns {boolean}
+   */
+  static isEpubArchive(location) {
+    const ext = _path.default.extname(location);
+
+    if (ext === ".epub") {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * A wrapepr for the fs.stat method
+   * @param {string} location
+   * @returns {object} - stats object
+   */
+  static async getStats(location) {
+    let stats;
+
+    try {
+      stats = await (0, _es6Promisify.promisify)(_fs.default.stat)(location);
+    } catch (err) {
+      console.warn("Could not get stat", err);
+      return;
+    }
+    return stats;
+  }
+
+  /**
+   * Wrapper for stats isDirectory()
+   * @param {string} location
+   * @returns {boolean}
+   */
+  static async isDir(location) {
+    const stats = await FileManager.getStats(location);
+    if (stats) {
+      return stats.isDirectory();
+    }
+    return false;
+  }
+
+  /**
+   * Wrapper for stats isFile()
+   * @param {string} location
+   * @returns {boolean}
+   */
+  static async isFile(location) {
+    const stats = await FileManager.getStats(location);
+    if (stats) {
+      return stats.isFile();
+    }
+    return false;
+  }
+
+  /**
+   * Read entire file and return the data
+   * if no encoding is set, a raw buffer is returned.
+   * Use 'utf8' for string
+   * @param {string} location
+   */
+  static async readFile(location, encoding = undefined) {
+    let data;
+    try {
+      data = await (0, _es6Promisify.promisify)(_fs.default.readFile)(location, encoding);
+    } catch (err) {
+      console.warn("Could not readFile", location, err);
+      return;
+    }
+    return data;
+  }
+
+  // static async read(location, buffer = undefined) {
+  //   const dataBuffer = buffer ? buffer : new Buffer();
+  //   try {
+  //     await promisify(fs.read)(location, dataBuffer);
+  //   }
+  // }
+
+  /**
+   * Read a XML file and parse it into a json object using xml2js
+   * @param {string} - location
+   * @returns {object} - a json object
+   */
+  static async readXmlFile(location) {
+    const data = await FileManager.readFile(location);
+    let result;
+    if (data) {
+      try {
+        result = await (0, _es6Promisify.promisify)(_xml2js.default.parseString)(data, {
+          attrkey: "attr",
+          charkey: "val",
+          trim: true });
+
+      } catch (err) {
+        console.warn("Error parsing xml file:", location, err);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Recursively searches a directory and returns a flat array of all files
+   *
+   * @param {string} directoryName - the base directory to search
+   * @param {array} _results - private. holds _results for recursive search
+   * @returns {array} - an array of file path strings
+   */
+  static async findAllFiles(directoryName, _results = []) {
+    let files;
+    if (directoryName === "..") {
+      return;
+    }
+
+    try {
+      files = await FileManager.readDir(directoryName);
+    } catch (err) {
+      console.error("Error reading directory", directoryName, err);
+      return _results;
+    }
+
+    for (let file of files) {
+      const fullPath = _path.default.join(directoryName, file);
+      if (file !== "." && (await FileManager.isDir(fullPath))) {
+        const subdir = await FileManager.findAllFiles(fullPath, _results);
+        // console.log("subdir", subdir);
+      } else {
+        _results.push(fullPath);
+      }
+    }
+    return _results;
+  }
+
+  // static async findAllFiles(directoryName) {
+  //   let files = [];
+  //   let allFiles = [];
+  //   try {
+  //     files = await FileManager.readDir(directoryName);
+  //   } catch (err) {
+  //     console.error("Error reading directory", directoryName, err);
+  //     return;
+  //   }
+
+  //   for (let file of files) {
+  //     const fullPath = path.join(directoryName, file);
+  //     if (await FileManager.isDir(fullPath)) {
+  //       allFiles = allFiles.concat(await FileManager.findAllFiles(fullPath));
+  //       return;
+  //     } else {
+  //       allFiles = allFiles.concat(fullPath);
+  //     }
+  //   }
+  //   return allFiles;
+  // }
+
+  /**
+   * Get the contents of a directory
+   * @param {string} directory
+   * @returns {array}
+   */
+  static async readDir(directory) {
+    return new Promise((resolve, reject) => {
+      _fs.default.readdir(directory, (err, content) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(content);
+        }
+      });
+    });
+  }
+
+  /**
+   * Recursively search directory for files with the given extension
+   *
+   * @param {string} directoryName - the dir to start search in
+   * @param {string} findExt - the file extension to search for
+   * @param {array} _results - private. holds results for recursive search
+   * @returns {array} - an array of file path strings
+   */
+  static async findFilesWithExt(directoryName, findExt, _results = []) {
+    let files = await (0, _es6Promisify.promisify)(_fs.default.readdir)(directoryName, {
+      withFileTypes: true });
+
+
+    const ext = findExt.substr(0, 1) === "." ? findExt : `.${findExt}`;
+
+    for (let f of files) {
+      let fullPath = _path.default.join(directoryName, f.name);
+      if (f.isDirectory()) {
+        await FileManager.findFilesWithExt(fullPath, findExt, _results);
+      } else {
+        if (_path.default.extname(fullPath) === ext) {
+          _results.push(fullPath);
+        }
+      }
+    }
+    return _results;
+  }
+
+  /**
+   * Checks if a file already exists at the given location
+   *
+   * @param {string} path - file path to test
+   * @returns {boolean}
+   */
+  static async fileExists(path) {
+    try {
+      const stats = await (0, _es6Promisify.promisify)(_fs.default.stat)(path);
+      if (stats.isFile()) {
+        return true;
+      }
+    } catch (err) {
+      console.warn("Could not detect file", path, err);
       return false;
     }
 
-    /**
-       * A wrapepr for the fs.stat method
-       * @param {string} location
-       * @returns {object} - stats object
-       */ }, { key: "getStats", value: function () {var _getStats = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(
-      location) {var stats;return regeneratorRuntime.wrap(function _callee5$(_context5) {while (1) {switch (_context5.prev = _context5.next) {case 0:_context5.prev = 0;_context5.next = 3;return (
-
-
-
-                  (0, _es6Promisify.promisify)(_fs["default"].stat)(location));case 3:stats = _context5.sent;_context5.next = 10;break;case 6:_context5.prev = 6;_context5.t0 = _context5["catch"](0);
-
-                console.warn("Could not get stat", _context5.t0);return _context5.abrupt("return");case 10:return _context5.abrupt("return",
-
-
-                stats);case 11:case "end":return _context5.stop();}}}, _callee5, null, [[0, 6]]);}));function getStats(_x6) {return _getStats.apply(this, arguments);}return getStats;}()
-
-
-    /**
-                                                                                                                                                                                           * Wrapper for stats isDirectory()
-                                                                                                                                                                                           * @param {string} location
-                                                                                                                                                                                           * @returns {boolean}
-                                                                                                                                                                                           */ }, { key: "isDir", value: function () {var _isDir = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(
-      location) {var stats;return regeneratorRuntime.wrap(function _callee6$(_context6) {while (1) {switch (_context6.prev = _context6.next) {case 0:_context6.next = 2;return (
-                  FileManager.getStats(location));case 2:stats = _context6.sent;if (!
-                stats) {_context6.next = 5;break;}return _context6.abrupt("return",
-                stats.isDirectory());case 5:return _context6.abrupt("return",
-
-                false);case 6:case "end":return _context6.stop();}}}, _callee6);}));function isDir(_x7) {return _isDir.apply(this, arguments);}return isDir;}()
-
-
-    /**
-                                                                                                                                                                 * Wrapper for stats isFile()
-                                                                                                                                                                 * @param {string} location
-                                                                                                                                                                 * @returns {boolean}
-                                                                                                                                                                 */ }, { key: "isFile", value: function () {var _isFile = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(
-      location) {var stats;return regeneratorRuntime.wrap(function _callee7$(_context7) {while (1) {switch (_context7.prev = _context7.next) {case 0:_context7.next = 2;return (
-                  FileManager.getStats(location));case 2:stats = _context7.sent;if (!
-                stats) {_context7.next = 5;break;}return _context7.abrupt("return",
-                stats.isFile());case 5:return _context7.abrupt("return",
-
-                false);case 6:case "end":return _context7.stop();}}}, _callee7);}));function isFile(_x8) {return _isFile.apply(this, arguments);}return isFile;}()
-
-
-    /**
-                                                                                                                                                                    * Read entire file and return the data
-                                                                                                                                                                    * if no encoding is set, a raw buffer is returned.
-                                                                                                                                                                    * Use 'utf8' for string
-                                                                                                                                                                    * @param {string} location
-                                                                                                                                                                    */ }, { key: "readFile", value: function () {var _readFile = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee8(
-      location) {var encoding,data,_args8 = arguments;return regeneratorRuntime.wrap(function _callee8$(_context8) {while (1) {switch (_context8.prev = _context8.next) {case 0:encoding = _args8.length > 1 && _args8[1] !== undefined ? _args8[1] : undefined;_context8.prev = 1;_context8.next = 4;return (
-
-
-                  (0, _es6Promisify.promisify)(_fs["default"].readFile)(location, encoding));case 4:data = _context8.sent;_context8.next = 11;break;case 7:_context8.prev = 7;_context8.t0 = _context8["catch"](1);
-
-                console.warn("Could not readFile", location, _context8.t0);return _context8.abrupt("return");case 11:return _context8.abrupt("return",
-
-
-                data);case 12:case "end":return _context8.stop();}}}, _callee8, null, [[1, 7]]);}));function readFile(_x9) {return _readFile.apply(this, arguments);}return readFile;}()
-
-
-    // static async read(location, buffer = undefined) {
-    //   const dataBuffer = buffer ? buffer : new Buffer();
-    //   try {
-    //     await promisify(fs.read)(location, dataBuffer);
-    //   }
-    // }
-
-    /**
-     * Read a XML file and parse it into a json object using xml2js
-     * @param {string} - location
-     * @returns {object} - a json object
-     */ }, { key: "readXmlFile", value: function () {var _readXmlFile = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee9(
-      location) {var data, result;return regeneratorRuntime.wrap(function _callee9$(_context9) {while (1) {switch (_context9.prev = _context9.next) {case 0:_context9.next = 2;return (
-                  FileManager.readFile(location));case 2:data = _context9.sent;if (!
-
-                data) {_context9.next = 13;break;}_context9.prev = 4;_context9.next = 7;return (
-
-                  (0, _es6Promisify.promisify)(_xml2js["default"].parseString)(data, {
-                    attrkey: "attr",
-                    charkey: "val",
-                    trim: true }));case 7:result = _context9.sent;_context9.next = 13;break;case 10:_context9.prev = 10;_context9.t0 = _context9["catch"](4);
-
-
-                console.warn("Error parsing xml file:", location, _context9.t0);case 13:return _context9.abrupt("return",
-
-
-                result);case 14:case "end":return _context9.stop();}}}, _callee9, null, [[4, 10]]);}));function readXmlFile(_x10) {return _readXmlFile.apply(this, arguments);}return readXmlFile;}()
-
-
-    /**
-                                                                                                                                                                                                       * Recursively searches a directory and returns a flat array of all files
-                                                                                                                                                                                                       *
-                                                                                                                                                                                                       * @param {string} directoryName - the base directory to search
-                                                                                                                                                                                                       * @param {array} _results - private. holds _results for recursive search
-                                                                                                                                                                                                       * @returns {array} - an array of file path strings
-                                                                                                                                                                                                       */ }, { key: "findAllFiles", value: function () {var _findAllFiles = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee10(
-      directoryName) {var _results,files,_iterator2,_step2,file,fullPath,subdir,_args10 = arguments;return regeneratorRuntime.wrap(function _callee10$(_context10) {while (1) {switch (_context10.prev = _context10.next) {case 0:_results = _args10.length > 1 && _args10[1] !== undefined ? _args10[1] : [];if (!(
-
-                directoryName === "..")) {_context10.next = 3;break;}return _context10.abrupt("return");case 3:_context10.prev = 3;_context10.next = 6;return (
-
-
-
-
-                  FileManager.readDir(directoryName));case 6:files = _context10.sent;_context10.next = 13;break;case 9:_context10.prev = 9;_context10.t0 = _context10["catch"](3);
-
-                console.error("Error reading directory", directoryName, _context10.t0);return _context10.abrupt("return",
-                _results);case 13:_iterator2 = _createForOfIteratorHelper(
-
-
-                files);_context10.prev = 14;_iterator2.s();case 16:if ((_step2 = _iterator2.n()).done) {_context10.next = 33;break;}file = _step2.value;
-                fullPath = _path["default"].join(directoryName, file);_context10.t1 =
-                file !== ".";if (!_context10.t1) {_context10.next = 24;break;}_context10.next = 23;return FileManager.isDir(fullPath);case 23:_context10.t1 = _context10.sent;case 24:if (!_context10.t1) {_context10.next = 30;break;}_context10.next = 27;return (
-                  FileManager.findAllFiles(fullPath, _results));case 27:subdir = _context10.sent;_context10.next = 31;break;case 30:
-
-
-                _results.push(fullPath);case 31:_context10.next = 16;break;case 33:_context10.next = 38;break;case 35:_context10.prev = 35;_context10.t2 = _context10["catch"](14);_iterator2.e(_context10.t2);case 38:_context10.prev = 38;_iterator2.f();return _context10.finish(38);case 41:return _context10.abrupt("return",
-
-
-                _results);case 42:case "end":return _context10.stop();}}}, _callee10, null, [[3, 9], [14, 35, 38, 41]]);}));function findAllFiles(_x11) {return _findAllFiles.apply(this, arguments);}return findAllFiles;}()
-
-
-    // static async findAllFiles(directoryName) {
-    //   let files = [];
-    //   let allFiles = [];
-    //   try {
-    //     files = await FileManager.readDir(directoryName);
-    //   } catch (err) {
-    //     console.error("Error reading directory", directoryName, err);
-    //     return;
-    //   }
-
-    //   for (let file of files) {
-    //     const fullPath = path.join(directoryName, file);
-    //     if (await FileManager.isDir(fullPath)) {
-    //       allFiles = allFiles.concat(await FileManager.findAllFiles(fullPath));
-    //       return;
-    //     } else {
-    //       allFiles = allFiles.concat(fullPath);
-    //     }
-    //   }
-    //   return allFiles;
-    // }
-
-    /**
-     * Get the contents of a directory
-     * @param {string} directory
-     * @returns {array}
-     */ }, { key: "readDir", value: function () {var _readDir = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee11(
-      directory) {return regeneratorRuntime.wrap(function _callee11$(_context11) {while (1) {switch (_context11.prev = _context11.next) {case 0:return _context11.abrupt("return",
-                new Promise(function (resolve, reject) {
-                  _fs["default"].readdir(directory, function (err, content) {
-                    if (err) {
-                      reject(err);
-                    } else {
-                      resolve(content);
-                    }
-                  });
-                }));case 1:case "end":return _context11.stop();}}}, _callee11);}));function readDir(_x12) {return _readDir.apply(this, arguments);}return readDir;}()
-
-
-    /**
-                                                                                                                                                                       * Recursively search directory for files with the given extension
-                                                                                                                                                                       *
-                                                                                                                                                                       * @param {string} directoryName - the dir to start search in
-                                                                                                                                                                       * @param {string} findExt - the file extension to search for
-                                                                                                                                                                       * @param {array} _results - private. holds results for recursive search
-                                                                                                                                                                       * @returns {array} - an array of file path strings
-                                                                                                                                                                       */ }, { key: "findFilesWithExt", value: function () {var _findFilesWithExt = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee12(
-      directoryName, findExt) {var _results,files,ext,_iterator3,_step3,f,fullPath,_args12 = arguments;return regeneratorRuntime.wrap(function _callee12$(_context12) {while (1) {switch (_context12.prev = _context12.next) {case 0:_results = _args12.length > 2 && _args12[2] !== undefined ? _args12[2] : [];_context12.next = 3;return (
-                  (0, _es6Promisify.promisify)(_fs["default"].readdir)(directoryName, {
-                    withFileTypes: true }));case 3:files = _context12.sent;
-
-
-                ext = findExt.substr(0, 1) === "." ? findExt : ".".concat(findExt);_iterator3 = _createForOfIteratorHelper(
-
-                files);_context12.prev = 6;_iterator3.s();case 8:if ((_step3 = _iterator3.n()).done) {_context12.next = 19;break;}f = _step3.value;
-                fullPath = _path["default"].join(directoryName, f.name);if (!
-                f.isDirectory()) {_context12.next = 16;break;}_context12.next = 14;return (
-                  FileManager.findFilesWithExt(fullPath, findExt, _results));case 14:_context12.next = 17;break;case 16:
-
-                if (_path["default"].extname(fullPath) === ext) {
-                  _results.push(fullPath);
-                }case 17:_context12.next = 8;break;case 19:_context12.next = 24;break;case 21:_context12.prev = 21;_context12.t0 = _context12["catch"](6);_iterator3.e(_context12.t0);case 24:_context12.prev = 24;_iterator3.f();return _context12.finish(24);case 27:return _context12.abrupt("return",
-
-
-                _results);case 28:case "end":return _context12.stop();}}}, _callee12, null, [[6, 21, 24, 27]]);}));function findFilesWithExt(_x13, _x14) {return _findFilesWithExt.apply(this, arguments);}return findFilesWithExt;}()
-
-
-    /**
-                                                                                                                                                                                                                                        * Checks if a file already exists at the given location
-                                                                                                                                                                                                                                        *
-                                                                                                                                                                                                                                        * @param {string} path - file path to test
-                                                                                                                                                                                                                                        * @returns {boolean}
-                                                                                                                                                                                                                                        */ }, { key: "fileExists", value: function () {var _fileExists = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee13(
-      path) {var stats;return regeneratorRuntime.wrap(function _callee13$(_context13) {while (1) {switch (_context13.prev = _context13.next) {case 0:_context13.prev = 0;_context13.next = 3;return (
-
-                  (0, _es6Promisify.promisify)(_fs["default"].stat)(path));case 3:stats = _context13.sent;if (!
-                stats.isFile()) {_context13.next = 6;break;}return _context13.abrupt("return",
-                true);case 6:_context13.next = 12;break;case 8:_context13.prev = 8;_context13.t0 = _context13["catch"](0);
-
-
-                console.warn("Could not detect file", path, _context13.t0);return _context13.abrupt("return",
-                false);case 12:return _context13.abrupt("return",
-
-
-                false);case 13:case "end":return _context13.stop();}}}, _callee13, null, [[0, 8]]);}));function fileExists(_x15) {return _fileExists.apply(this, arguments);}return fileExists;}()
-
-
-    /**
-                                                                                                                                                                                                    * Checks if a directory already exists at the given location
-                                                                                                                                                                                                    * @param {string} path - dir to test
-                                                                                                                                                                                                    * @returns {boolean}
-                                                                                                                                                                                                    */ }, { key: "dirExists", value: function () {var _dirExists = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee14(
-      path) {var stats;return regeneratorRuntime.wrap(function _callee14$(_context14) {while (1) {switch (_context14.prev = _context14.next) {case 0:_context14.prev = 0;_context14.next = 3;return (
-
-                  (0, _es6Promisify.promisify)(_fs["default"].stat)(path));case 3:stats = _context14.sent;if (!
-                stats.isDirectory()) {_context14.next = 6;break;}return _context14.abrupt("return",
-                true);case 6:_context14.next = 11;break;case 8:_context14.prev = 8;_context14.t0 = _context14["catch"](0);return _context14.abrupt("return",
-
-
-
-                false);case 11:return _context14.abrupt("return",
-
-
-                false);case 12:case "end":return _context14.stop();}}}, _callee14, null, [[0, 8]]);}));function dirExists(_x16) {return _dirExists.apply(this, arguments);}return dirExists;}()
-
-
-    /**
-                                                                                                                                                                                                 * Recursive directory copy
-                                                                                                                                                                                                 * @param {string} src - path to the directory to copy
-                                                                                                                                                                                                 * @param {string} dest - path to the copy destination
-                                                                                                                                                                                                 */ }, { key: "copyDir", value: function () {var _copyDir = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee15(
-      src, dest) {var entries, _iterator4, _step4, entry, srcPath, destPath;return regeneratorRuntime.wrap(function _callee15$(_context15) {while (1) {switch (_context15.prev = _context15.next) {case 0:_context15.next = 2;return (
-                  (0, _es6Promisify.promisify)(_fs["default"].readdir)(src, { withFileTypes: true }));case 2:entries = _context15.sent;_context15.prev = 3;_context15.next = 6;return (
-
-                  (0, _es6Promisify.promisify)(_fs["default"].mkdir)(dest));case 6:_context15.next = 12;break;case 8:_context15.prev = 8;_context15.t0 = _context15["catch"](3);
-
-                console.error("copyDir Error: Could not mkdir", dest, _context15.t0.message);throw _context15.t0;case 12:_iterator4 = _createForOfIteratorHelper(
-
-
-
-                entries);_context15.prev = 13;_iterator4.s();case 15:if ((_step4 = _iterator4.n()).done) {_context15.next = 28;break;}entry = _step4.value;
-                srcPath = _path["default"].join(src, entry.name);
-                destPath = _path["default"].join(dest, entry.name);if (!
-                entry.isDirectory()) {_context15.next = 24;break;}_context15.next = 22;return (
-                  FileManager.copyDir(srcPath, destPath));case 22:_context15.next = 26;break;case 24:_context15.next = 26;return (
-
-                  (0, _es6Promisify.promisify)(_fs["default"].copyFile)(srcPath, destPath));case 26:_context15.next = 15;break;case 28:_context15.next = 33;break;case 30:_context15.prev = 30;_context15.t1 = _context15["catch"](13);_iterator4.e(_context15.t1);case 33:_context15.prev = 33;_iterator4.f();return _context15.finish(33);case 36:case "end":return _context15.stop();}}}, _callee15, null, [[3, 8], [13, 30, 33, 36]]);}));function copyDir(_x17, _x18) {return _copyDir.apply(this, arguments);}return copyDir;}()
-
-
-
-
-    /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        * A wrapper for os.tmpdir that resolves symlinks
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        * see: https://github.com/nodejs/node/issues/11422
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        */ }, { key: "getTmpDir", value: function () {var _getTmpDir = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee16() {var tmpDir;return regeneratorRuntime.wrap(function _callee16$(_context16) {while (1) {switch (_context16.prev = _context16.next) {case 0:if (!(
-
-                FileManager.environment === "node")) {_context16.next = 14;break;}_context16.prev = 1;_context16.next = 4;return (
-
-                  (0, _es6Promisify.promisify)(_fs["default"].realpath)(_os["default"].tmpdir));case 4:tmpDir = _context16.sent;return _context16.abrupt("return",
-                tmpDir);case 8:_context16.prev = 8;_context16.t0 = _context16["catch"](1);
-
-                console.error("Error in getTmpDir", _context16.t0.message);throw _context16.t0;case 12:_context16.next = 15;break;case 14:return _context16.abrupt("return",
-
-
-
-                "/tmp");case 15:case "end":return _context16.stop();}}}, _callee16, null, [[1, 8]]);}));function getTmpDir() {return _getTmpDir.apply(this, arguments);}return getTmpDir;}() }, { key: "resolveIriToEpubLocation", value: function resolveIriToEpubLocation(
-
-
-
-    iri, referencePath) {
-      if (iri.indexOf("http") === 0) {
-        return iri;
-      } else {
-        return _path["default"].join(_path["default"].dirname(referencePath), iri);
+    return false;
+  }
+
+  /**
+   * Checks if a directory already exists at the given location
+   * @param {string} path - dir to test
+   * @returns {boolean}
+   */
+  static async dirExists(path) {
+    try {
+      const stats = await (0, _es6Promisify.promisify)(_fs.default.stat)(path);
+      if (stats.isDirectory()) {
+        return true;
       }
-    } }, { key: "absolutePathToEpubLocation", value: function absolutePathToEpubLocation(
+    } catch (err) {
+      // console.warn("Could not detect dir", path, err.message);
+      return false;
+    }
 
-    epubPath, resourcePath) {
-      return _path["default"].relative(epubPath, resourcePath);
-    } }, { key: "epubLocationToAbsolutePath", value: function epubLocationToAbsolutePath(
+    return false;
+  }
 
-    epubPath, resourcePath) {
-      return _path["default"].join(_path["default"].dirname, epubPath, resourcePath);
-    } }, { key: "virtualPath", get: function get() {return "/epubkit";} /**
-                                                                         * Public class property environment.
-                                                                         * environment indicates if we are running in a browser or not.
-                                                                         * @returns {string} - one of "browser" or "node"
-                                                                         */ }, { key: "environment", get: function get() {var _process, _process$env; // for testing in jest we sometimes need to force the env node_env
-      if ((_process = process) === null || _process === void 0 ? void 0 : (_process$env = _process.env) === null || _process$env === void 0 ? void 0 : _process$env.MOCK_ENV) {return process.env.MOCK_ENV;}return typeof window === "undefined" ? "node" : "browser";} }]);return FileManager;}();var _default = FileManager;exports["default"] = _default;
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uL3NyYy9maWxlLW1hbmFnZXIuanMiXSwibmFtZXMiOlsiRmlsZU1hbmFnZXIiLCJsb2NhdGlvbiIsImZldGNoT3B0aW9ucyIsImlzRXB1YkFyY2hpdmUiLCJwcmVwYXJlRXB1YkFyY2hpdmUiLCJ3b3JraW5nUGF0aCIsInByZXBhcmVFcHViRGlyIiwic291cmNlTG9jYXRpb24iLCJzYXZlTG9jYXRpb24iLCJjb21wcmVzcyIsInBhdGhJbmZvIiwicGF0aCIsInBhcnNlIiwiZXB1Yk5hbWUiLCJuYW1lIiwiemlwIiwiSlNaaXAiLCJmaW5kQWxsRmlsZXMiLCJmaWxlUGF0aHMiLCJyZWFkRmlsZSIsInJlc29sdmUiLCJtaW1lVHlwZUNvbnRlbnQiLCJmaWxlIiwiZmlsZVBhdGgiLCJjb250ZW50cyIsInJlbGF0aXZlUGF0aCIsInN1YnN0cmluZyIsIm5vcm1hbGl6ZSIsImxlbmd0aCIsImNvbnNvbGUiLCJlcnJvciIsImdlbmVyYXRlQXN5bmMiLCJ0eXBlIiwiZW52aXJvbm1lbnQiLCJjb21wcmVzc2lvbiIsImNvbXByZXNzaW9uT3B0aW9ucyIsImxldmVsIiwiemlwQ29udGVudCIsImxvZyIsInJlc3VsdCIsIkZpbGVTYXZlciIsInNhdmVBcyIsImJhc2UiLCJmcyIsIndyaXRlRmlsZSIsInByZWZpeFVybCIsImNvbnRhaW5lckxvY2F0aW9uIiwiY29udGFpbmVyVXJsIiwiZmV0Y2giLCJyZXNwb25zZSIsIm9rIiwidGV4dCIsImNvbnRhaW5lckRhdGEiLCJ4bWwyanMiLCJwYXJzZVN0cmluZyIsIm1hbmlmZXN0UGF0aCIsImNvbnRhaW5lciIsInJvb3RmaWxlcyIsInJvb3RmaWxlIiwiJCIsIm9wZkxvY2F0aW9uIiwib3BmRmV0Y2hSZXNwb25zZSIsIm9wZkRhdGEiLCJwYWNrYWdlTWFuYWdlciIsIlBhY2thZ2VNYW5hZ2VyIiwibG9hZFhtbCIsIm1hbmlmZXN0SXRlbXMiLCJtYW5pZmVzdCIsIml0ZW1zIiwiZnNNYW5pZmVzdFBhdGgiLCJqb2luIiwiZmlsZUluZGV4IiwiSlNPTiIsInN0cmluZ2lmeSIsIkJyb3dzZXJGUyIsImNvbmZpZ3VyZSIsIm9wdGlvbnMiLCJ2aXJ0dWFsUGF0aCIsInJlYWRhYmxlIiwiYmFzZVVybCIsImluZGV4Iiwid3JpdGFibGUiLCJtZXNzYWdlIiwiZ2V0VG1wRGlyIiwidG1wRGlyIiwiZXB1YkRpck5hbWUiLCJzcGxpdCIsInNlcCIsInBvcCIsInRtcFBhdGgiLCJEYXRlIiwibm93IiwiZGlyRXhpc3RzIiwicm1kaXIiLCJyZWN1cnNpdmUiLCJtYXhSZXRyaWVzIiwiY29weURpciIsImlzRXB1YiIsIndhcm4iLCJhcnJheUJ1ZmZlciIsInppcERhdGEiLCJCdWZmZXIiLCJCRlNSZXF1aXJlIiwid29ya2luZ0RpciIsImZyb20iLCJyZWFkZGlyIiwiZXJyIiwiZmlsZXMiLCJvcyIsInRtcGRpciIsImJhc2VuYW1lIiwiQWRtWmlwIiwiZXh0cmFjdEFsbFRvIiwiZXh0IiwiZXh0bmFtZSIsInN0YXQiLCJzdGF0cyIsImdldFN0YXRzIiwiaXNEaXJlY3RvcnkiLCJpc0ZpbGUiLCJlbmNvZGluZyIsInVuZGVmaW5lZCIsImRhdGEiLCJhdHRya2V5IiwiY2hhcmtleSIsInRyaW0iLCJkaXJlY3RvcnlOYW1lIiwiX3Jlc3VsdHMiLCJyZWFkRGlyIiwiZnVsbFBhdGgiLCJpc0RpciIsInN1YmRpciIsInB1c2giLCJkaXJlY3RvcnkiLCJQcm9taXNlIiwicmVqZWN0IiwiY29udGVudCIsImZpbmRFeHQiLCJ3aXRoRmlsZVR5cGVzIiwic3Vic3RyIiwiZiIsImZpbmRGaWxlc1dpdGhFeHQiLCJzcmMiLCJkZXN0IiwiZW50cmllcyIsIm1rZGlyIiwiZW50cnkiLCJzcmNQYXRoIiwiZGVzdFBhdGgiLCJjb3B5RmlsZSIsInJlYWxwYXRoIiwiaXJpIiwicmVmZXJlbmNlUGF0aCIsImluZGV4T2YiLCJkaXJuYW1lIiwiZXB1YlBhdGgiLCJyZXNvdXJjZVBhdGgiLCJyZWxhdGl2ZSIsInByb2Nlc3MiLCJlbnYiLCJNT0NLX0VOViIsIndp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O0FBSUssc0I7Ozs7QUFJcUJxRSxJQUFBQSxHLEVBQUtDLGEsRUFBZTtBQUNsRCxVQUFJRCxHQUFHLENBQUNFLE9BQUosQ0FBWSxNQUFaLE1BQXdCLENBQTVCLEVBQStCO0FBQzdCLGVBQU9GLEdBQVA7QUFDRCxPQUZELE1BRU87QUFDTCxlQUFPNUksaUJBQUsyRCxJQUFMLENBQVUzRCxpQkFBSytJLE9BQUwsQ0FBYUYsYUFBYixDQUFWLEVBQXVDRCxHQUF2QyxDQUFQO0FBQ0Q7QUFDRixLOztBQUVpQ0ksSUFBQUEsUSxFQUFVQyxZLEVBQWM7QUFDeEQsYUFBT2pKLGlCQUFLa0osUUFBTCxDQUFjRixRQUFkLEVBQXdCQyxZQUF4QixDQUFQO0FBQ0QsSzs7QUFFaUNELElBQUFBLFEsRUFBVUMsWSxFQUFjO0FBQ3hELGFBQU9qSixpQkFBSzJELElBQUwsQ0FBVTNELGlCQUFLK0ksT0FBZixFQUF3QkMsUUFBeEIsRUFBa0NDLFlBQWxDLENBQVA7QUFDRCxLLDhDQXJtQndCLENBQ3ZCLE9BQU8sVUFBUCxDQUNELEMsQ0FDRDs7Ozt5SEFLeUIsNkJBQ3ZCO0FBQ0Esc0JBQUlFLE9BQUosNkRBQUksU0FBU0MsR0FBYixpREFBSSxhQUFjQyxRQUFsQixFQUE0QixDQUMxQixPQUFPRixPQUFPLENBQUNDLEdBQVIsQ0FBWUMsUUFBbkIsQ0FDRCxDQUNELE9BQU8sT0FBT0MsTUFBUCxLQUFrQixXQUFsQixHQUFnQyxNQUFoQyxHQUF5QyxTQUFoRCxDQUNELEMsMkNBMGxCWWpLLFciLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgZnMgZnJvbSBcImZzXCI7XG5pbXBvcnQgb3MgZnJvbSBcIm9zXCI7XG5pbXBvcnQgcGF0aCBmcm9tIFwicGF0aFwiO1xuaW1wb3J0IEZpbGVTYXZlciBmcm9tIFwiZmlsZS1zYXZlclwiOyAvL1wiLi4vbm9kZV9tb2R1bGVzL2ZpbGUtc2F2ZXIvc3JjL0ZpbGVTYXZlci5qc1wiO1xuLy8gTk9URTogd2UgY2Fubm90IHVzZSB0aGUgbmF0aXZlIGZzIHByb21pc2VzIGJlY2F1c2UgQnJvd3NlckZTIGRvZXMgbm90IHN1cHBvcnQgdGhlbSB5ZXQuXG5pbXBvcnQgeyBwcm9taXNpZnkgfSBmcm9tIFwiZXM2LXByb21pc2lmeVwiO1xuaW1wb3J0IHhtbDJqcyBmcm9tIFwieG1sMmpzXCI7XG5pbXBvcnQgSlNaaXAgZnJvbSBcImpzemlwXCI7XG5cbmltcG9ydCBQYWNrYWdlTWFuYWdlciBmcm9tIFwiLi9wYWNrYWdlLW1hbmFnZXJcIjtcbmltcG9ydCB7IG9wZk1hbmlmZXN0VG9Ccm93c2VyRnNJbmRleCB9IGZyb20gXCIuL3V0aWxzL29wZi10by1icm93c2VyLWZzLWluZGV4XCI7XG5cbi8qKlxuICogTW9zdCBvZiB0aGUgbmFzdHkgZGV0YWlscyBpbiBtYW5hZ2luZyB0aGUgZGlmZmVyZW50IGVudmlyb25tZW50cyBpc1xuICogY29udGFpbmVkIGluIGhlcmUuXG4gKiBUaGlzIGNsYXNzIHdyYXBzIGEgbG90IG9mIHRoZSBub2RlIGZzIGZpbGUgc3lzdGVtIGxpYnJhcnkgbWV0aG9kcy5cbiAqIEZvciBicm93c2VyIGNsaWVudHMsIHRoZSBCcm9zd2VyRlMgbW9kdWxlIGlzIHVzZWQgdG8gZW11bGF0ZSBOb2RlIEZTIGFuZFxuICogRmlsZVNhdmVyIGlzIHVzZWQgdG8gZW5hYmxlIGNsaWVudCdzIHRvIGRvd25sb2FkIGRvY3VtZW50cyBmb3Igc2F2aW5nLlxuICogQnJvd3NlckZTIGRvZXMgbm90IHBvbGx5ZmlsbCB0aGUgZnMgbmF0aXZlIHByb21pc2VzLCBzbyBtYW55IGZzIG1ldGhvZHNcbiAqIGFyZSB3cmFwcGVkIHdpdGggcHJvbWlzaWZ5IGJlbG93LlxuICpcbiAqIHNlZSBhbHNvOlxuICogaHR0cHM6Ly9naXRodWIuY29tL2p2aWxrL0Jyb3dzZXJGU1xuICogaHR0cHM6Ly9naXRodWIuY29tL2Jyb3dzZXJpZnkvcGF0aC1icm93c2VyaWZ5XG4gKlxuICovXG5jbGFzcyBGaWxlTWFuYWdlciB7XG4gIHN0YXRpYyBnZXQgdmlydHVhbFBhdGgoKSB7XG4gICAgcmV0dXJuIFwiL2VwdWJraXRcIjtcbiAgfVxuICAvKipcbiAgICogUHVibGljIGNsYXNzIHByb3BlcnR5IGVudmlyb25tZW50LlxuICAgKiBlbnZpcm9ubWVudCBpbmRpY2F0ZXMgaWYgd2UgYXJlIHJ1bm5pbmcgaW4gYSBicm93c2VyIG9yIG5vdC5cbiAgICogQHJldHVybnMge3N0cmluZ30gLSBvbmUgb2YgXCJicm93c2VyXCIgb3IgXCJub2RlXCJcbiAgICovXG4gIHN0YXRpYyBnZXQgZW52aXJvbm1lbnQoKSB7XG4gICAgLy8gZm9yIHRlc3RpbmcgaW4gamVzdCB3ZSBzb21ldGltZXMgbmVlZCB0byBmb3JjZSB0aGUgZW52IG5vZGVfZW52XG4gICAgaWYgKHByb2Nlc3M/LmVudj8uTU9DS19FTlYpIHtcbiAgICAgIHJldHVybiBwcm9jZXNzLmVudi5NT0NLX0VOVjtcbiAgICB9XG4gICAgcmV0dXJuIHR5cGVvZiB3aW5kb3cgPT09IFwidW5kZWZpbmVkXCIgPyBcIm5vZGVcIiA6IFwiYnJvd3NlclwiO1xuICB9XG5cbiAgc3RhdGljIGFzeW5jIGxvYWRFcHViKGxvY2F0aW9uLCBmZXRjaE9wdGlvbnMgPSB7fSkge1xuICAgIGlmIChGaWxlTWFuYWdlci5pc0VwdWJBcmNoaXZlKGxvY2F0aW9uKSkge1xuICAgICAgY29uc3Qgd29ya2luZ1BhdGggPSBhd2FpdCBGaWxlTWFuYWdlci5wcmVwYXJlRXB1YkFyY2hpdmUoXG4gICAgICAgIGxvY2F0aW9uLFxuICAgICAgICBmZXRjaE9wdGlvbnNcbiAgICAgICk7XG4gICAgICByZXR1cm4gd29ya2luZ1BhdGg7XG4gICAgfSBlbHNlIHtcbiAgICAgIGNvbnN0IHdvcmtpbmdQYXRoID0gYXdhaXQgRmlsZU1hbmFnZXIucHJlcGFyZUVwdWJEaXIoXG4gICAgICAgIGxvY2F0aW9uLFxuICAgICAgICBmZXRjaE9wdGlvbnNcbiAgICAgICk7XG4gICAgICByZXR1cm4gd29ya2luZ1BhdGg7XG4gICAgfVxuICB9XG5cbiAgLyoqXG4gICAqIFNhdmVzIHRoZSBlcHViIGFyY2hpdmUgdG8gdGhlIGdpdmVuIGxvY2F0aW9uLiBJbiB0aGUgYnJvd3NlcixcbiAgICogdGhlIHVzZXIgd2lsbCBiZSBwcm9tcHRlZCB0byBzZXQgdGhlIGZpbGUgZG93bmxvYWQgbG9jYXRpb24uXG4gICAqIFRoaXMgbWV0aG9kIHJlbGllcyBvbiBKU1ppcCBmb3IgemlwaW5nIHRoZSBhcmNoaXZlIGluIGJvdGggY2xpZW50IGFuZCBub2RlXG4gICAqIFRPRE86IGlmIHRlc3Rpbmcgc2hvd3MgdGhhdCBKU1ppcCBpcyBub3QgYmVzdCBmb3Igbm9kZSwgY29uc2lkZXIgdXNpbmdcbiAgICogYXJjaGl2ZXI6IGh0dHBzOi8vZ2l0aHViLmNvbS9hcmNoaXZlcmpzL25vZGUtYXJjaGl2ZXJcbiAgICogZXB1YiB6aXAgc3BlYzogaHR0cHM6Ly93d3cudzMub3JnL3B1Ymxpc2hpbmcvZXB1YjMvZXB1Yi1vY2YuaHRtbCNzZWMtemlwLWNvbnRhaW5lci16aXByZXFzXG4gICAqIEBwYXJhbSB7c3RyaW5nfSBsb2NhdGlvbiAtIGRlc3RpbmF0aW9uIHBhdGggdG8gc2F2ZSBlcHViIHRvXG4gICAqIEBwYXJhbSB7Ym9vbGVhbn0gY29tcHJlc3MgLSBmbGFnIHRvIGVuYWJsZSBhcmNoaXZlIGNvbXByZXNzaW9uXG4gICAqL1xuICBzdGF0aWMgYXN5bmMgc2F2ZUVwdWJBcmNoaXZlKHNvdXJjZUxvY2F0aW9uLCBzYXZlTG9jYXRpb24sIGNvbXByZXNzID0gZmFsc2UpIHtcbiAgICBjb25zdCBwYXRoSW5mbyA9IHBhdGgucGFyc2Uoc2F2ZUxvY2F0aW9uKTtcbiAgICBjb25zdCBlcHViTmFtZSA9IHBhdGhJbmZvLm5hbWU7XG5cbiAgICBjb25zdCB6aXAgPSBuZXcgSlNaaXAoKTtcbiAgICBjb25zdCBmaWxlUGF0aHMgPSBhd2FpdCBGaWxlTWFuYWdlci5maW5kQWxsRmlsZXMoc291cmNlTG9jYXRpb24pO1xuXG4gICAgLy8gbWltZXRpbWUgbXVzdCBiZSBmaXJzdCBmaWxlIGluIHRoZSB6aXA7XG4gICAgY29uc3QgbWltZVR5cGVDb250ZW50ID0gYXdhaXQgRmlsZU1hbmFnZXIucmVhZEZpbGUoXG4gICAgICBwYXRoLnJlc29sdmUoc291cmNlTG9jYXRpb24sIFwibWltZXR5cGVcIilcbiAgICApO1xuICAgIHppcC5maWxlKFwibWltZXR5cGVcIiwgbWltZVR5cGVDb250ZW50KTtcblxuICAgIC8vIHRvIHJ1biBpbiBwYXJhbGxlbCBzZWU6IGh0dHBzOi8vc3RhY2tvdmVyZmxvdy5jb20vYS81MDg3NDUwNy83OTQzNTg5XG4gICAgZm9yIChjb25zdCBmaWxlUGF0aCBvZiBmaWxlUGF0aHMpIHtcbiAgICAgIGNvbnN0IGNvbnRlbnRzID0gYXdhaXQgRmlsZU1hbmFnZXIucmVhZEZpbGUoZmlsZVBhdGgpO1xuICAgICAgLy8gY29udmVydCB0aGUgYWJzb2x1dGUgcGF0aCB0byB0aGUgaW50ZXJuYWwgZXB1YiBwYXRoXG4gICAgICBsZXQgcmVsYXRpdmVQYXRoID0gZmlsZVBhdGguc3Vic3RyaW5nKFxuICAgICAgICBgJHtwYXRoLm5vcm1hbGl6ZShzb3VyY2VMb2NhdGlvbil9YC5sZW5ndGhcbiAgICAgICk7XG4gICAgICBpZiAocmVsYXRpdmVQYXRoLnN1YnN0cmluZygwLCAxKSA9PT0gXCIvXCIpIHtcbiAgICAgICAgcmVsYXRpdmVQYXRoID0gcmVsYXRpdmVQYXRoLnN1YnN0cmluZygxKTtcbiAgICAgIH1cbiAgICAgIGlmIChyZWxhdGl2ZVBhdGggIT09IFwibWltZXR5cGVcIikge1xuICAgICAgICBpZiAoY29udGVudHMpIHtcbiAgICAgICAgICB6aXAuZmlsZShgJHtyZWxhdGl2ZVBhdGh9YCwgY29udGVudHMpO1xuICAgICAgICB9IGVsc2Uge1xuICAgICAgICAgIGNvbnNvbGUuZXJyb3IoXCJDb3VsZCBub3QgcmVhZCBjb250ZW50cyBvZiBmaWxlXCIsIGZpbGVQYXRoKTtcbiAgICAgICAgICByZXR1cm47XG4gICAgICAgIH1cbiAgICAgIH1cbiAgICB9XG5cbiAgICBsZXQgemlwQ29udGVudDtcblxuICAgIHRyeSB7XG4gICAgICB6aXBDb250ZW50ID0gYXdhaXQgemlwLmdlbmVyYXRlQXN5bmMoe1xuICAgICAgICB0eXBlOiBGaWxlTWFuYWdlci5lbnZpcm9ubWVudCA9PT0gXCJicm93c2VyXCIgPyBcImJsb2JcIiA6IFwibm9kZWJ1ZmZlclwiLFxuICAgICAgICBjb21wcmVzc2lvbjogY29tcHJlc3MgPyBcIkRFRkxBVEVcIiA6IFwiU1RPUkVcIixcbiAgICAgICAgY29tcHJlc3Npb25PcHRpb25zOiB7XG4gICAgICAgICAgbGV2ZWw6IGNvbXByZXNzXG4gICAgICAgICAgICA/IDhcbiAgICAgICAgICAgIDogMCAvKiBvbmx5IGxldmVscyAwIG9yIDggYXJlIGFsbG93ZWQgaW4gZXB1YiBzcGVjICovLFxuICAgICAgICB9LFxuICAgICAgfSk7XG4gICAgfSBjYXRjaCAoZXJyKSB7XG4gICAgICBjb25zb2xlLmxvZyhcIkVycm9yIGF0IHppcC5nZW5lcmF0ZUFzeW5jIFwiLCBlcnIpO1xuICAgIH1cblxuICAgIGlmICh6aXBDb250ZW50KSB7XG4gICAgICAvLyBUT0RPLSBGaWxlU2F2ZXIgaXMgY3VycmVudGx5IGJ1Z2dlZCBpbiBjaHJvbWU6XG4gICAgICAvLyBzZWU6IGh0dHBzOi8vZ2l0aHViLmNvbS9lbGlncmV5L0ZpbGVTYXZlci5qcy9pc3N1ZXMvNjI0XG4gICAgICBpZiAoRmlsZU1hbmFnZXIuZW52aXJvbm1lbnQgPT09IFwiYnJvd3NlclwiKSB7XG4gICAgICAgIHRyeSB7XG4gICAgICAgICAgY29uc3QgcmVzdWx0ID0gRmlsZVNhdmVyLnNhdmVBcyh6aXBDb250ZW50LCBwYXRoSW5mby5iYXNlKTtcbiAgICAgICAgfSBjYXRjaCAoZXJyKSB7XG4gICAgICAgICAgY29uc29sZS5lcnJvcihcIkVycm9yIHNhdmluZyBlcHViXCIsIGVycik7XG4gICAgICAgICAgcmV0dXJuO1xuICAgICAgICB9XG4gICAgICB9IGVsc2Uge1xuICAgICAgICB0cnkge1xuICAgICAgICAgIGF3YWl0IHByb21pc2lmeShmcy53cml0ZUZpbGUpKHNhdmVMb2NhdGlvbiwgemlwQ29udGVudCk7XG4gICAgICAgIH0gY2F0Y2ggKGVycikge1xuICAgICAgICAgIGNvbnNvbGUubG9nKFwiRXJyb3Igd3JpdGluZyB6aXAgZmlsZTpcIiwgZXJyKTtcbiAgICAgICAgICByZXR1cm47XG4gICAgICAgIH1cbiAgICAgIH1cbiAgICB9IGVsc2Uge1xuICAgICAgY29uc29sZS5lcnJvcihcIkVycm9yIGdlbmVyYXRpbmcgemlwIGZpbGUuXCIpO1xuICAgIH1cbiAgfVxuXG4gIC8qKlxuICAgKiBXaGVuIGxvYWRpbmcgYW4gRXB1YiBkaXJlY3RvcnkgaW4gYSBicm93c2VyIGNsaWVudCwgdGhlIGZpbGVzXG4gICAqIGFyZSBmZXRjaGVkIGxhemlseSBieSBCcm93c2VyRlMgYW5kIHNhdmVkIHRvIGxvY2FsU3RvcmFnZS5cbiAgICpcbiAgICogQHBhcmFtIHtzdHJpbmd9IGxvY2F0aW9uXG4gICAqL1xuICBzdGF0aWMgYXN5bmMgcHJlcGFyZUVwdWJEaXIobG9jYXRpb24sIGZldGNoT3B0aW9ucyA9IHt9KSB7XG4gICAgaWYgKEZpbGVNYW5hZ2VyLmVudmlyb25tZW50ID09PSBcImJyb3dzZXJcIikge1xuICAgICAgLypcbiAgICAgIEZvciB0aGUgYnJvd3NlciB3ZSBuZWVkIHRvIGJ1aWxkIGEgZmlsZSBpbmRleCBmb3IgQnJvd3NlckZTIFxuICAgICAgVGhhdCBpbmRleCBpcyBkZXJpdmVkIGZyb20gdGhlIE9QRiBmaWxlIHNvIHdlIG11c3QgZmluZCB0aGUgb3BmXG4gICAgICBwYXRoIGdpdmVuIGluIHRoZSBjb250YWluZXIueG1sIGZpbGUuIFxuICAgICAgVGhlcmUgaXMgYSBjaGlja2VuIGFuZCBlZ2cgcHJvYmxlbSBpbiB0aGF0IEJyb3dzZXJGUyBjYW4gbm90IGJlIFxuICAgICAgaW5pdGlhbGl6ZWQgd2l0aG91dCB0aGUgZmlsZSBpbmRleCwgc28gd2UgbXVzdCBwcmVsb2FkIHRoZSBjb250YWluZXIueG1sXG4gICAgICBhbmQgT1BGIGZpbGUgZmlyc3QuIFxuICAgICAgKi9cbiAgICAgIGNvbnN0IHByZWZpeFVybCA9IHBhdGgucmVzb2x2ZShsb2NhdGlvbik7XG4gICAgICBjb25zdCBjb250YWluZXJMb2NhdGlvbiA9IFwiLi9NRVRBLUlORi9jb250YWluZXIueG1sXCI7XG4gICAgICBjb25zdCBjb250YWluZXJVcmwgPSBwYXRoLnJlc29sdmUobG9jYXRpb24sIGNvbnRhaW5lckxvY2F0aW9uKTtcbiAgICAgIGNvbnN0IHJlc3BvbnNlID0gYXdhaXQgZmV0Y2goY29udGFpbmVyVXJsLCBmZXRjaE9wdGlvbnMpO1xuXG4gICAgICBpZiAoIXJlc3BvbnNlLm9rKSB7XG4gICAgICAgIGNvbnNvbGUuZXJyb3IoXCJFcnJvciBmZXRjaGluZyBjb250YWluZXIueG1sXCIpO1xuICAgICAgICByZXR1cm47XG4gICAgICB9XG4gICAgICBjb25zdCBjb250YWluZXJEYXRhID0gYXdhaXQgcmVzcG9uc2UudGV4dCgpO1xuICAgICAgY29uc29sZS5sb2coXCJjb250YWluZXJEYXRhXCIsIGNvbnRhaW5lckRhdGEpO1xuICAgICAgbGV0IG1hbmlmZXN0UGF0aDtcbiAgICAgIHRyeSB7XG4gICAgICAgIC8vIGNvbnN0IHBhcnNlciA9IG5ldyB4bWwyanMuUGFyc2VyKCk7XG4gICAgICAgIGNvbnN0IHJlc3VsdCA9IGF3YWl0IHByb21pc2lmeSh4bWwyanMucGFyc2VTdHJpbmcpKGNvbnRhaW5lckRhdGEpO1xuXG4gICAgICAgIG1hbmlmZXN0UGF0aCA9XG4gICAgICAgICAgcmVzdWx0Py5jb250YWluZXI/LnJvb3RmaWxlc1swXS5yb290ZmlsZVswXT8uJFtcImZ1bGwtcGF0aFwiXTtcbiAgICAgICAgaWYgKCFtYW5pZmVzdFBhdGgpIHtcbiAgICAgICAgICBjb25zb2xlLmVycm9yKFwiQ291bGQgbm90IGZpbmQgcGF0aCB0byBvcGYgZmlsZS5cIik7XG4gICAgICAgICAgcmV0dXJuO1xuICAgICAgICB9XG4gICAgICB9IGNhdGNoIChlcnIpIHtcbiAgICAgICAgY29uc29sZS5lcnJvcihcIkVycm9yIHBhcnNpbmcgY29udGFpbmVyLnhtbCBmaWxlOlwiLCBlcnIpO1xuICAgICAgICByZXR1cm47XG4gICAgICB9XG5cbiAgICAgIGNvbnN0IG9wZkxvY2F0aW9uID0gcGF0aC5yZXNvbHZlKGxvY2F0aW9uLCBtYW5pZmVzdFBhdGgpO1xuICAgICAgY29uc3Qgb3BmRmV0Y2hSZXNwb25zZSA9IGF3YWl0IGZldGNoKG9wZkxvY2F0aW9uLCBmZXRjaE9wdGlvbnMpO1xuICAgICAgY29uc3Qgb3BmRGF0YSA9IGF3YWl0IG9wZkZldGNoUmVzcG9uc2UudGV4dCgpO1xuICAgICAgY29uc3QgcGFja2FnZU1hbmFnZXIgPSBuZXcgUGFja2FnZU1hbmFnZXIobWFuaWZlc3RQYXRoKTtcbiAgICAgIGF3YWl0IHBhY2thZ2VNYW5hZ2VyLmxvYWRYbWwob3BmRGF0YSk7XG4gICAgICBjb25zdCBtYW5pZmVzdEl0ZW1zID0gcGFja2FnZU1hbmFnZXIubWFuaWZlc3QuaXRlbXM7XG5cbiAgICAgIGNvbnN0IGZzTWFuaWZlc3RQYXRoID0gcGF0aC5qb2luKGxvY2F0aW9uLCBtYW5pZmVzdFBhdGgpO1xuICAgICAgY29uc3QgZmlsZUluZGV4ID0gb3BmTWFuaWZlc3RUb0Jyb3dzZXJGc0luZGV4KFxuICAgICAgICBtYW5pZmVzdEl0ZW1zLFxuICAgICAgICBtYW5pZmVzdFBhdGhcbiAgICAgICk7XG4gICAgICBjb25zb2xlLmxvZyhcIk1vdW50aW5nIGVwdWIgZGlyZWN0b3J5IHdpdGggQnJvd3NlckZTXCIsIGxvY2F0aW9uKTtcbiAgICAgIGNvbnNvbGUubG9nKFwiZmlsZSBpbmRleFwiLCBKU09OLnBhcnNlKEpTT04uc3RyaW5naWZ5KGZpbGVJbmRleCkpKTtcblxuICAgICAgdHJ5IHtcbiAgICAgICAgY29uc3QgcmVzdWx0ID0gYXdhaXQgcHJvbWlzaWZ5KEJyb3dzZXJGUy5jb25maWd1cmUpKHtcbiAgICAgICAgICBmczogXCJNb3VudGFibGVGaWxlU3lzdGVtXCIsXG4gICAgICAgICAgb3B0aW9uczoge1xuICAgICAgICAgICAgW0ZpbGVNYW5hZ2VyLnZpcnR1YWxQYXRoICsgXCIvb3ZlcmxheVwiXToge1xuICAgICAgICAgICAgICBmczogXCJPdmVybGF5RlNcIixcbiAgICAgICAgICAgICAgb3B0aW9uczoge1xuICAgICAgICAgICAgICAgIHJlYWRhYmxlOiB7XG4gICAgICAgICAgICAgICAgICBmczogXCJIVFRQUmVxdWVzdFwiLFxuICAgICAgICAgICAgICAgICAgb3B0aW9uczoge1xuICAgICAgICAgICAgICAgICAgICBiYXNlVXJsOiBwcmVmaXhVcmwsXG4gICAgICAgICAgICAgICAgICAgIGluZGV4OiBmaWxlSW5kZXggLyogYSBqc29uIGRpcmVjdG9yeSBzdHJ1Y3R1cmUgKi8sXG4gICAgICAgICAgICAgICAgICB9LFxuICAgICAgICAgICAgICAgIH0sXG4gICAgICAgICAgICAgICAgd3JpdGFibGU6IHtcbiAgICAgICAgICAgICAgICAgIGZzOiBcIkxvY2FsU3RvcmFnZVwiLFxuICAgICAgICAgICAgICAgIH0sXG4gICAgICAgICAgICAgIH0sXG4gICAgICAgICAgICB9LFxuICAgICAgICAgICAgXCIvdG1wXCI6IHsgZnM6IFwiSW5NZW1vcnlcIiB9LFxuICAgICAgICAgIH0sXG4gICAgICAgIH0pO1xuICAgICAgfSBjYXRjaCAoZXJyKSB7XG4gICAgICAgIGNvbnNvbGUuZXJyb3IoXCJFcnJvciBjb25maWd1cmluZyBCcm93c2VyRlM6XCIsIGVyci5tZXNzYWdlKTtcbiAgICAgICAgcmV0dXJuO1xuICAgICAgfVxuICAgICAgLy8gZnMucmVhZGRpcihcIi4vZXB1YmtpdC9vdmVybGF5L3Rlc3QvYWxpY2UvTUVUQS1JTkZcIiwgKGVyciwgZmlsZXMpID0+IHtcbiAgICAgIC8vICAgZmlsZXMuZm9yRWFjaCgoZmlsZSkgPT4ge1xuICAgICAgLy8gICAgIGNvbnNvbGUubG9nKFwiOlwiLCBmaWxlKTtcbiAgICAgIC8vICAgfSk7XG4gICAgICAvLyB9KTtcblxuICAgICAgLy8gcmV0dXJuIHRoZSB2aXJ0dWFsIHBhdGggdG8gdGhlIGVwdWIgcm9vdFxuICAgICAgY29uc3Qgd29ya2luZ1BhdGggPSBwYXRoLm5vcm1hbGl6ZShgJHtGaWxlTWFuYWdlci52aXJ0dWFsUGF0aH0vb3ZlcmxheS9gKTtcbiAgICAgIHJldHVybiB3b3JraW5nUGF0aDtcbiAgICB9IGVsc2Uge1xuICAgICAgLy8gd2hlbiBydW5uaW5nIGluIE5vZGUsIGNvcHkgdGhlIGVwdWIgZGlyIHRvIHRtcCBkaXJlY3RvcnkuXG4gICAgICBsZXQgdG1wRGlyO1xuICAgICAgdHJ5IHtcbiAgICAgICAgdG1wRGlyID0gYXdhaXQgRmlsZU1hbmFnZXIuZ2V0VG1wRGlyKCk7XG4gICAgICB9IGNhdGNoIChlcnIpIHtcbiAgICAgICAgdGhyb3cgZXJyO1xuICAgICAgfVxuXG4gICAgICBjb25zdCBlcHViRGlyTmFtZSA9IGxvY2F0aW9uLnNwbGl0KHBhdGguc2VwKS5wb3AoKTtcblxuICAgICAgY29uc3QgdG1wUGF0aCA9IHBhdGgucmVzb2x2ZSh0bXBEaXIsIGAke2VwdWJEaXJOYW1lfV8ke0RhdGUubm93KCl9YCk7XG4gICAgICBpZiAoYXdhaXQgRmlsZU1hbmFnZXIuZGlyRXhpc3RzKHRtcFBhdGgpKSB7XG4gICAgICAgIHRyeSB7XG4gICAgICAgICAgYXdhaXQgcHJvbWlzaWZ5KGZzLnJtZGlyKSh0bXBQYXRoLCB7XG4gICAgICAgICAgICByZWN1cnNpdmU6IHRydWUsXG4gICAgICAgICAgICBtYXhSZXRyaWVzOiAzLFxuICAgICAgICAgIH0pO1xuICAgICAgICB9IGNhdGNoIChlcnIpIHtcbiAgICAgICAgICBjb25zb2xlLmxvZyhcIkNvdWxkIG5vdCByZW1vdmUgZGlyXCIsIHRtcFBhdGgsIGVyci5tZXNzYWdlKTtcbiAgICAgICAgICB0aHJvdyBcIkNvdWxkIG5vdCBwcmVwYXJlIGRpcmVjdG9yeS4gVG1wIGRpcmVjdG9yIGFscmVhZHkgZXhpc3RzIGFuZCBjb3VsZCBub3QgYmUgcmVtb3ZlZC5cIjtcbiAgICAgICAgfVxuICAgICAgfVxuICAgICAgdHJ5IHtcbiAgICAgICAgYXdhaXQgRmlsZU1hbmFnZXIuY29weURpcihsb2NhdGlvbiwgdG1wUGF0aCk7XG4gICAgICB9IGNhdGNoIChlcnIpIHtcbiAgICAgICAgY29uc29sZS5lcnJvcihcbiAgICAgICAgICBcInByZXBhcmVFcHViRGlyIEVycm9yOiBDb3VsZCBub3QgY29weSBkaXIgdG9cIixcbiAgICAgICAgICB0bXBQYXRoLFxuICAgICAgICAgIGVyci5tZXNzYWdlXG4gICAgICAgICk7XG4gICAgICAgIHJldHVybjtcbiAgICAgIH1cblxuICAgICAgY29uc3Qgd29ya2luZ1BhdGggPSBwYXRoLm5vcm1hbGl6ZSh0bXBQYXRoKTtcbiAgICAgIHJldHVybiB3b3JraW5nUGF0aDtcbiAgICB9XG4gIH1cblxuICAvKipcbiAgICogTG9hZHMgYW5kIHVuYXJjaGl2ZXMgYW4gLmVwdWIgZmlsZSB0byBhIHRtcCB3b3JraW5nIGRpcmVjdG9yeVxuICAgKiBXaGVuIGluIGJyb3dzZXIgY2xpZW50LCBCcm93c2VyRlMgd2lsbCB1bnppcCB0aGUgYXJjaGl2ZSB0byB0aGUgdmlydHVhbCBwYXRoIGAke0ZpbGVNYW5hZ2VyLnZpcnR1YWxQYXRofS96aXBgXG4gICAqXG4gICAqIEBwYXJhbSB7c3RyaW5nfSBsb2NhdGlvbiAtIHRoZSB1cmwgb3IgcGF0aCB0byBhbiAuZXB1YiBmaWxlXG4gICAqIEByZXR1cm5zIHtzdHJpbmd9IC0gdGhlIHBhdGggdG8gdGhlIHRtcCBsb2NhdGlvblxuICAgKi9cbiAgc3RhdGljIGFzeW5jIHByZXBhcmVFcHViQXJjaGl2ZShsb2NhdGlvbiwgZmV0Y2hPcHRpb25zID0ge30pIHtcbiAgICBjb25zdCBpc0VwdWIgPSBGaWxlTWFuYWdlci5pc0VwdWJBcmNoaXZlKGxvY2F0aW9uKTtcblxuICAgIGlmICghaXNFcHViKSB7XG4gICAgICBjb25zb2xlLndhcm4oXCJGaWxlIGlzIG5vdCBhbiBlcHViXCIsIGxvY2F0aW9uKTtcbiAgICAgIHJldHVybjtcbiAgICB9XG5cbiAgICBpZiAoRmlsZU1hbmFnZXIuZW52aXJvbm1lbnQgPT09IFwiYnJvd3NlclwiKSB7XG4gICAgICAvLyBpZiBydW5uaW5nIGluIGNsaWVudCwgdXNlIEJyb3dzZXJGUyB0byBtb3VudCBaaXAgYXMgZmlsZSBzeXN0ZW0gaW4gbWVtb3J5XG4gICAgICBjb25zb2xlLmxvZyhcIk1vdW50aW5nIGVwdWIgYXJjaGl2ZSB3aXRoIEJyb3dzZXJGU1wiLCBsb2NhdGlvbik7XG4gICAgICBjb25zdCByZXNwb25zZSA9IGF3YWl0IGZldGNoKGxvY2F0aW9uLCBmZXRjaE9wdGlvbnMpO1xuICAgICAgY29uc3QgemlwRGF0YSA9IGF3YWl0IHJlc3BvbnNlLmFycmF5QnVmZmVyKCk7XG4gICAgICBjb25zdCBCdWZmZXIgPSBCcm93c2VyRlMuQkZTUmVxdWlyZShcImJ1ZmZlclwiKS5CdWZmZXI7XG4gICAgICBjb25zdCB3b3JraW5nRGlyID0gcGF0aC5wYXJzZShsb2NhdGlvbikubmFtZTtcbiAgICAgIGNvbnN0IHJlc3VsdCA9IGF3YWl0IHByb21pc2lmeShCcm93c2VyRlMuY29uZmlndXJlKSh7XG4gICAgICAgIGZzOiBcIk1vdW50YWJsZUZpbGVTeXN0ZW1cIixcbiAgICAgICAgb3B0aW9uczoge1xuICAgICAgICAgIFtgJHtGaWxlTWFuYWdlci52aXJ0dWFsUGF0aH0vb3ZlcmxheS8ke3dvcmtpbmdEaXJ9YF06IHtcbiAgICAgICAgICAgIGZzOiBcIk92ZXJsYXlGU1wiLFxuICAgICAgICAgICAgb3B0aW9uczoge1xuICAgICAgICAgICAgICByZWFkYWJsZToge1xuICAgICAgICAgICAgICAgIGZzOiBcIlppcEZTXCIsXG4gICAgICAgICAgICAgICAgb3B0aW9uczoge1xuICAgICAgICAgICAgICAgICAgLy8gV3JhcCBhcyBCdWZmZXIgb2JqZWN0LlxuICAgICAgICAgICAgICAgICAgemlwRGF0YTogQnVmZmVyLmZyb20oemlwRGF0YSksXG4gICAgICAgICAgICAgICAgfSxcbiAgICAgICAgICAgICAgfSxcbiAgICAgICAgICAgICAgd3JpdGFibGU6IHtcbiAgICAgICAgICAgICAgICBmczogXCJMb2NhbFN0b3JhZ2VcIixcbiAgICAgICAgICAgICAgfSxcbiAgICAgICAgICAgIH0sXG4gICAgICAgICAgfSxcbiAgICAgICAgICBcIi90bXBcIjogeyBmczogXCJJbk1lbW9yeVwiIH0sXG4gICAgICAgIH0sXG4gICAgICB9KTtcblxuICAgICAgaWYgKHJlc3VsdCkge1xuICAgICAgICAvLyBBbiBlcnJvciBvY2N1cnJlZC5cbiAgICAgICAgY29uc29sZS53YXJuKFwiRXJyb3IgYXQgQnJvd3NlckZTLmNvbmZpZ3VyZVwiLCByZXN1bHQubWVzc2FnZSk7XG4gICAgICAgIHRocm93IHJlc3VsdDtcbiAgICAgIH1cbiAgICAgIGZzLnJlYWRkaXIoXCIuL2VwdWJraXQvb3ZlcmxheVwiLCAoZXJyLCBmaWxlcykgPT4ge1xuICAgICAgICBjb25zb2xlLmxvZyhcImZpbGVzXCIsIGZpbGVzKTtcbiAgICAgIH0pO1xuICAgICAgLy8gcmV0dXJuIHRoZSB2aXJ0dWFsIHBhdGggdG8gdGhlIGVwdWIgcm9vdFxuICAgICAgY29uc3Qgd29ya2luZ1BhdGggPSBwYXRoLm5vcm1hbGl6ZShcbiAgICAgICAgYCR7RmlsZU1hbmFnZXIudmlydHVhbFBhdGh9L292ZXJsYXkvJHt3b3JraW5nRGlyfWBcbiAgICAgICk7XG4gICAgICByZXR1cm4gd29ya2luZ1BhdGg7XG4gICAgfSBlbHNlIHtcbiAgICAgIC8vIHdoZW4gcnVubmluZyBpbiBOb2RlLCBkZWNvbXByZXNzIGVwdWIgdG8gdG1wIGRpcmVjdG9yeS5cbiAgICAgIGNvbnN0IHRtcERpciA9IG9zLnRtcGRpcigpO1xuICAgICAgY29uc3QgdG1wUGF0aCA9IHBhdGgucmVzb2x2ZSh0bXBEaXIsIHBhdGguYmFzZW5hbWUobG9jYXRpb24pKTtcbiAgICAgIGNvbnN0IEFkbVppcCA9IG5ldyBBZG1aaXAobG9jYXRpb24pO1xuICAgICAgQWRtWmlwLmV4dHJhY3RBbGxUbyh0bXBQYXRoLCB0cnVlKTtcbiAgICAgIGNvbnN0IHdvcmtpbmdQYXRoID0gdG1wUGF0aDtcbiAgICAgIHJldHVybiB3b3JraW5nUGF0aDtcbiAgICB9XG4gIH1cblxuICAvKipcbiAgICogVGVzdCBpZiBmaWxlIGlzIGEgLmVwdWIgYXJjaGl2ZVxuICAgKiBAcGFyYW0ge3N0cmluZ30gbG9jYXRpb24gLSBwYXRoIHRvIGZpbGVcbiAgICogQHJldHVybnMge2Jvb2xlYW59XG4gICAqL1xuICBzdGF0aWMgaXNFcHViQXJjaGl2ZShsb2NhdGlvbikge1xuICAgIGNvbnN0IGV4dCA9IHBhdGguZXh0bmFtZShsb2NhdGlvbik7XG5cbiAgICBpZiAoZXh0ID09PSBcIi5lcHViXCIpIHtcbiAgICAgIHJldHVybiB0cnVlO1xuICAgIH1cblxuICAgIHJldHVybiBmYWxzZTtcbiAgfVxuXG4gIC8qKlxuICAgKiBBIHdyYXBlcHIgZm9yIHRoZSBmcy5zdGF0IG1ldGhvZFxuICAgKiBAcGFyYW0ge3N0cmluZ30gbG9jYXRpb25cbiAgICogQHJldHVybnMge29iamVjdH0gLSBzdGF0cyBvYmplY3RcbiAgICovXG4gIHN0YXRpYyBhc3luYyBnZXRTdGF0cyhsb2NhdGlvbikge1xuICAgIGxldCBzdGF0cztcblxuICAgIHRyeSB7XG4gICAgICBzdGF0cyA9IGF3YWl0IHByb21pc2lmeShmcy5zdGF0KShsb2NhdGlvbik7XG4gICAgfSBjYXRjaCAoZXJyKSB7XG4gICAgICBjb25zb2xlLndhcm4oXCJDb3VsZCBub3QgZ2V0IHN0YXRcIiwgZXJyKTtcbiAgICAgIHJldHVybjtcbiAgICB9XG4gICAgcmV0dXJuIHN0YXRzO1xuICB9XG5cbiAgLyoqXG4gICAqIFdyYXBwZXIgZm9yIHN0YXRzIGlzRGlyZWN0b3J5KClcbiAgICogQHBhcmFtIHtzdHJpbmd9IGxvY2F0aW9uXG4gICAqIEByZXR1cm5zIHtib29sZWFufVxuICAgKi9cbiAgc3RhdGljIGFzeW5jIGlzRGlyKGxvY2F0aW9uKSB7XG4gICAgY29uc3Qgc3RhdHMgPSBhd2FpdCBGaWxlTWFuYWdlci5nZXRTdGF0cyhsb2NhdGlvbik7XG4gICAgaWYgKHN0YXRzKSB7XG4gICAgICByZXR1cm4gc3RhdHMuaXNEaXJlY3RvcnkoKTtcbiAgICB9XG4gICAgcmV0dXJuIGZhbHNlO1xuICB9XG5cbiAgLyoqXG4gICAqIFdyYXBwZXIgZm9yIHN0YXRzIGlzRmlsZSgpXG4gICAqIEBwYXJhbSB7c3RyaW5nfSBsb2NhdGlvblxuICAgKiBAcmV0dXJucyB7Ym9vbGVhbn1cbiAgICovXG4gIHN0YXRpYyBhc3luYyBpc0ZpbGUobG9jYXRpb24pIHtcbiAgICBjb25zdCBzdGF0cyA9IGF3YWl0IEZpbGVNYW5hZ2VyLmdldFN0YXRzKGxvY2F0aW9uKTtcbiAgICBpZiAoc3RhdHMpIHtcbiAgICAgIHJldHVybiBzdGF0cy5pc0ZpbGUoKTtcbiAgICB9XG4gICAgcmV0dXJuIGZhbHNlO1xuICB9XG5cbiAgLyoqXG4gICAqIFJlYWQgZW50aXJlIGZpbGUgYW5kIHJldHVybiB0aGUgZGF0YVxuICAgKiBpZiBubyBlbmNvZGluZyBpcyBzZXQsIGEgcmF3IGJ1ZmZlciBpcyByZXR1cm5lZC5cbiAgICogVXNlICd1dGY4JyBmb3Igc3RyaW5nXG4gICAqIEBwYXJhbSB7c3RyaW5nfSBsb2NhdGlvblxuICAgKi9cbiAgc3RhdGljIGFzeW5jIHJlYWRGaWxlKGxvY2F0aW9uLCBlbmNvZGluZyA9IHVuZGVmaW5lZCkge1xuICAgIGxldCBkYXRhO1xuICAgIHRyeSB7XG4gICAgICBkYXRhID0gYXdhaXQgcHJvbWlzaWZ5KGZzLnJlYWRGaWxlKShsb2NhdGlvbiwgZW5jb2RpbmcpO1xuICAgIH0gY2F0Y2ggKGVycikge1xuICAgICAgY29uc29sZS53YXJuKFwiQ291bGQgbm90IHJlYWRGaWxlXCIsIGxvY2F0aW9uLCBlcnIpO1xuICAgICAgcmV0dXJuO1xuICAgIH1cbiAgICByZXR1cm4gZGF0YTtcbiAgfVxuXG4gIC8vIHN0YXRpYyBhc3luYyByZWFkKGxvY2F0aW9uLCBidWZmZXIgPSB1bmRlZmluZWQpIHtcbiAgLy8gICBjb25zdCBkYXRhQnVmZmVyID0gYnVmZmVyID8gYnVmZmVyIDogbmV3IEJ1ZmZlcigpO1xuICAvLyAgIHRyeSB7XG4gIC8vICAgICBhd2FpdCBwcm9taXNpZnkoZnMucmVhZCkobG9jYXRpb24sIGRhdGFCdWZmZXIpO1xuICAvLyAgIH1cbiAgLy8gfVxuXG4gIC8qKlxuICAgKiBSZWFkIGEgWE1MIGZpbGUgYW5kIHBhcnNlIGl0IGludG8gYSBqc29uIG9iamVjdCB1c2luZyB4bWwyanNcbiAgICogQHBhcmFtIHtzdHJpbmd9IC0gbG9jYXRpb25cbiAgICogQHJldHVybnMge29iamVjdH0gLSBhIGpzb24gb2JqZWN0XG4gICAqL1xuICBzdGF0aWMgYXN5bmMgcmVhZFhtbEZpbGUobG9jYXRpb24pIHtcbiAgICBjb25zdCBkYXRhID0gYXdhaXQgRmlsZU1hbmFnZXIucmVhZEZpbGUobG9jYXRpb24pO1xuICAgIGxldCByZXN1bHQ7XG4gICAgaWYgKGRhdGEpIHtcbiAgICAgIHRyeSB7XG4gICAgICAgIHJlc3VsdCA9IGF3YWl0IHByb21pc2lmeSh4bWwyanMucGFyc2VTdHJpbmcpKGRhdGEsIHtcbiAgICAgICAgICBhdHRya2V5OiBcImF0dHJcIixcbiAgICAgICAgICBjaGFya2V5OiBcInZhbFwiLFxuICAgICAgICAgIHRyaW06IHRydWUsXG4gICAgICAgIH0pO1xuICAgICAgfSBjYXRjaCAoZXJyKSB7XG4gICAgICAgIGNvbnNvbGUud2FybihcIkVycm9yIHBhcnNpbmcgeG1sIGZpbGU6XCIsIGxvY2F0aW9uLCBlcnIpO1xuICAgICAgfVxuICAgIH1cbiAgICByZXR1cm4gcmVzdWx0O1xuICB9XG5cbiAgLyoqXG4gICAqIFJlY3Vyc2l2ZWx5IHNlYXJjaGVzIGEgZGlyZWN0b3J5IGFuZCByZXR1cm5zIGEgZmxhdCBhcnJheSBvZiBhbGwgZmlsZXNcbiAgICpcbiAgICogQHBhcmFtIHtzdHJpbmd9IGRpcmVjdG9yeU5hbWUgLSB0aGUgYmFzZSBkaXJlY3RvcnkgdG8gc2VhcmNoXG4gICAqIEBwYXJhbSB7YXJyYXl9IF9yZXN1bHRzIC0gcHJpdmF0ZS4gaG9sZHMgX3Jlc3VsdHMgZm9yIHJlY3Vyc2l2ZSBzZWFyY2hcbiAgICogQHJldHVybnMge2FycmF5fSAtIGFuIGFycmF5IG9mIGZpbGUgcGF0aCBzdHJpbmdzXG4gICAqL1xuICBzdGF0aWMgYXN5bmMgZmluZEFsbEZpbGVzKGRpcmVjdG9yeU5hbWUsIF9yZXN1bHRzID0gW10pIHtcbiAgICBsZXQgZmlsZXM7XG4gICAgaWYgKGRpcmVjdG9yeU5hbWUgPT09IFwiLi5cIikge1xuICAgICAgcmV0dXJuO1xuICAgIH1cblxuICAgIHRyeSB7XG4gICAgICBmaWxlcyA9IGF3YWl0IEZpbGVNYW5hZ2VyLnJlYWREaXIoZGlyZWN0b3J5TmFtZSk7XG4gICAgfSBjYXRjaCAoZXJyKSB7XG4gICAgICBjb25zb2xlLmVycm9yKFwiRXJyb3IgcmVhZGluZyBkaXJlY3RvcnlcIiwgZGlyZWN0b3J5TmFtZSwgZXJyKTtcbiAgICAgIHJldHVybiBfcmVzdWx0cztcbiAgICB9XG5cbiAgICBmb3IgKGxldCBmaWxlIG9mIGZpbGVzKSB7XG4gICAgICBjb25zdCBmdWxsUGF0aCA9IHBhdGguam9pbihkaXJlY3RvcnlOYW1lLCBmaWxlKTtcbiAgICAgIGlmIChmaWxlICE9PSBcIi5cIiAmJiAoYXdhaXQgRmlsZU1hbmFnZXIuaXNEaXIoZnVsbFBhdGgpKSkge1xuICAgICAgICBjb25zdCBzdWJkaXIgPSBhd2FpdCBGaWxlTWFuYWdlci5maW5kQWxsRmlsZXMoZnVsbFBhdGgsIF9yZXN1bHRzKTtcbiAgICAgICAgLy8gY29uc29sZS5sb2coXCJzdWJkaXJcIiwgc3ViZGlyKTtcbiAgICAgIH0gZWxzZSB7XG4gICAgICAgIF9yZXN1bHRzLnB1c2goZnVsbFBhdGgpO1xuICAgICAgfVxuICAgIH1cbiAgICByZXR1cm4gX3Jlc3VsdHM7XG4gIH1cblxuICAvLyBzdGF0aWMgYXN5bmMgZmluZEFsbEZpbGVzKGRpcmVjdG9yeU5hbWUpIHtcbiAgLy8gICBsZXQgZmlsZXMgPSBbXTtcbiAgLy8gICBsZXQgYWxsRmlsZXMgPSBbXTtcbiAgLy8gICB0cnkge1xuICAvLyAgICAgZmlsZXMgPSBhd2FpdCBGaWxlTWFuYWdlci5yZWFkRGlyKGRpcmVjdG9yeU5hbWUpO1xuICAvLyAgIH0gY2F0Y2ggKGVycikge1xuICAvLyAgICAgY29uc29sZS5lcnJvcihcIkVycm9yIHJlYWRpbmcgZGlyZWN0b3J5XCIsIGRpcmVjdG9yeU5hbWUsIGVycik7XG4gIC8vICAgICByZXR1cm47XG4gIC8vICAgfVxuXG4gIC8vICAgZm9yIChsZXQgZmlsZSBvZiBmaWxlcykge1xuICAvLyAgICAgY29uc3QgZnVsbFBhdGggPSBwYXRoLmpvaW4oZGlyZWN0b3J5TmFtZSwgZmlsZSk7XG4gIC8vICAgICBpZiAoYXdhaXQgRmlsZU1hbmFnZXIuaXNEaXIoZnVsbFBhdGgpKSB7XG4gIC8vICAgICAgIGFsbEZpbGVzID0gYWxsRmlsZXMuY29uY2F0KGF3YWl0IEZpbGVNYW5hZ2VyLmZpbmRBbGxGaWxlcyhmdWxsUGF0aCkpO1xuICAvLyAgICAgICByZXR1cm47XG4gIC8vICAgICB9IGVsc2Uge1xuICAvLyAgICAgICBhbGxGaWxlcyA9IGFsbEZpbGVzLmNvbmNhdChmdWxsUGF0aCk7XG4gIC8vICAgICB9XG4gIC8vICAgfVxuICAvLyAgIHJldHVybiBhbGxGaWxlcztcbiAgLy8gfVxuXG4gIC8qKlxuICAgKiBHZXQgdGhlIGNvbnRlbnRzIG9mIGEgZGlyZWN0b3J5XG4gICAqIEBwYXJhbSB7c3RyaW5nfSBkaXJlY3RvcnlcbiAgICogQHJldHVybnMge2FycmF5fVxuICAgKi9cbiAgc3RhdGljIGFzeW5jIHJlYWREaXIoZGlyZWN0b3J5KSB7XG4gICAgcmV0dXJuIG5ldyBQcm9taXNlKChyZXNvbHZlLCByZWplY3QpID0+IHtcbiAgICAgIGZzLnJlYWRkaXIoZGlyZWN0b3J5LCAoZXJyLCBjb250ZW50KSA9PiB7XG4gICAgICAgIGlmIChlcnIpIHtcbiAgICAgICAgICByZWplY3QoZXJyKTtcbiAgICAgICAgfSBlbHNlIHtcbiAgICAgICAgICByZXNvbHZlKGNvbnRlbnQpO1xuICAgICAgICB9XG4gICAgICB9KTtcbiAgICB9KTtcbiAgfVxuXG4gIC8qKlxuICAgKiBSZWN1cnNpdmVseSBzZWFyY2ggZGlyZWN0b3J5IGZvciBmaWxlcyB3aXRoIHRoZSBnaXZlbiBleHRlbnNpb25cbiAgICpcbiAgICogQHBhcmFtIHtzdHJpbmd9IGRpcmVjdG9yeU5hbWUgLSB0aGUgZGlyIHRvIHN0YXJ0IHNlYXJjaCBpblxuICAgKiBAcGFyYW0ge3N0cmluZ30gZmluZEV4dCAtIHRoZSBmaWxlIGV4dGVuc2lvbiB0byBzZWFyY2ggZm9yXG4gICAqIEBwYXJhbSB7YXJyYXl9IF9yZXN1bHRzIC0gcHJpdmF0ZS4gaG9sZHMgcmVzdWx0cyBmb3IgcmVjdXJzaXZlIHNlYXJjaFxuICAgKiBAcmV0dXJucyB7YXJyYXl9IC0gYW4gYXJyYXkgb2YgZmlsZSBwYXRoIHN0cmluZ3NcbiAgICovXG4gIHN0YXRpYyBhc3luYyBmaW5kRmlsZXNXaXRoRXh0KGRpcmVjdG9yeU5hbWUsIGZpbmRFeHQsIF9yZXN1bHRzID0gW10pIHtcbiAgICBsZXQgZmlsZXMgPSBhd2FpdCBwcm9taXNpZnkoZnMucmVhZGRpcikoZGlyZWN0b3J5TmFtZSwge1xuICAgICAgd2l0aEZpbGVUeXBlczogdHJ1ZSxcbiAgICB9KTtcblxuICAgIGNvbnN0IGV4dCA9IGZpbmRFeHQuc3Vic3RyKDAsIDEpID09PSBcIi5cIiA/IGZpbmRFeHQgOiBgLiR7ZmluZEV4dH1gO1xuXG4gICAgZm9yIChsZXQgZiBvZiBmaWxlcykge1xuICAgICAgbGV0IGZ1bGxQYXRoID0gcGF0aC5qb2luKGRpcmVjdG9yeU5hbWUsIGYubmFtZSk7XG4gICAgICBpZiAoZi5pc0RpcmVjdG9yeSgpKSB7XG4gICAgICAgIGF3YWl0IEZpbGVNYW5hZ2VyLmZpbmRGaWxlc1dpdGhFeHQoZnVsbFBhdGgsIGZpbmRFeHQsIF9yZXN1bHRzKTtcbiAgICAgIH0gZWxzZSB7XG4gICAgICAgIGlmIChwYXRoLmV4dG5hbWUoZnVsbFBhdGgpID09PSBleHQpIHtcbiAgICAgICAgICBfcmVzdWx0cy5wdXNoKGZ1bGxQYXRoKTtcbiAgICAgICAgfVxuICAgICAgfVxuICAgIH1cbiAgICByZXR1cm4gX3Jlc3VsdHM7XG4gIH1cblxuICAvKipcbiAgICogQ2hlY2tzIGlmIGEgZmlsZSBhbHJlYWR5IGV4aXN0cyBhdCB0aGUgZ2l2ZW4gbG9jYXRpb25cbiAgICpcbiAgICogQHBhcmFtIHtzdHJpbmd9IHBhdGggLSBmaWxlIHBhdGggdG8gdGVzdFxuICAgKiBAcmV0dXJucyB7Ym9vbGVhbn1cbiAgICovXG4gIHN0YXRpYyBhc3luYyBmaWxlRXhpc3RzKHBhdGgpIHtcbiAgICB0cnkge1xuICAgICAgY29uc3Qgc3RhdHMgPSBhd2FpdCBwcm9taXNpZnkoZnMuc3RhdCkocGF0aCk7XG4gICAgICBpZiAoc3RhdHMuaXNGaWxlKCkpIHtcbiAgICAgICAgcmV0dXJuIHRydWU7XG4gICAgICB9XG4gICAgfSBjYXRjaCAoZXJyKSB7XG4gICAgICBjb25zb2xlLndhcm4oXCJDb3VsZCBub3QgZGV0ZWN0IGZpbGVcIiwgcGF0aCwgZXJyKTtcbiAgICAgIHJldHVybiBmYWxzZTtcbiAgICB9XG5cbiAgICByZXR1cm4gZmFsc2U7XG4gIH1cblxuICAvKipcbiAgICogQ2hlY2tzIGlmIGEgZGlyZWN0b3J5IGFscmVhZHkgZXhpc3RzIGF0IHRoZSBnaXZlbiBsb2NhdGlvblxuICAgKiBAcGFyYW0ge3N0cmluZ30gcGF0aCAtIGRpciB0byB0ZXN0XG4gICAqIEByZXR1cm5zIHtib29sZWFufVxuICAgKi9cbiAgc3RhdGljIGFzeW5jIGRpckV4aXN0cyhwYXRoKSB7XG4gICAgdHJ5IHtcbiAgICAgIGNvbnN0IHN0YXRzID0gYXdhaXQgcHJvbWlzaWZ5KGZzLnN0YXQpKHBhdGgpO1xuICAgICAgaWYgKHN0YXRzLmlzRGlyZWN0b3J5KCkpIHtcbiAgICAgICAgcmV0dXJuIHRydWU7XG4gICAgICB9XG4gICAgfSBjYXRjaCAoZXJyKSB7XG4gICAgICAvLyBjb25zb2xlLndhcm4oXCJDb3VsZCBub3QgZGV0ZWN0IGRpclwiLCBwYXRoLCBlcnIubWVzc2FnZSk7XG4gICAgICByZXR1cm4gZmFsc2U7XG4gICAgfVxuXG4gICAgcmV0dXJuIGZhbHNlO1xuICB9XG5cbiAgLyoqXG4gICAqIFJlY3Vyc2l2ZSBkaXJlY3RvcnkgY29weVxuICAgKiBAcGFyYW0ge3N0cmluZ30gc3JjIC0gcGF0aCB0byB0aGUgZGlyZWN0b3J5IHRvIGNvcHlcbiAgICogQHBhcmFtIHtzdHJpbmd9IGRlc3QgLSBwYXRoIHRvIHRoZSBjb3B5IGRlc3RpbmF0aW9uXG4gICAqL1xuICBzdGF0aWMgYXN5bmMgY29weURpcihzcmMsIGRlc3QpIHtcbiAgICBjb25zdCBlbnRyaWVzID0gYXdhaXQgcHJvbWlzaWZ5KGZzLnJlYWRkaXIpKHNyYywgeyB3aXRoRmlsZVR5cGVzOiB0cnVlIH0pO1xuICAgIHRyeSB7XG4gICAgICBhd2FpdCBwcm9taXNpZnkoZnMubWtkaXIpKGRlc3QpO1xuICAgIH0gY2F0Y2ggKGVycikge1xuICAgICAgY29uc29sZS5lcnJvcihcImNvcHlEaXIgRXJyb3I6IENvdWxkIG5vdCBta2RpclwiLCBkZXN0LCBlcnIubWVzc2FnZSk7XG4gICAgICB0aHJvdyBlcnI7XG4gICAgfVxuXG4gICAgZm9yIChsZXQgZW50cnkgb2YgZW50cmllcykge1xuICAgICAgY29uc3Qgc3JjUGF0aCA9IHBhdGguam9pbihzcmMsIGVudHJ5Lm5hbWUpO1xuICAgICAgY29uc3QgZGVzdFBhdGggPSBwYXRoLmpvaW4oZGVzdCwgZW50cnkubmFtZSk7XG4gICAgICBpZiAoZW50cnkuaXNEaXJlY3RvcnkoKSkge1xuICAgICAgICBhd2FpdCBGaWxlTWFuYWdlci5jb3B5RGlyKHNyY1BhdGgsIGRlc3RQYXRoKTtcbiAgICAgIH0gZWxzZSB7XG4gICAgICAgIGF3YWl0IHByb21pc2lmeShmcy5jb3B5RmlsZSkoc3JjUGF0aCwgZGVzdFBhdGgpO1xuICAgICAgfVxuICAgIH1cbiAgfVxuXG4gIC8qKlxuICAgKiBBIHdyYXBwZXIgZm9yIG9zLnRtcGRpciB0aGF0IHJlc29sdmVzIHN5bWxpbmtzXG4gICAqIHNlZTogaHR0cHM6Ly9naXRodWIuY29tL25vZGVqcy9ub2RlL2lzc3Vlcy8xMTQyMlxuICAgKi9cbiAgc3RhdGljIGFzeW5jIGdldFRtcERpcigpIHtcbiAgICBpZiAoRmlsZU1hbmFnZXIuZW52aXJvbm1lbnQgPT09IFwibm9kZVwiKSB7XG4gICAgICB0cnkge1xuICAgICAgICBjb25zdCB0bXBEaXIgPSBhd2FpdCBwcm9taXNpZnkoZnMucmVhbHBhdGgpKG9zLnRtcGRpcik7XG4gICAgICAgIHJldHVybiB0bXBEaXI7XG4gICAgICB9IGNhdGNoIChlcnIpIHtcbiAgICAgICAgY29uc29sZS5lcnJvcihcIkVycm9yIGluIGdldFRtcERpclwiLCBlcnIubWVzc2FnZSk7XG4gICAgICAgIHRocm93IGVycjtcbiAgICAgIH1cbiAgICB9IGVsc2Uge1xuICAgICAgcmV0dXJuIFwiL3RtcFwiO1xuICAgIH1cbiAgfVxuXG4gIHN0YXRpYyByZXNvbHZlSXJpVG9FcHViTG9jYXRpb24oaXJpLCByZWZlcmVuY2VQYXRoKSB7XG4gICAgaWYgKGlyaS5pbmRleE9mKFwiaHR0cFwiKSA9PT0gMCkge1xuICAgICAgcmV0dXJuIGlyaTtcbiAgICB9IGVsc2Uge1xuICAgICAgcmV0dXJuIHBhdGguam9pbihwYXRoLmRpcm5hbWUocmVmZXJlbmNlUGF0aCksIGlyaSk7XG4gICAgfVxuICB9XG5cbiAgc3RhdGljIGFic29sdXRlUGF0aFRvRXB1YkxvY2F0aW9uKGVwdWJQYXRoLCByZXNvdXJjZVBhdGgpIHtcbiAgICByZXR1cm4gcGF0aC5yZWxhdGl2ZShlcHViUGF0aCwgcmVzb3VyY2VQYXRoKTtcbiAgfVxuXG4gIHN0YXRpYyBlcHViTG9jYXRpb25Ub0Fic29sdXRlUGF0aChlcHViUGF0aCwgcmVzb3VyY2VQYXRoKSB7XG4gICAgcmV0dXJuIHBhdGguam9pbihwYXRoLmRpcm5hbWUsIGVwdWJQYXRoLCByZXNvdXJjZVBhdGgpO1xuICB9XG59XG5cbmV4cG9ydCBkZWZhdWx0IEZpbGVNYW5hZ2VyO1xuIl19
+  /**
+   * Recursive directory copy
+   * @param {string} src - path to the directory to copy
+   * @param {string} dest - path to the copy destination
+   */
+  static async copyDir(src, dest) {
+    const entries = await (0, _es6Promisify.promisify)(_fs.default.readdir)(src, { withFileTypes: true });
+    try {
+      await (0, _es6Promisify.promisify)(_fs.default.mkdir)(dest);
+    } catch (err) {
+      console.error("copyDir Error: Could not mkdir", dest, err.message);
+      throw err;
+    }
+
+    for (let entry of entries) {
+      const srcPath = _path.default.join(src, entry.name);
+      const destPath = _path.default.join(dest, entry.name);
+      if (entry.isDirectory()) {
+        await FileManager.copyDir(srcPath, destPath);
+      } else {
+        await (0, _es6Promisify.promisify)(_fs.default.copyFile)(srcPath, destPath);
+      }
+    }
+  }
+
+  /**
+   * A wrapper for os.tmpdir that resolves symlinks
+   * see: https://github.com/nodejs/node/issues/11422
+   */
+  static async getTmpDir() {
+    if (FileManager.environment === "node") {
+      try {
+        const tmpDir = await (0, _es6Promisify.promisify)(_fs.default.realpath)(_os.default.tmpdir);
+        return tmpDir;
+      } catch (err) {
+        console.error("Error in getTmpDir", err.message);
+        throw err;
+      }
+    } else {
+      return "/tmp";
+    }
+  }
+
+  static resolveIriToEpubLocation(iri, referencePath) {
+    if (iri.indexOf("http") === 0) {
+      return iri;
+    } else {
+      return _path.default.join(_path.default.dirname(referencePath), iri);
+    }
+  }
+
+  static absolutePathToEpubLocation(epubPath, resourcePath) {
+    return _path.default.relative(epubPath, resourcePath);
+  }
+
+  static epubLocationToAbsolutePath(epubPath, resourcePath) {
+    return _path.default.join(_path.default.dirname, epubPath, resourcePath);
+  }}var _default =
+
+
+FileManager;exports.default = _default;module.exports = exports.default;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uL3NyYy9maWxlLW1hbmFnZXIuanMiXSwibmFtZXMiOlsiRmlsZU1hbmFnZXIiLCJ2aXJ0dWFsUGF0aCIsImVudmlyb25tZW50IiwicHJvY2VzcyIsImVudiIsIk1PQ0tfRU5WIiwid2luZG93IiwibG9hZEVwdWIiLCJsb2NhdGlvbiIsImZldGNoT3B0aW9ucyIsImlzRXB1YkFyY2hpdmUiLCJ3b3JraW5nUGF0aCIsInByZXBhcmVFcHViQXJjaGl2ZSIsInByZXBhcmVFcHViRGlyIiwic2F2ZUVwdWJBcmNoaXZlIiwic291cmNlTG9jYXRpb24iLCJzYXZlTG9jYXRpb24iLCJjb21wcmVzcyIsInBhdGhJbmZvIiwicGF0aCIsInBhcnNlIiwiZXB1Yk5hbWUiLCJuYW1lIiwiemlwIiwiSlNaaXAiLCJmaWxlUGF0aHMiLCJmaW5kQWxsRmlsZXMiLCJtaW1lVHlwZUNvbnRlbnQiLCJyZWFkRmlsZSIsInJlc29sdmUiLCJmaWxlIiwiZmlsZVBhdGgiLCJjb250ZW50cyIsInJlbGF0aXZlUGF0aCIsInN1YnN0cmluZyIsIm5vcm1hbGl6ZSIsImxlbmd0aCIsImNvbnNvbGUiLCJlcnJvciIsInppcENvbnRlbnQiLCJnZW5lcmF0ZUFzeW5jIiwidHlwZSIsImNvbXByZXNzaW9uIiwiY29tcHJlc3Npb25PcHRpb25zIiwibGV2ZWwiLCJlcnIiLCJsb2ciLCJyZXN1bHQiLCJGaWxlU2F2ZXIiLCJzYXZlQXMiLCJiYXNlIiwiZnMiLCJ3cml0ZUZpbGUiLCJwcmVmaXhVcmwiLCJjb250YWluZXJMb2NhdGlvbiIsImNvbnRhaW5lclVybCIsInJlc3BvbnNlIiwiZmV0Y2giLCJvayIsImNvbnRhaW5lckRhdGEiLCJ0ZXh0IiwibWFuaWZlc3RQYXRoIiwieG1sMmpzIiwicGFyc2VTdHJpbmciLCJjb250YWluZXIiLCJyb290ZmlsZXMiLCJyb290ZmlsZSIsIiQiLCJvcGZMb2NhdGlvbiIsIm9wZkZldGNoUmVzcG9uc2UiLCJvcGZEYXRhIiwicGFja2FnZU1hbmFnZXIiLCJQYWNrYWdlTWFuYWdlciIsImxvYWRYbWwiLCJtYW5pZmVzdEl0ZW1zIiwibWFuaWZlc3QiLCJpdGVtcyIsImZzTWFuaWZlc3RQYXRoIiwiam9pbiIsImZpbGVJbmRleCIsIkpTT04iLCJzdHJpbmdpZnkiLCJCcm93c2VyRlMiLCJjb25maWd1cmUiLCJvcHRpb25zIiwicmVhZGFibGUiLCJiYXNlVXJsIiwiaW5kZXgiLCJ3cml0YWJsZSIsIm1lc3NhZ2UiLCJ0bXBEaXIiLCJnZXRUbXBEaXIiLCJlcHViRGlyTmFtZSIsInNwbGl0Iiwic2VwIiwicG9wIiwidG1wUGF0aCIsIkRhdGUiLCJub3ciLCJkaXJFeGlzdHMiLCJybWRpciIsInJlY3Vyc2l2ZSIsIm1heFJldHJpZXMiLCJjb3B5RGlyIiwiaXNFcHViIiwid2FybiIsInppcERhdGEiLCJhcnJheUJ1ZmZlciIsIkJ1ZmZlciIsIkJGU1JlcXVpcmUiLCJ3b3JraW5nRGlyIiwiZnJvbSIsInJlYWRkaXIiLCJmaWxlcyIsIm9zIiwidG1wZGlyIiwiYmFzZW5hbWUiLCJBZG1aaXAiLCJleHRyYWN0QWxsVG8iLCJleHQiLCJleHRuYW1lIiwiZ2V0U3RhdHMiLCJzdGF0cyIsInN0YXQiLCJpc0RpciIsImlzRGlyZWN0b3J5IiwiaXNGaWxlIiwiZW5jb2RpbmciLCJ1bmRlZmluZWQiLCJkYXRhIiwicmVhZFhtbEZpbGUiLCJhdHRya2V5IiwiY2hhcmtleSIsInRyaW0iLCJkaXJlY3RvcnlOYW1lIiwiX3Jlc3VsdHMiLCJyZWFkRGlyIiwiZnVsbFBhdGgiLCJzdWJkaXIiLCJwdXNoIiwiZGlyZWN0b3J5IiwiUHJvbWlzZSIsInJlamVjdCIsImNvbnRlbnQiLCJmaW5kRmlsZXNXaXRoRXh0IiwiZmluZEV4dCIsIndpdGhGaWxlVHlwZXMiLCJzdWJzdHIiLCJmIiwiZmlsZUV4aXN0cyIsInNyYyIsImRlc3QiLCJlbnRyaWVzIiwibWtkaXIiLCJlbnRyeSIsInNyY1BhdGgiLCJkZXN0UGF0aCIsImNvcHlGaWxlIiwicmVhbHBhdGgiLCJyZXNvbHZlSXJpVG9FcHViTG9jYXRpb24iLCJpcmkiLCJyZWZlcmVuY2VQYXRoIiwiaW5kZXhPZiIsImRpcm5hbWUiLCJhYnNvbHV0ZVBhdGhUb0VwdWJMb2NhdGlvbiIsImVwdWJQYXRoIiwicmVzb3VyY2VQYXRoIiwicmVsYXRpdmUiLCJlcHViTG9jYXRpb25Ub0Fic29sdXRlUGF0aCJdLCJtYXBwaW5ncyI6Im9HQUFBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQTs7QUFFQTtBQUNBLHNFLDhGQVBvQztBQUNwQztBQVFBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSxNQUFNQSxXQUFOLENBQWtCO0FBQ00sYUFBWEMsV0FBVyxHQUFHO0FBQ3ZCLFdBQU8sVUFBUDtBQUNEO0FBQ0Q7QUFDRjtBQUNBO0FBQ0E7QUFDQTtBQUN3QixhQUFYQyxXQUFXLEdBQUc7QUFDdkI7QUFDQSxvQkFBSUMsT0FBSixxREFBSSxTQUFTQyxHQUFiLHlDQUFJLGFBQWNDLFFBQWxCLEVBQTRCO0FBQzFCLGFBQU9GLE9BQU8sQ0FBQ0MsR0FBUixDQUFZQyxRQUFuQjtBQUNEO0FBQ0QsV0FBTyxPQUFPQyxNQUFQLEtBQWtCLFdBQWxCLEdBQWdDLE1BQWhDLEdBQXlDLFNBQWhEO0FBQ0Q7O0FBRW9CLGVBQVJDLFFBQVEsQ0FBQ0MsUUFBRCxFQUFXQyxZQUFZLEdBQUcsRUFBMUIsRUFBOEI7QUFDakQsUUFBSVQsV0FBVyxDQUFDVSxhQUFaLENBQTBCRixRQUExQixDQUFKLEVBQXlDO0FBQ3ZDLFlBQU1HLFdBQVcsR0FBRyxNQUFNWCxXQUFXLENBQUNZLGtCQUFaO0FBQ3hCSixNQUFBQSxRQUR3QjtBQUV4QkMsTUFBQUEsWUFGd0IsQ0FBMUI7O0FBSUEsYUFBT0UsV0FBUDtBQUNELEtBTkQsTUFNTztBQUNMLFlBQU1BLFdBQVcsR0FBRyxNQUFNWCxXQUFXLENBQUNhLGNBQVo7QUFDeEJMLE1BQUFBLFFBRHdCO0FBRXhCQyxNQUFBQSxZQUZ3QixDQUExQjs7QUFJQSxh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O0FBRWdDLFNBQTFCSSwwQkFBMEIsQ0FBQ0MsUUFBRCxFQUFXQyxZQUFYLEVBQXlCO0FBQ3hELFdBQU9uSixjQUFLb0osUUFBTCxDQUFjRixRQUFkLEVBQXdCQyxZQUF4QixDQUFQO0FBQ0Q7O0FBRWdDLFNBQTFCRSwwQkFBMEIsQ0FBQ0gsUUFBRCxFQUFXQyxZQUFYLEVBQXlCO0FBQ3hELFdBQU9uSixjQUFLMkQsSUFBTCxDQUFVM0QsY0FBS2dKLE9BQWYsRUFBd0JFLFFBQXhCLEVBQWtDQyxZQUFsQyxDQUFQO0FBQ0QsR0F0bUJlLEM7OztBQXltQkh0SyxXIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IGZzIGZyb20gXCJmc1wiO1xuaW1wb3J0IG9zIGZyb20gXCJvc1wiO1xuaW1wb3J0IHBhdGggZnJvbSBcInBhdGhcIjtcbmltcG9ydCBGaWxlU2F2ZXIgZnJvbSBcImZpbGUtc2F2ZXJcIjsgLy9cIi4uL25vZGVfbW9kdWxlcy9maWxlLXNhdmVyL3NyYy9GaWxlU2F2ZXIuanNcIjtcbi8vIE5PVEU6IHdlIGNhbm5vdCB1c2UgdGhlIG5hdGl2ZSBmcyBwcm9taXNlcyBiZWNhdXNlIEJyb3dzZXJGUyBkb2VzIG5vdCBzdXBwb3J0IHRoZW0geWV0LlxuaW1wb3J0IHsgcHJvbWlzaWZ5IH0gZnJvbSBcImVzNi1wcm9taXNpZnlcIjtcbmltcG9ydCB4bWwyanMgZnJvbSBcInhtbDJqc1wiO1xuaW1wb3J0IEpTWmlwIGZyb20gXCJqc3ppcFwiO1xuXG5pbXBvcnQgUGFja2FnZU1hbmFnZXIgZnJvbSBcIi4vcGFja2FnZS1tYW5hZ2VyXCI7XG5pbXBvcnQgeyBvcGZNYW5pZmVzdFRvQnJvd3NlckZzSW5kZXggfSBmcm9tIFwiLi91dGlscy9vcGYtdG8tYnJvd3Nlci1mcy1pbmRleFwiO1xuXG4vKipcbiAqIE1vc3Qgb2YgdGhlIG5hc3R5IGRldGFpbHMgaW4gbWFuYWdpbmcgdGhlIGRpZmZlcmVudCBlbnZpcm9ubWVudHMgaXNcbiAqIGNvbnRhaW5lZCBpbiBoZXJlLlxuICogVGhpcyBjbGFzcyB3cmFwcyBhIGxvdCBvZiB0aGUgbm9kZSBmcyBmaWxlIHN5c3RlbSBsaWJyYXJ5IG1ldGhvZHMuXG4gKiBGb3IgYnJvd3NlciBjbGllbnRzLCB0aGUgQnJvc3dlckZTIG1vZHVsZSBpcyB1c2VkIHRvIGVtdWxhdGUgTm9kZSBGUyBhbmRcbiAqIEZpbGVTYXZlciBpcyB1c2VkIHRvIGVuYWJsZSBjbGllbnQncyB0byBkb3dubG9hZCBkb2N1bWVudHMgZm9yIHNhdmluZy5cbiAqIEJyb3dzZXJGUyBkb2VzIG5vdCBwb2xseWZpbGwgdGhlIGZzIG5hdGl2ZSBwcm9taXNlcywgc28gbWFueSBmcyBtZXRob2RzXG4gKiBhcmUgd3JhcHBlZCB3aXRoIHByb21pc2lmeSBiZWxvdy5cbiAqXG4gKiBzZWUgYWxzbzpcbiAqIGh0dHBzOi8vZ2l0aHViLmNvbS9qdmlsay9Ccm93c2VyRlNcbiAqIGh0dHBzOi8vZ2l0aHViLmNvbS9icm93c2VyaWZ5L3BhdGgtYnJvd3NlcmlmeVxuICpcbiAqL1xuY2xhc3MgRmlsZU1hbmFnZXIge1xuICBzdGF0aWMgZ2V0IHZpcnR1YWxQYXRoKCkge1xuICAgIHJldHVybiBcIi9lcHVia2l0XCI7XG4gIH1cbiAgLyoqXG4gICAqIFB1YmxpYyBjbGFzcyBwcm9wZXJ0eSBlbnZpcm9ubWVudC5cbiAgICogZW52aXJvbm1lbnQgaW5kaWNhdGVzIGlmIHdlIGFyZSBydW5uaW5nIGluIGEgYnJvd3NlciBvciBub3QuXG4gICAqIEByZXR1cm5zIHtzdHJpbmd9IC0gb25lIG9mIFwiYnJvd3NlclwiIG9yIFwibm9kZVwiXG4gICAqL1xuICBzdGF0aWMgZ2V0IGVudmlyb25tZW50KCkge1xuICAgIC8vIGZvciB0ZXN0aW5nIGluIGplc3Qgd2Ugc29tZXRpbWVzIG5lZWQgdG8gZm9yY2UgdGhlIGVudiBub2RlX2VudlxuICAgIGlmIChwcm9jZXNzPy5lbnY/Lk1PQ0tfRU5WKSB7XG4gICAgICByZXR1cm4gcHJvY2Vzcy5lbnYuTU9DS19FTlY7XG4gICAgfVxuICAgIHJldHVybiB0eXBlb2Ygd2luZG93ID09PSBcInVuZGVmaW5lZFwiID8gXCJub2RlXCIgOiBcImJyb3dzZXJcIjtcbiAgfVxuXG4gIHN0YXRpYyBhc3luYyBsb2FkRXB1Yihsb2NhdGlvbiwgZmV0Y2hPcHRpb25zID0ge30pIHtcbiAgICBpZiAoRmlsZU1hbmFnZXIuaXNFcHViQXJjaGl2ZShsb2NhdGlvbikpIHtcbiAgICAgIGNvbnN0IHdvcmtpbmdQYXRoID0gYXdhaXQgRmlsZU1hbmFnZXIucHJlcGFyZUVwdWJBcmNoaXZlKFxuICAgICAgICBsb2NhdGlvbixcbiAgICAgICAgZmV0Y2hPcHRpb25zXG4gICAgICApO1xuICAgICAgcmV0dXJuIHdvcmtpbmdQYXRoO1xuICAgIH0gZWxzZSB7XG4gICAgICBjb25zdCB3b3JraW5nUGF0aCA9IGF3YWl0IEZpbGVNYW5hZ2VyLnByZXBhcmVFcHViRGlyKFxuICAgICAgICBsb2NhdGlvbixcbiAgICAgICAgZmV0Y2hPcHRpb25zXG4gICAgICApO1xuICAgICAgcmV0dXJuIHdvcmtpbmdQYXRoO1xuICAgIH1cbiAgfVxuXG4gIC8qKlxuICAgKiBTYXZlcyB0aGUgZXB1YiBhcmNoaXZlIHRvIHRoZSBnaXZlbiBsb2NhdGlvbi4gSW4gdGhlIGJyb3dzZXIsXG4gICAqIHRoZSB1c2VyIHdpbGwgYmUgcHJvbXB0ZWQgdG8gc2V0IHRoZSBmaWxlIGRvd25sb2FkIGxvY2F0aW9uLlxuICAgKiBUaGlzIG1ldGhvZCByZWxpZXMgb24gSlNaaXAgZm9yIHppcGluZyB0aGUgYXJjaGl2ZSBpbiBib3RoIGNsaWVudCBhbmQgbm9kZVxuICAgKiBUT0RPOiBpZiB0ZXN0aW5nIHNob3dzIHRoYXQgSlNaaXAgaXMgbm90IGJlc3QgZm9yIG5vZGUsIGNvbnNpZGVyIHVzaW5nXG4gICAqIGFyY2hpdmVyOiBodHRwczovL2dpdGh1Yi5jb20vYXJjaGl2ZXJqcy9ub2RlLWFyY2hpdmVyXG4gICAqIGVwdWIgemlwIHNwZWM6IGh0dHBzOi8vd3d3LnczLm9yZy9wdWJsaXNoaW5nL2VwdWIzL2VwdWItb2NmLmh0bWwjc2VjLXppcC1jb250YWluZXItemlwcmVxc1xuICAgKiBAcGFyYW0ge3N0cmluZ30gbG9jYXRpb24gLSBkZXN0aW5hdGlvbiBwYXRoIHRvIHNhdmUgZXB1YiB0b1xuICAgKiBAcGFyYW0ge2Jvb2xlYW59IGNvbXByZXNzIC0gZmxhZyB0byBlbmFibGUgYXJjaGl2ZSBjb21wcmVzc2lvblxuICAgKi9cbiAgc3RhdGljIGFzeW5jIHNhdmVFcHViQXJjaGl2ZShzb3VyY2VMb2NhdGlvbiwgc2F2ZUxvY2F0aW9uLCBjb21wcmVzcyA9IGZhbHNlKSB7XG4gICAgY29uc3QgcGF0aEluZm8gPSBwYXRoLnBhcnNlKHNhdmVMb2NhdGlvbik7XG4gICAgY29uc3QgZXB1Yk5hbWUgPSBwYXRoSW5mby5uYW1lO1xuXG4gICAgY29uc3QgemlwID0gbmV3IEpTWmlwKCk7XG4gICAgY29uc3QgZmlsZVBhdGhzID0gYXdhaXQgRmlsZU1hbmFnZXIuZmluZEFsbEZpbGVzKHNvdXJjZUxvY2F0aW9uKTtcblxuICAgIC8vIG1pbWV0aW1lIG11c3QgYmUgZmlyc3QgZmlsZSBpbiB0aGUgemlwO1xuICAgIGNvbnN0IG1pbWVUeXBlQ29udGVudCA9IGF3YWl0IEZpbGVNYW5hZ2VyLnJlYWRGaWxlKFxuICAgICAgcGF0aC5yZXNvbHZlKHNvdXJjZUxvY2F0aW9uLCBcIm1pbWV0eXBlXCIpXG4gICAgKTtcbiAgICB6aXAuZmlsZShcIm1pbWV0eXBlXCIsIG1pbWVUeXBlQ29udGVudCk7XG5cbiAgICAvLyB0byBydW4gaW4gcGFyYWxsZWwgc2VlOiBodHRwczovL3N0YWNrb3ZlcmZsb3cuY29tL2EvNTA4NzQ1MDcvNzk0MzU4OVxuICAgIGZvciAoY29uc3QgZmlsZVBhdGggb2YgZmlsZVBhdGhzKSB7XG4gICAgICBjb25zdCBjb250ZW50cyA9IGF3YWl0IEZpbGVNYW5hZ2VyLnJlYWRGaWxlKGZpbGVQYXRoKTtcbiAgICAgIC8vIGNvbnZlcnQgdGhlIGFic29sdXRlIHBhdGggdG8gdGhlIGludGVybmFsIGVwdWIgcGF0aFxuICAgICAgbGV0IHJlbGF0aXZlUGF0aCA9IGZpbGVQYXRoLnN1YnN0cmluZyhcbiAgICAgICAgYCR7cGF0aC5ub3JtYWxpemUoc291cmNlTG9jYXRpb24pfWAubGVuZ3RoXG4gICAgICApO1xuICAgICAgaWYgKHJlbGF0aXZlUGF0aC5zdWJzdHJpbmcoMCwgMSkgPT09IFwiL1wiKSB7XG4gICAgICAgIHJlbGF0aXZlUGF0aCA9IHJlbGF0aXZlUGF0aC5zdWJzdHJpbmcoMSk7XG4gICAgICB9XG4gICAgICBpZiAocmVsYXRpdmVQYXRoICE9PSBcIm1pbWV0eXBlXCIpIHtcbiAgICAgICAgaWYgKGNvbnRlbnRzKSB7XG4gICAgICAgICAgemlwLmZpbGUoYCR7cmVsYXRpdmVQYXRofWAsIGNvbnRlbnRzKTtcbiAgICAgICAgfSBlbHNlIHtcbiAgICAgICAgICBjb25zb2xlLmVycm9yKFwiQ291bGQgbm90IHJlYWQgY29udGVudHMgb2YgZmlsZVwiLCBmaWxlUGF0aCk7XG4gICAgICAgICAgcmV0dXJuO1xuICAgICAgICB9XG4gICAgICB9XG4gICAgfVxuXG4gICAgbGV0IHppcENvbnRlbnQ7XG5cbiAgICB0cnkge1xuICAgICAgemlwQ29udGVudCA9IGF3YWl0IHppcC5nZW5lcmF0ZUFzeW5jKHtcbiAgICAgICAgdHlwZTogRmlsZU1hbmFnZXIuZW52aXJvbm1lbnQgPT09IFwiYnJvd3NlclwiID8gXCJibG9iXCIgOiBcIm5vZGVidWZmZXJcIixcbiAgICAgICAgY29tcHJlc3Npb246IGNvbXByZXNzID8gXCJERUZMQVRFXCIgOiBcIlNUT1JFXCIsXG4gICAgICAgIGNvbXByZXNzaW9uT3B0aW9uczoge1xuICAgICAgICAgIGxldmVsOiBjb21wcmVzc1xuICAgICAgICAgICAgPyA4XG4gICAgICAgICAgICA6IDAgLyogb25seSBsZXZlbHMgMCBvciA4IGFyZSBhbGxvd2VkIGluIGVwdWIgc3BlYyAqLyxcbiAgICAgICAgfSxcbiAgICAgIH0pO1xuICAgIH0gY2F0Y2ggKGVycikge1xuICAgICAgY29uc29sZS5sb2coXCJFcnJvciBhdCB6aXAuZ2VuZXJhdGVBc3luYyBcIiwgZXJyKTtcbiAgICB9XG5cbiAgICBpZiAoemlwQ29udGVudCkge1xuICAgICAgLy8gVE9ETy0gRmlsZVNhdmVyIGlzIGN1cnJlbnRseSBidWdnZWQgaW4gY2hyb21lOlxuICAgICAgLy8gc2VlOiBodHRwczovL2dpdGh1Yi5jb20vZWxpZ3JleS9GaWxlU2F2ZXIuanMvaXNzdWVzLzYyNFxuICAgICAgaWYgKEZpbGVNYW5hZ2VyLmVudmlyb25tZW50ID09PSBcImJyb3dzZXJcIikge1xuICAgICAgICB0cnkge1xuICAgICAgICAgIGNvbnN0IHJlc3VsdCA9IEZpbGVTYXZlci5zYXZlQXMoemlwQ29udGVudCwgcGF0aEluZm8uYmFzZSk7XG4gICAgICAgIH0gY2F0Y2ggKGVycikge1xuICAgICAgICAgIGNvbnNvbGUuZXJyb3IoXCJFcnJvciBzYXZpbmcgZXB1YlwiLCBlcnIpO1xuICAgICAgICAgIHJldHVybjtcbiAgICAgICAgfVxuICAgICAgfSBlbHNlIHtcbiAgICAgICAgdHJ5IHtcbiAgICAgICAgICBhd2FpdCBwcm9taXNpZnkoZnMud3JpdGVGaWxlKShzYXZlTG9jYXRpb24sIHppcENvbnRlbnQpO1xuICAgICAgICB9IGNhdGNoIChlcnIpIHtcbiAgICAgICAgICBjb25zb2xlLmxvZyhcIkVycm9yIHdyaXRpbmcgemlwIGZpbGU6XCIsIGVycik7XG4gICAgICAgICAgcmV0dXJuO1xuICAgICAgICB9XG4gICAgICB9XG4gICAgfSBlbHNlIHtcbiAgICAgIGNvbnNvbGUuZXJyb3IoXCJFcnJvciBnZW5lcmF0aW5nIHppcCBmaWxlLlwiKTtcbiAgICB9XG4gIH1cblxuICAvKipcbiAgICogV2hlbiBsb2FkaW5nIGFuIEVwdWIgZGlyZWN0b3J5IGluIGEgYnJvd3NlciBjbGllbnQsIHRoZSBmaWxlc1xuICAgKiBhcmUgZmV0Y2hlZCBsYXppbHkgYnkgQnJvd3NlckZTIGFuZCBzYXZlZCB0byBsb2NhbFN0b3JhZ2UuXG4gICAqXG4gICAqIEBwYXJhbSB7c3RyaW5nfSBsb2NhdGlvblxuICAgKi9cbiAgc3RhdGljIGFzeW5jIHByZXBhcmVFcHViRGlyKGxvY2F0aW9uLCBmZXRjaE9wdGlvbnMgPSB7fSkge1xuICAgIGlmIChGaWxlTWFuYWdlci5lbnZpcm9ubWVudCA9PT0gXCJicm93c2VyXCIpIHtcbiAgICAgIC8qXG4gICAgICBGb3IgdGhlIGJyb3dzZXIgd2UgbmVlZCB0byBidWlsZCBhIGZpbGUgaW5kZXggZm9yIEJyb3dzZXJGUyBcbiAgICAgIFRoYXQgaW5kZXggaXMgZGVyaXZlZCBmcm9tIHRoZSBPUEYgZmlsZSBzbyB3ZSBtdXN0IGZpbmQgdGhlIG9wZlxuICAgICAgcGF0aCBnaXZlbiBpbiB0aGUgY29udGFpbmVyLnhtbCBmaWxlLiBcbiAgICAgIFRoZXJlIGlzIGEgY2hpY2tlbiBhbmQgZWdnIHByb2JsZW0gaW4gdGhhdCBCcm93c2VyRlMgY2FuIG5vdCBiZSBcbiAgICAgIGluaXRpYWxpemVkIHdpdGhvdXQgdGhlIGZpbGUgaW5kZXgsIHNvIHdlIG11c3QgcHJlbG9hZCB0aGUgY29udGFpbmVyLnhtbFxuICAgICAgYW5kIE9QRiBmaWxlIGZpcnN0LiBcbiAgICAgICovXG4gICAgICBjb25zdCBwcmVmaXhVcmwgPSBwYXRoLnJlc29sdmUobG9jYXRpb24pO1xuICAgICAgY29uc3QgY29udGFpbmVyTG9jYXRpb24gPSBcIi4vTUVUQS1JTkYvY29udGFpbmVyLnhtbFwiO1xuICAgICAgY29uc3QgY29udGFpbmVyVXJsID0gcGF0aC5yZXNvbHZlKGxvY2F0aW9uLCBjb250YWluZXJMb2NhdGlvbik7XG4gICAgICBjb25zdCByZXNwb25zZSA9IGF3YWl0IGZldGNoKGNvbnRhaW5lclVybCwgZmV0Y2hPcHRpb25zKTtcblxuICAgICAgaWYgKCFyZXNwb25zZS5vaykge1xuICAgICAgICBjb25zb2xlLmVycm9yKFwiRXJyb3IgZmV0Y2hpbmcgY29udGFpbmVyLnhtbFwiKTtcbiAgICAgICAgcmV0dXJuO1xuICAgICAgfVxuICAgICAgY29uc3QgY29udGFpbmVyRGF0YSA9IGF3YWl0IHJlc3BvbnNlLnRleHQoKTtcbiAgICAgIGNvbnNvbGUubG9nKFwiY29udGFpbmVyRGF0YVwiLCBjb250YWluZXJEYXRhKTtcbiAgICAgIGxldCBtYW5pZmVzdFBhdGg7XG4gICAgICB0cnkge1xuICAgICAgICAvLyBjb25zdCBwYXJzZXIgPSBuZXcgeG1sMmpzLlBhcnNlcigpO1xuICAgICAgICBjb25zdCByZXN1bHQgPSBhd2FpdCBwcm9taXNpZnkoeG1sMmpzLnBhcnNlU3RyaW5nKShjb250YWluZXJEYXRhKTtcblxuICAgICAgICBtYW5pZmVzdFBhdGggPVxuICAgICAgICAgIHJlc3VsdD8uY29udGFpbmVyPy5yb290ZmlsZXNbMF0ucm9vdGZpbGVbMF0/LiRbXCJmdWxsLXBhdGhcIl07XG4gICAgICAgIGlmICghbWFuaWZlc3RQYXRoKSB7XG4gICAgICAgICAgY29uc29sZS5lcnJvcihcIkNvdWxkIG5vdCBmaW5kIHBhdGggdG8gb3BmIGZpbGUuXCIpO1xuICAgICAgICAgIHJldHVybjtcbiAgICAgICAgfVxuICAgICAgfSBjYXRjaCAoZXJyKSB7XG4gICAgICAgIGNvbnNvbGUuZXJyb3IoXCJFcnJvciBwYXJzaW5nIGNvbnRhaW5lci54bWwgZmlsZTpcIiwgZXJyKTtcbiAgICAgICAgcmV0dXJuO1xuICAgICAgfVxuXG4gICAgICBjb25zdCBvcGZMb2NhdGlvbiA9IHBhdGgucmVzb2x2ZShsb2NhdGlvbiwgbWFuaWZlc3RQYXRoKTtcbiAgICAgIGNvbnN0IG9wZkZldGNoUmVzcG9uc2UgPSBhd2FpdCBmZXRjaChvcGZMb2NhdGlvbiwgZmV0Y2hPcHRpb25zKTtcbiAgICAgIGNvbnN0IG9wZkRhdGEgPSBhd2FpdCBvcGZGZXRjaFJlc3BvbnNlLnRleHQoKTtcbiAgICAgIGNvbnN0IHBhY2thZ2VNYW5hZ2VyID0gbmV3IFBhY2thZ2VNYW5hZ2VyKG1hbmlmZXN0UGF0aCk7XG4gICAgICBhd2FpdCBwYWNrYWdlTWFuYWdlci5sb2FkWG1sKG9wZkRhdGEpO1xuICAgICAgY29uc3QgbWFuaWZlc3RJdGVtcyA9IHBhY2thZ2VNYW5hZ2VyLm1hbmlmZXN0Lml0ZW1zO1xuXG4gICAgICBjb25zdCBmc01hbmlmZXN0UGF0aCA9IHBhdGguam9pbihsb2NhdGlvbiwgbWFuaWZlc3RQYXRoKTtcbiAgICAgIGNvbnN0IGZpbGVJbmRleCA9IG9wZk1hbmlmZXN0VG9Ccm93c2VyRnNJbmRleChcbiAgICAgICAgbWFuaWZlc3RJdGVtcyxcbiAgICAgICAgbWFuaWZlc3RQYXRoXG4gICAgICApO1xuICAgICAgY29uc29sZS5sb2coXCJNb3VudGluZyBlcHViIGRpcmVjdG9yeSB3aXRoIEJyb3dzZXJGU1wiLCBsb2NhdGlvbik7XG4gICAgICBjb25zb2xlLmxvZyhcImZpbGUgaW5kZXhcIiwgSlNPTi5wYXJzZShKU09OLnN0cmluZ2lmeShmaWxlSW5kZXgpKSk7XG5cbiAgICAgIHRyeSB7XG4gICAgICAgIGNvbnN0IHJlc3VsdCA9IGF3YWl0IHByb21pc2lmeShCcm93c2VyRlMuY29uZmlndXJlKSh7XG4gICAgICAgICAgZnM6IFwiTW91bnRhYmxlRmlsZVN5c3RlbVwiLFxuICAgICAgICAgIG9wdGlvbnM6IHtcbiAgICAgICAgICAgIFtGaWxlTWFuYWdlci52aXJ0dWFsUGF0aCArIFwiL292ZXJsYXlcIl06IHtcbiAgICAgICAgICAgICAgZnM6IFwiT3ZlcmxheUZTXCIsXG4gICAgICAgICAgICAgIG9wdGlvbnM6IHtcbiAgICAgICAgICAgICAgICByZWFkYWJsZToge1xuICAgICAgICAgICAgICAgICAgZnM6IFwiSFRUUFJlcXVlc3RcIixcbiAgICAgICAgICAgICAgICAgIG9wdGlvbnM6IHtcbiAgICAgICAgICAgICAgICAgICAgYmFzZVVybDogcHJlZml4VXJsLFxuICAgICAgICAgICAgICAgICAgICBpbmRleDogZmlsZUluZGV4IC8qIGEganNvbiBkaXJlY3Rvcnkgc3RydWN0dXJlICovLFxuICAgICAgICAgICAgICAgICAgfSxcbiAgICAgICAgICAgICAgICB9LFxuICAgICAgICAgICAgICAgIHdyaXRhYmxlOiB7XG4gICAgICAgICAgICAgICAgICBmczogXCJMb2NhbFN0b3JhZ2VcIixcbiAgICAgICAgICAgICAgICB9LFxuICAgICAgICAgICAgICB9LFxuICAgICAgICAgICAgfSxcbiAgICAgICAgICAgIFwiL3RtcFwiOiB7IGZzOiBcIkluTWVtb3J5XCIgfSxcbiAgICAgICAgICB9LFxuICAgICAgICB9KTtcbiAgICAgIH0gY2F0Y2ggKGVycikge1xuICAgICAgICBjb25zb2xlLmVycm9yKFwiRXJyb3IgY29uZmlndXJpbmcgQnJvd3NlckZTOlwiLCBlcnIubWVzc2FnZSk7XG4gICAgICAgIHJldHVybjtcbiAgICAgIH1cbiAgICAgIC8vIGZzLnJlYWRkaXIoXCIuL2VwdWJraXQvb3ZlcmxheS90ZXN0L2FsaWNlL01FVEEtSU5GXCIsIChlcnIsIGZpbGVzKSA9PiB7XG4gICAgICAvLyAgIGZpbGVzLmZvckVhY2goKGZpbGUpID0+IHtcbiAgICAgIC8vICAgICBjb25zb2xlLmxvZyhcIjpcIiwgZmlsZSk7XG4gICAgICAvLyAgIH0pO1xuICAgICAgLy8gfSk7XG5cbiAgICAgIC8vIHJldHVybiB0aGUgdmlydHVhbCBwYXRoIHRvIHRoZSBlcHViIHJvb3RcbiAgICAgIGNvbnN0IHdvcmtpbmdQYXRoID0gcGF0aC5ub3JtYWxpemUoYCR7RmlsZU1hbmFnZXIudmlydHVhbFBhdGh9L292ZXJsYXkvYCk7XG4gICAgICByZXR1cm4gd29ya2luZ1BhdGg7XG4gICAgfSBlbHNlIHtcbiAgICAgIC8vIHdoZW4gcnVubmluZyBpbiBOb2RlLCBjb3B5IHRoZSBlcHViIGRpciB0byB0bXAgZGlyZWN0b3J5LlxuICAgICAgbGV0IHRtcERpcjtcbiAgICAgIHRyeSB7XG4gICAgICAgIHRtcERpciA9IGF3YWl0IEZpbGVNYW5hZ2VyLmdldFRtcERpcigpO1xuICAgICAgfSBjYXRjaCAoZXJyKSB7XG4gICAgICAgIHRocm93IGVycjtcbiAgICAgIH1cblxuICAgICAgY29uc3QgZXB1YkRpck5hbWUgPSBsb2NhdGlvbi5zcGxpdChwYXRoLnNlcCkucG9wKCk7XG5cbiAgICAgIGNvbnN0IHRtcFBhdGggPSBwYXRoLnJlc29sdmUodG1wRGlyLCBgJHtlcHViRGlyTmFtZX1fJHtEYXRlLm5vdygpfWApO1xuICAgICAgaWYgKGF3YWl0IEZpbGVNYW5hZ2VyLmRpckV4aXN0cyh0bXBQYXRoKSkge1xuICAgICAgICB0cnkge1xuICAgICAgICAgIGF3YWl0IHByb21pc2lmeShmcy5ybWRpcikodG1wUGF0aCwge1xuICAgICAgICAgICAgcmVjdXJzaXZlOiB0cnVlLFxuICAgICAgICAgICAgbWF4UmV0cmllczogMyxcbiAgICAgICAgICB9KTtcbiAgICAgICAgfSBjYXRjaCAoZXJyKSB7XG4gICAgICAgICAgY29uc29sZS5sb2coXCJDb3VsZCBub3QgcmVtb3ZlIGRpclwiLCB0bXBQYXRoLCBlcnIubWVzc2FnZSk7XG4gICAgICAgICAgdGhyb3cgXCJDb3VsZCBub3QgcHJlcGFyZSBkaXJlY3RvcnkuIFRtcCBkaXJlY3RvciBhbHJlYWR5IGV4aXN0cyBhbmQgY291bGQgbm90IGJlIHJlbW92ZWQuXCI7XG4gICAgICAgIH1cbiAgICAgIH1cbiAgICAgIHRyeSB7XG4gICAgICAgIGF3YWl0IEZpbGVNYW5hZ2VyLmNvcHlEaXIobG9jYXRpb24sIHRtcFBhdGgpO1xuICAgICAgfSBjYXRjaCAoZXJyKSB7XG4gICAgICAgIGNvbnNvbGUuZXJyb3IoXG4gICAgICAgICAgXCJwcmVwYXJlRXB1YkRpciBFcnJvcjogQ291bGQgbm90IGNvcHkgZGlyIHRvXCIsXG4gICAgICAgICAgdG1wUGF0aCxcbiAgICAgICAgICBlcnIubWVzc2FnZVxuICAgICAgICApO1xuICAgICAgICByZXR1cm47XG4gICAgICB9XG5cbiAgICAgIGNvbnN0IHdvcmtpbmdQYXRoID0gcGF0aC5ub3JtYWxpemUodG1wUGF0aCk7XG4gICAgICByZXR1cm4gd29ya2luZ1BhdGg7XG4gICAgfVxuICB9XG5cbiAgLyoqXG4gICAqIExvYWRzIGFuZCB1bmFyY2hpdmVzIGFuIC5lcHViIGZpbGUgdG8gYSB0bXAgd29ya2luZyBkaXJlY3RvcnlcbiAgICogV2hlbiBpbiBicm93c2VyIGNsaWVudCwgQnJvd3NlckZTIHdpbGwgdW56aXAgdGhlIGFyY2hpdmUgdG8gdGhlIHZpcnR1YWwgcGF0aCBgJHtGaWxlTWFuYWdlci52aXJ0dWFsUGF0aH0vemlwYFxuICAgKlxuICAgKiBAcGFyYW0ge3N0cmluZ30gbG9jYXRpb24gLSB0aGUgdXJsIG9yIHBhdGggdG8gYW4gLmVwdWIgZmlsZVxuICAgKiBAcmV0dXJucyB7c3RyaW5nfSAtIHRoZSBwYXRoIHRvIHRoZSB0bXAgbG9jYXRpb25cbiAgICovXG4gIHN0YXRpYyBhc3luYyBwcmVwYXJlRXB1YkFyY2hpdmUobG9jYXRpb24sIGZldGNoT3B0aW9ucyA9IHt9KSB7XG4gICAgY29uc3QgaXNFcHViID0gRmlsZU1hbmFnZXIuaXNFcHViQXJjaGl2ZShsb2NhdGlvbik7XG5cbiAgICBpZiAoIWlzRXB1Yikge1xuICAgICAgY29uc29sZS53YXJuKFwiRmlsZSBpcyBub3QgYW4gZXB1YlwiLCBsb2NhdGlvbik7XG4gICAgICByZXR1cm47XG4gICAgfVxuXG4gICAgaWYgKEZpbGVNYW5hZ2VyLmVudmlyb25tZW50ID09PSBcImJyb3dzZXJcIikge1xuICAgICAgLy8gaWYgcnVubmluZyBpbiBjbGllbnQsIHVzZSBCcm93c2VyRlMgdG8gbW91bnQgWmlwIGFzIGZpbGUgc3lzdGVtIGluIG1lbW9yeVxuICAgICAgY29uc29sZS5sb2coXCJNb3VudGluZyBlcHViIGFyY2hpdmUgd2l0aCBCcm93c2VyRlNcIiwgbG9jYXRpb24pO1xuICAgICAgY29uc3QgcmVzcG9uc2UgPSBhd2FpdCBmZXRjaChsb2NhdGlvbiwgZmV0Y2hPcHRpb25zKTtcbiAgICAgIGNvbnN0IHppcERhdGEgPSBhd2FpdCByZXNwb25zZS5hcnJheUJ1ZmZlcigpO1xuICAgICAgY29uc3QgQnVmZmVyID0gQnJvd3NlckZTLkJGU1JlcXVpcmUoXCJidWZmZXJcIikuQnVmZmVyO1xuICAgICAgY29uc3Qgd29ya2luZ0RpciA9IHBhdGgucGFyc2UobG9jYXRpb24pLm5hbWU7XG4gICAgICBjb25zdCByZXN1bHQgPSBhd2FpdCBwcm9taXNpZnkoQnJvd3NlckZTLmNvbmZpZ3VyZSkoe1xuICAgICAgICBmczogXCJNb3VudGFibGVGaWxlU3lzdGVtXCIsXG4gICAgICAgIG9wdGlvbnM6IHtcbiAgICAgICAgICBbYCR7RmlsZU1hbmFnZXIudmlydHVhbFBhdGh9L292ZXJsYXkvJHt3b3JraW5nRGlyfWBdOiB7XG4gICAgICAgICAgICBmczogXCJPdmVybGF5RlNcIixcbiAgICAgICAgICAgIG9wdGlvbnM6IHtcbiAgICAgICAgICAgICAgcmVhZGFibGU6IHtcbiAgICAgICAgICAgICAgICBmczogXCJaaXBGU1wiLFxuICAgICAgICAgICAgICAgIG9wdGlvbnM6IHtcbiAgICAgICAgICAgICAgICAgIC8vIFdyYXAgYXMgQnVmZmVyIG9iamVjdC5cbiAgICAgICAgICAgICAgICAgIHppcERhdGE6IEJ1ZmZlci5mcm9tKHppcERhdGEpLFxuICAgICAgICAgICAgICAgIH0sXG4gICAgICAgICAgICAgIH0sXG4gICAgICAgICAgICAgIHdyaXRhYmxlOiB7XG4gICAgICAgICAgICAgICAgZnM6IFwiTG9jYWxTdG9yYWdlXCIsXG4gICAgICAgICAgICAgIH0sXG4gICAgICAgICAgICB9LFxuICAgICAgICAgIH0sXG4gICAgICAgICAgXCIvdG1wXCI6IHsgZnM6IFwiSW5NZW1vcnlcIiB9LFxuICAgICAgICB9LFxuICAgICAgfSk7XG5cbiAgICAgIGlmIChyZXN1bHQpIHtcbiAgICAgICAgLy8gQW4gZXJyb3Igb2NjdXJyZWQuXG4gICAgICAgIGNvbnNvbGUud2FybihcIkVycm9yIGF0IEJyb3dzZXJGUy5jb25maWd1cmVcIiwgcmVzdWx0Lm1lc3NhZ2UpO1xuICAgICAgICB0aHJvdyByZXN1bHQ7XG4gICAgICB9XG4gICAgICBmcy5yZWFkZGlyKFwiLi9lcHVia2l0L292ZXJsYXlcIiwgKGVyciwgZmlsZXMpID0+IHtcbiAgICAgICAgY29uc29sZS5sb2coXCJmaWxlc1wiLCBmaWxlcyk7XG4gICAgICB9KTtcbiAgICAgIC8vIHJldHVybiB0aGUgdmlydHVhbCBwYXRoIHRvIHRoZSBlcHViIHJvb3RcbiAgICAgIGNvbnN0IHdvcmtpbmdQYXRoID0gcGF0aC5ub3JtYWxpemUoXG4gICAgICAgIGAke0ZpbGVNYW5hZ2VyLnZpcnR1YWxQYXRofS9vdmVybGF5LyR7d29ya2luZ0Rpcn1gXG4gICAgICApO1xuICAgICAgcmV0dXJuIHdvcmtpbmdQYXRoO1xuICAgIH0gZWxzZSB7XG4gICAgICAvLyB3aGVuIHJ1bm5pbmcgaW4gTm9kZSwgZGVjb21wcmVzcyBlcHViIHRvIHRtcCBkaXJlY3RvcnkuXG4gICAgICBjb25zdCB0bXBEaXIgPSBvcy50bXBkaXIoKTtcbiAgICAgIGNvbnN0IHRtcFBhdGggPSBwYXRoLnJlc29sdmUodG1wRGlyLCBwYXRoLmJhc2VuYW1lKGxvY2F0aW9uKSk7XG4gICAgICBjb25zdCBBZG1aaXAgPSBuZXcgQWRtWmlwKGxvY2F0aW9uKTtcbiAgICAgIEFkbVppcC5leHRyYWN0QWxsVG8odG1wUGF0aCwgdHJ1ZSk7XG4gICAgICBjb25zdCB3b3JraW5nUGF0aCA9IHRtcFBhdGg7XG4gICAgICByZXR1cm4gd29ya2luZ1BhdGg7XG4gICAgfVxuICB9XG5cbiAgLyoqXG4gICAqIFRlc3QgaWYgZmlsZSBpcyBhIC5lcHViIGFyY2hpdmVcbiAgICogQHBhcmFtIHtzdHJpbmd9IGxvY2F0aW9uIC0gcGF0aCB0byBmaWxlXG4gICAqIEByZXR1cm5zIHtib29sZWFufVxuICAgKi9cbiAgc3RhdGljIGlzRXB1YkFyY2hpdmUobG9jYXRpb24pIHtcbiAgICBjb25zdCBleHQgPSBwYXRoLmV4dG5hbWUobG9jYXRpb24pO1xuXG4gICAgaWYgKGV4dCA9PT0gXCIuZXB1YlwiKSB7XG4gICAgICByZXR1cm4gdHJ1ZTtcbiAgICB9XG5cbiAgICByZXR1cm4gZmFsc2U7XG4gIH1cblxuICAvKipcbiAgICogQSB3cmFwZXByIGZvciB0aGUgZnMuc3RhdCBtZXRob2RcbiAgICogQHBhcmFtIHtzdHJpbmd9IGxvY2F0aW9uXG4gICAqIEByZXR1cm5zIHtvYmplY3R9IC0gc3RhdHMgb2JqZWN0XG4gICAqL1xuICBzdGF0aWMgYXN5bmMgZ2V0U3RhdHMobG9jYXRpb24pIHtcbiAgICBsZXQgc3RhdHM7XG5cbiAgICB0cnkge1xuICAgICAgc3RhdHMgPSBhd2FpdCBwcm9taXNpZnkoZnMuc3RhdCkobG9jYXRpb24pO1xuICAgIH0gY2F0Y2ggKGVycikge1xuICAgICAgY29uc29sZS53YXJuKFwiQ291bGQgbm90IGdldCBzdGF0XCIsIGVycik7XG4gICAgICByZXR1cm47XG4gICAgfVxuICAgIHJldHVybiBzdGF0cztcbiAgfVxuXG4gIC8qKlxuICAgKiBXcmFwcGVyIGZvciBzdGF0cyBpc0RpcmVjdG9yeSgpXG4gICAqIEBwYXJhbSB7c3RyaW5nfSBsb2NhdGlvblxuICAgKiBAcmV0dXJucyB7Ym9vbGVhbn1cbiAgICovXG4gIHN0YXRpYyBhc3luYyBpc0Rpcihsb2NhdGlvbikge1xuICAgIGNvbnN0IHN0YXRzID0gYXdhaXQgRmlsZU1hbmFnZXIuZ2V0U3RhdHMobG9jYXRpb24pO1xuICAgIGlmIChzdGF0cykge1xuICAgICAgcmV0dXJuIHN0YXRzLmlzRGlyZWN0b3J5KCk7XG4gICAgfVxuICAgIHJldHVybiBmYWxzZTtcbiAgfVxuXG4gIC8qKlxuICAgKiBXcmFwcGVyIGZvciBzdGF0cyBpc0ZpbGUoKVxuICAgKiBAcGFyYW0ge3N0cmluZ30gbG9jYXRpb25cbiAgICogQHJldHVybnMge2Jvb2xlYW59XG4gICAqL1xuICBzdGF0aWMgYXN5bmMgaXNGaWxlKGxvY2F0aW9uKSB7XG4gICAgY29uc3Qgc3RhdHMgPSBhd2FpdCBGaWxlTWFuYWdlci5nZXRTdGF0cyhsb2NhdGlvbik7XG4gICAgaWYgKHN0YXRzKSB7XG4gICAgICByZXR1cm4gc3RhdHMuaXNGaWxlKCk7XG4gICAgfVxuICAgIHJldHVybiBmYWxzZTtcbiAgfVxuXG4gIC8qKlxuICAgKiBSZWFkIGVudGlyZSBmaWxlIGFuZCByZXR1cm4gdGhlIGRhdGFcbiAgICogaWYgbm8gZW5jb2RpbmcgaXMgc2V0LCBhIHJhdyBidWZmZXIgaXMgcmV0dXJuZWQuXG4gICAqIFVzZSAndXRmOCcgZm9yIHN0cmluZ1xuICAgKiBAcGFyYW0ge3N0cmluZ30gbG9jYXRpb25cbiAgICovXG4gIHN0YXRpYyBhc3luYyByZWFkRmlsZShsb2NhdGlvbiwgZW5jb2RpbmcgPSB1bmRlZmluZWQpIHtcbiAgICBsZXQgZGF0YTtcbiAgICB0cnkge1xuICAgICAgZGF0YSA9IGF3YWl0IHByb21pc2lmeShmcy5yZWFkRmlsZSkobG9jYXRpb24sIGVuY29kaW5nKTtcbiAgICB9IGNhdGNoIChlcnIpIHtcbiAgICAgIGNvbnNvbGUud2FybihcIkNvdWxkIG5vdCByZWFkRmlsZVwiLCBsb2NhdGlvbiwgZXJyKTtcbiAgICAgIHJldHVybjtcbiAgICB9XG4gICAgcmV0dXJuIGRhdGE7XG4gIH1cblxuICAvLyBzdGF0aWMgYXN5bmMgcmVhZChsb2NhdGlvbiwgYnVmZmVyID0gdW5kZWZpbmVkKSB7XG4gIC8vICAgY29uc3QgZGF0YUJ1ZmZlciA9IGJ1ZmZlciA/IGJ1ZmZlciA6IG5ldyBCdWZmZXIoKTtcbiAgLy8gICB0cnkge1xuICAvLyAgICAgYXdhaXQgcHJvbWlzaWZ5KGZzLnJlYWQpKGxvY2F0aW9uLCBkYXRhQnVmZmVyKTtcbiAgLy8gICB9XG4gIC8vIH1cblxuICAvKipcbiAgICogUmVhZCBhIFhNTCBmaWxlIGFuZCBwYXJzZSBpdCBpbnRvIGEganNvbiBvYmplY3QgdXNpbmcgeG1sMmpzXG4gICAqIEBwYXJhbSB7c3RyaW5nfSAtIGxvY2F0aW9uXG4gICAqIEByZXR1cm5zIHtvYmplY3R9IC0gYSBqc29uIG9iamVjdFxuICAgKi9cbiAgc3RhdGljIGFzeW5jIHJlYWRYbWxGaWxlKGxvY2F0aW9uKSB7XG4gICAgY29uc3QgZGF0YSA9IGF3YWl0IEZpbGVNYW5hZ2VyLnJlYWRGaWxlKGxvY2F0aW9uKTtcbiAgICBsZXQgcmVzdWx0O1xuICAgIGlmIChkYXRhKSB7XG4gICAgICB0cnkge1xuICAgICAgICByZXN1bHQgPSBhd2FpdCBwcm9taXNpZnkoeG1sMmpzLnBhcnNlU3RyaW5nKShkYXRhLCB7XG4gICAgICAgICAgYXR0cmtleTogXCJhdHRyXCIsXG4gICAgICAgICAgY2hhcmtleTogXCJ2YWxcIixcbiAgICAgICAgICB0cmltOiB0cnVlLFxuICAgICAgICB9KTtcbiAgICAgIH0gY2F0Y2ggKGVycikge1xuICAgICAgICBjb25zb2xlLndhcm4oXCJFcnJvciBwYXJzaW5nIHhtbCBmaWxlOlwiLCBsb2NhdGlvbiwgZXJyKTtcbiAgICAgIH1cbiAgICB9XG4gICAgcmV0dXJuIHJlc3VsdDtcbiAgfVxuXG4gIC8qKlxuICAgKiBSZWN1cnNpdmVseSBzZWFyY2hlcyBhIGRpcmVjdG9yeSBhbmQgcmV0dXJucyBhIGZsYXQgYXJyYXkgb2YgYWxsIGZpbGVzXG4gICAqXG4gICAqIEBwYXJhbSB7c3RyaW5nfSBkaXJlY3RvcnlOYW1lIC0gdGhlIGJhc2UgZGlyZWN0b3J5IHRvIHNlYXJjaFxuICAgKiBAcGFyYW0ge2FycmF5fSBfcmVzdWx0cyAtIHByaXZhdGUuIGhvbGRzIF9yZXN1bHRzIGZvciByZWN1cnNpdmUgc2VhcmNoXG4gICAqIEByZXR1cm5zIHthcnJheX0gLSBhbiBhcnJheSBvZiBmaWxlIHBhdGggc3RyaW5nc1xuICAgKi9cbiAgc3RhdGljIGFzeW5jIGZpbmRBbGxGaWxlcyhkaXJlY3RvcnlOYW1lLCBfcmVzdWx0cyA9IFtdKSB7XG4gICAgbGV0IGZpbGVzO1xuICAgIGlmIChkaXJlY3RvcnlOYW1lID09PSBcIi4uXCIpIHtcbiAgICAgIHJldHVybjtcbiAgICB9XG5cbiAgICB0cnkge1xuICAgICAgZmlsZXMgPSBhd2FpdCBGaWxlTWFuYWdlci5yZWFkRGlyKGRpcmVjdG9yeU5hbWUpO1xuICAgIH0gY2F0Y2ggKGVycikge1xuICAgICAgY29uc29sZS5lcnJvcihcIkVycm9yIHJlYWRpbmcgZGlyZWN0b3J5XCIsIGRpcmVjdG9yeU5hbWUsIGVycik7XG4gICAgICByZXR1cm4gX3Jlc3VsdHM7XG4gICAgfVxuXG4gICAgZm9yIChsZXQgZmlsZSBvZiBmaWxlcykge1xuICAgICAgY29uc3QgZnVsbFBhdGggPSBwYXRoLmpvaW4oZGlyZWN0b3J5TmFtZSwgZmlsZSk7XG4gICAgICBpZiAoZmlsZSAhPT0gXCIuXCIgJiYgKGF3YWl0IEZpbGVNYW5hZ2VyLmlzRGlyKGZ1bGxQYXRoKSkpIHtcbiAgICAgICAgY29uc3Qgc3ViZGlyID0gYXdhaXQgRmlsZU1hbmFnZXIuZmluZEFsbEZpbGVzKGZ1bGxQYXRoLCBfcmVzdWx0cyk7XG4gICAgICAgIC8vIGNvbnNvbGUubG9nKFwic3ViZGlyXCIsIHN1YmRpcik7XG4gICAgICB9IGVsc2Uge1xuICAgICAgICBfcmVzdWx0cy5wdXNoKGZ1bGxQYXRoKTtcbiAgICAgIH1cbiAgICB9XG4gICAgcmV0dXJuIF9yZXN1bHRzO1xuICB9XG5cbiAgLy8gc3RhdGljIGFzeW5jIGZpbmRBbGxGaWxlcyhkaXJlY3RvcnlOYW1lKSB7XG4gIC8vICAgbGV0IGZpbGVzID0gW107XG4gIC8vICAgbGV0IGFsbEZpbGVzID0gW107XG4gIC8vICAgdHJ5IHtcbiAgLy8gICAgIGZpbGVzID0gYXdhaXQgRmlsZU1hbmFnZXIucmVhZERpcihkaXJlY3RvcnlOYW1lKTtcbiAgLy8gICB9IGNhdGNoIChlcnIpIHtcbiAgLy8gICAgIGNvbnNvbGUuZXJyb3IoXCJFcnJvciByZWFkaW5nIGRpcmVjdG9yeVwiLCBkaXJlY3RvcnlOYW1lLCBlcnIpO1xuICAvLyAgICAgcmV0dXJuO1xuICAvLyAgIH1cblxuICAvLyAgIGZvciAobGV0IGZpbGUgb2YgZmlsZXMpIHtcbiAgLy8gICAgIGNvbnN0IGZ1bGxQYXRoID0gcGF0aC5qb2luKGRpcmVjdG9yeU5hbWUsIGZpbGUpO1xuICAvLyAgICAgaWYgKGF3YWl0IEZpbGVNYW5hZ2VyLmlzRGlyKGZ1bGxQYXRoKSkge1xuICAvLyAgICAgICBhbGxGaWxlcyA9IGFsbEZpbGVzLmNvbmNhdChhd2FpdCBGaWxlTWFuYWdlci5maW5kQWxsRmlsZXMoZnVsbFBhdGgpKTtcbiAgLy8gICAgICAgcmV0dXJuO1xuICAvLyAgICAgfSBlbHNlIHtcbiAgLy8gICAgICAgYWxsRmlsZXMgPSBhbGxGaWxlcy5jb25jYXQoZnVsbFBhdGgpO1xuICAvLyAgICAgfVxuICAvLyAgIH1cbiAgLy8gICByZXR1cm4gYWxsRmlsZXM7XG4gIC8vIH1cblxuICAvKipcbiAgICogR2V0IHRoZSBjb250ZW50cyBvZiBhIGRpcmVjdG9yeVxuICAgKiBAcGFyYW0ge3N0cmluZ30gZGlyZWN0b3J5XG4gICAqIEByZXR1cm5zIHthcnJheX1cbiAgICovXG4gIHN0YXRpYyBhc3luYyByZWFkRGlyKGRpcmVjdG9yeSkge1xuICAgIHJldHVybiBuZXcgUHJvbWlzZSgocmVzb2x2ZSwgcmVqZWN0KSA9PiB7XG4gICAgICBmcy5yZWFkZGlyKGRpcmVjdG9yeSwgKGVyciwgY29udGVudCkgPT4ge1xuICAgICAgICBpZiAoZXJyKSB7XG4gICAgICAgICAgcmVqZWN0KGVycik7XG4gICAgICAgIH0gZWxzZSB7XG4gICAgICAgICAgcmVzb2x2ZShjb250ZW50KTtcbiAgICAgICAgfVxuICAgICAgfSk7XG4gICAgfSk7XG4gIH1cblxuICAvKipcbiAgICogUmVjdXJzaXZlbHkgc2VhcmNoIGRpcmVjdG9yeSBmb3IgZmlsZXMgd2l0aCB0aGUgZ2l2ZW4gZXh0ZW5zaW9uXG4gICAqXG4gICAqIEBwYXJhbSB7c3RyaW5nfSBkaXJlY3RvcnlOYW1lIC0gdGhlIGRpciB0byBzdGFydCBzZWFyY2ggaW5cbiAgICogQHBhcmFtIHtzdHJpbmd9IGZpbmRFeHQgLSB0aGUgZmlsZSBleHRlbnNpb24gdG8gc2VhcmNoIGZvclxuICAgKiBAcGFyYW0ge2FycmF5fSBfcmVzdWx0cyAtIHByaXZhdGUuIGhvbGRzIHJlc3VsdHMgZm9yIHJlY3Vyc2l2ZSBzZWFyY2hcbiAgICogQHJldHVybnMge2FycmF5fSAtIGFuIGFycmF5IG9mIGZpbGUgcGF0aCBzdHJpbmdzXG4gICAqL1xuICBzdGF0aWMgYXN5bmMgZmluZEZpbGVzV2l0aEV4dChkaXJlY3RvcnlOYW1lLCBmaW5kRXh0LCBfcmVzdWx0cyA9IFtdKSB7XG4gICAgbGV0IGZpbGVzID0gYXdhaXQgcHJvbWlzaWZ5KGZzLnJlYWRkaXIpKGRpcmVjdG9yeU5hbWUsIHtcbiAgICAgIHdpdGhGaWxlVHlwZXM6IHRydWUsXG4gICAgfSk7XG5cbiAgICBjb25zdCBleHQgPSBmaW5kRXh0LnN1YnN0cigwLCAxKSA9PT0gXCIuXCIgPyBmaW5kRXh0IDogYC4ke2ZpbmRFeHR9YDtcblxuICAgIGZvciAobGV0IGYgb2YgZmlsZXMpIHtcbiAgICAgIGxldCBmdWxsUGF0aCA9IHBhdGguam9pbihkaXJlY3RvcnlOYW1lLCBmLm5hbWUpO1xuICAgICAgaWYgKGYuaXNEaXJlY3RvcnkoKSkge1xuICAgICAgICBhd2FpdCBGaWxlTWFuYWdlci5maW5kRmlsZXNXaXRoRXh0KGZ1bGxQYXRoLCBmaW5kRXh0LCBfcmVzdWx0cyk7XG4gICAgICB9IGVsc2Uge1xuICAgICAgICBpZiAocGF0aC5leHRuYW1lKGZ1bGxQYXRoKSA9PT0gZXh0KSB7XG4gICAgICAgICAgX3Jlc3VsdHMucHVzaChmdWxsUGF0aCk7XG4gICAgICAgIH1cbiAgICAgIH1cbiAgICB9XG4gICAgcmV0dXJuIF9yZXN1bHRzO1xuICB9XG5cbiAgLyoqXG4gICAqIENoZWNrcyBpZiBhIGZpbGUgYWxyZWFkeSBleGlzdHMgYXQgdGhlIGdpdmVuIGxvY2F0aW9uXG4gICAqXG4gICAqIEBwYXJhbSB7c3RyaW5nfSBwYXRoIC0gZmlsZSBwYXRoIHRvIHRlc3RcbiAgICogQHJldHVybnMge2Jvb2xlYW59XG4gICAqL1xuICBzdGF0aWMgYXN5bmMgZmlsZUV4aXN0cyhwYXRoKSB7XG4gICAgdHJ5IHtcbiAgICAgIGNvbnN0IHN0YXRzID0gYXdhaXQgcHJvbWlzaWZ5KGZzLnN0YXQpKHBhdGgpO1xuICAgICAgaWYgKHN0YXRzLmlzRmlsZSgpKSB7XG4gICAgICAgIHJldHVybiB0cnVlO1xuICAgICAgfVxuICAgIH0gY2F0Y2ggKGVycikge1xuICAgICAgY29uc29sZS53YXJuKFwiQ291bGQgbm90IGRldGVjdCBmaWxlXCIsIHBhdGgsIGVycik7XG4gICAgICByZXR1cm4gZmFsc2U7XG4gICAgfVxuXG4gICAgcmV0dXJuIGZhbHNlO1xuICB9XG5cbiAgLyoqXG4gICAqIENoZWNrcyBpZiBhIGRpcmVjdG9yeSBhbHJlYWR5IGV4aXN0cyBhdCB0aGUgZ2l2ZW4gbG9jYXRpb25cbiAgICogQHBhcmFtIHtzdHJpbmd9IHBhdGggLSBkaXIgdG8gdGVzdFxuICAgKiBAcmV0dXJucyB7Ym9vbGVhbn1cbiAgICovXG4gIHN0YXRpYyBhc3luYyBkaXJFeGlzdHMocGF0aCkge1xuICAgIHRyeSB7XG4gICAgICBjb25zdCBzdGF0cyA9IGF3YWl0IHByb21pc2lmeShmcy5zdGF0KShwYXRoKTtcbiAgICAgIGlmIChzdGF0cy5pc0RpcmVjdG9yeSgpKSB7XG4gICAgICAgIHJldHVybiB0cnVlO1xuICAgICAgfVxuICAgIH0gY2F0Y2ggKGVycikge1xuICAgICAgLy8gY29uc29sZS53YXJuKFwiQ291bGQgbm90IGRldGVjdCBkaXJcIiwgcGF0aCwgZXJyLm1lc3NhZ2UpO1xuICAgICAgcmV0dXJuIGZhbHNlO1xuICAgIH1cblxuICAgIHJldHVybiBmYWxzZTtcbiAgfVxuXG4gIC8qKlxuICAgKiBSZWN1cnNpdmUgZGlyZWN0b3J5IGNvcHlcbiAgICogQHBhcmFtIHtzdHJpbmd9IHNyYyAtIHBhdGggdG8gdGhlIGRpcmVjdG9yeSB0byBjb3B5XG4gICAqIEBwYXJhbSB7c3RyaW5nfSBkZXN0IC0gcGF0aCB0byB0aGUgY29weSBkZXN0aW5hdGlvblxuICAgKi9cbiAgc3RhdGljIGFzeW5jIGNvcHlEaXIoc3JjLCBkZXN0KSB7XG4gICAgY29uc3QgZW50cmllcyA9IGF3YWl0IHByb21pc2lmeShmcy5yZWFkZGlyKShzcmMsIHsgd2l0aEZpbGVUeXBlczogdHJ1ZSB9KTtcbiAgICB0cnkge1xuICAgICAgYXdhaXQgcHJvbWlzaWZ5KGZzLm1rZGlyKShkZXN0KTtcbiAgICB9IGNhdGNoIChlcnIpIHtcbiAgICAgIGNvbnNvbGUuZXJyb3IoXCJjb3B5RGlyIEVycm9yOiBDb3VsZCBub3QgbWtkaXJcIiwgZGVzdCwgZXJyLm1lc3NhZ2UpO1xuICAgICAgdGhyb3cgZXJyO1xuICAgIH1cblxuICAgIGZvciAobGV0IGVudHJ5IG9mIGVudHJpZXMpIHtcbiAgICAgIGNvbnN0IHNyY1BhdGggPSBwYXRoLmpvaW4oc3JjLCBlbnRyeS5uYW1lKTtcbiAgICAgIGNvbnN0IGRlc3RQYXRoID0gcGF0aC5qb2luKGRlc3QsIGVudHJ5Lm5hbWUpO1xuICAgICAgaWYgKGVudHJ5LmlzRGlyZWN0b3J5KCkpIHtcbiAgICAgICAgYXdhaXQgRmlsZU1hbmFnZXIuY29weURpcihzcmNQYXRoLCBkZXN0UGF0aCk7XG4gICAgICB9IGVsc2Uge1xuICAgICAgICBhd2FpdCBwcm9taXNpZnkoZnMuY29weUZpbGUpKHNyY1BhdGgsIGRlc3RQYXRoKTtcbiAgICAgIH1cbiAgICB9XG4gIH1cblxuICAvKipcbiAgICogQSB3cmFwcGVyIGZvciBvcy50bXBkaXIgdGhhdCByZXNvbHZlcyBzeW1saW5rc1xuICAgKiBzZWU6IGh0dHBzOi8vZ2l0aHViLmNvbS9ub2RlanMvbm9kZS9pc3N1ZXMvMTE0MjJcbiAgICovXG4gIHN0YXRpYyBhc3luYyBnZXRUbXBEaXIoKSB7XG4gICAgaWYgKEZpbGVNYW5hZ2VyLmVudmlyb25tZW50ID09PSBcIm5vZGVcIikge1xuICAgICAgdHJ5IHtcbiAgICAgICAgY29uc3QgdG1wRGlyID0gYXdhaXQgcHJvbWlzaWZ5KGZzLnJlYWxwYXRoKShvcy50bXBkaXIpO1xuICAgICAgICByZXR1cm4gdG1wRGlyO1xuICAgICAgfSBjYXRjaCAoZXJyKSB7XG4gICAgICAgIGNvbnNvbGUuZXJyb3IoXCJFcnJvciBpbiBnZXRUbXBEaXJcIiwgZXJyLm1lc3NhZ2UpO1xuICAgICAgICB0aHJvdyBlcnI7XG4gICAgICB9XG4gICAgfSBlbHNlIHtcbiAgICAgIHJldHVybiBcIi90bXBcIjtcbiAgICB9XG4gIH1cblxuICBzdGF0aWMgcmVzb2x2ZUlyaVRvRXB1YkxvY2F0aW9uKGlyaSwgcmVmZXJlbmNlUGF0aCkge1xuICAgIGlmIChpcmkuaW5kZXhPZihcImh0dHBcIikgPT09IDApIHtcbiAgICAgIHJldHVybiBpcmk7XG4gICAgfSBlbHNlIHtcbiAgICAgIHJldHVybiBwYXRoLmpvaW4ocGF0aC5kaXJuYW1lKHJlZmVyZW5jZVBhdGgpLCBpcmkpO1xuICAgIH1cbiAgfVxuXG4gIHN0YXRpYyBhYnNvbHV0ZVBhdGhUb0VwdWJMb2NhdGlvbihlcHViUGF0aCwgcmVzb3VyY2VQYXRoKSB7XG4gICAgcmV0dXJuIHBhdGgucmVsYXRpdmUoZXB1YlBhdGgsIHJlc291cmNlUGF0aCk7XG4gIH1cblxuICBzdGF0aWMgZXB1YkxvY2F0aW9uVG9BYnNvbHV0ZVBhdGgoZXB1YlBhdGgsIHJlc291cmNlUGF0aCkge1xuICAgIHJldHVybiBwYXRoLmpvaW4ocGF0aC5kaXJuYW1lLCBlcHViUGF0aCwgcmVzb3VyY2VQYXRoKTtcbiAgfVxufVxuXG5leHBvcnQgZGVmYXVsdCBGaWxlTWFuYWdlcjtcbiJdfQ==

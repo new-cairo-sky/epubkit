@@ -4,6 +4,7 @@ export default ContainerManager;
  * https://www.w3.org/publishing/epub32/epub-ocf.html#sec-container-metainf-container.xml
  */
 declare class ContainerManager extends DataElement {
+    constructor();
     _rawData: object | undefined;
     rootfiles: ContainerRootfiles | undefined;
     /**
