@@ -1,0 +1,36 @@
+"use strict";Object.defineProperty(exports, "__esModule", { value: true });exports["default"] = void 0;var _fileManager = _interopRequireDefault(require("./file-manager"));
+var _packageElement = _interopRequireDefault(require("./package-element"));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { "default": obj };}function _typeof(obj) {"@babel/helpers - typeof";if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {_typeof = function _typeof(obj) {return typeof obj;};} else {_typeof = function _typeof(obj) {return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;};}return _typeof(obj);}function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target, props) {for (var i = 0; i < props.length; i++) {var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);}}function _createClass(Constructor, protoProps, staticProps) {if (protoProps) _defineProperties(Constructor.prototype, protoProps);if (staticProps) _defineProperties(Constructor, staticProps);return Constructor;}function _inherits(subClass, superClass) {if (typeof superClass !== "function" && superClass !== null) {throw new TypeError("Super expression must either be null or a function");}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } });if (superClass) _setPrototypeOf(subClass, superClass);}function _setPrototypeOf(o, p) {_setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {o.__proto__ = p;return o;};return _setPrototypeOf(o, p);}function _createSuper(Derived) {var hasNativeReflectConstruct = _isNativeReflectConstruct();return function _createSuperInternal() {var Super = _getPrototypeOf(Derived),result;if (hasNativeReflectConstruct) {var NewTarget = _getPrototypeOf(this).constructor;result = Reflect.construct(Super, arguments, NewTarget);} else {result = Super.apply(this, arguments);}return _possibleConstructorReturn(this, result);};}function _possibleConstructorReturn(self, call) {if (call && (_typeof(call) === "object" || typeof call === "function")) {return call;}return _assertThisInitialized(self);}function _assertThisInitialized(self) {if (self === void 0) {throw new ReferenceError("this hasn't been initialised - super() hasn't been called");}return self;}function _isNativeReflectConstruct() {if (typeof Reflect === "undefined" || !Reflect.construct) return false;if (Reflect.construct.sham) return false;if (typeof Proxy === "function") return true;try {Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));return true;} catch (e) {return false;}}function _getPrototypeOf(o) {_getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {return o.__proto__ || Object.getPrototypeOf(o);};return _getPrototypeOf(o);}var
+
+PackageManifestItem = /*#__PURE__*/function (_PackageElement) {_inherits(PackageManifestItem, _PackageElement);var _super = _createSuper(PackageManifestItem);
+  function PackageManifestItem(id, href, mediaType) {var _this;var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};var opfLocation = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : "";_classCallCheck(this, PackageManifestItem);
+    var attr = Object.assign(
+    {
+      id: id,
+      href: href,
+      "media-type": mediaType,
+      fallback: undefined,
+      "media-overlay": undefined,
+      properties: undefined },
+
+    options);
+
+    _this = _super.call(this, "item", undefined, attr);
+
+    _this._opfLocation = opfLocation;return _this;
+  }_createClass(PackageManifestItem, [{ key: "opfLocation", set: function set(
+
+    locationInEpub) {
+      this._opfLocation = locationInEpub;
+    }, get: function get()
+
+    {
+      return this._opfLocation;
+    }
+
+    /**
+       * If href is relative, get's the href location as relative to the epub's root.
+       */ }, { key: "location", get: function get()
+    {
+      return _fileManager["default"].resolveIriToEpubLocation(this.href, this._opfLocation);
+    } }]);return PackageManifestItem;}(_packageElement["default"]);exports["default"] = PackageManifestItem;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uL3NyYy9wYWNrYWdlLW1hbmlmZXN0LWl0ZW0uanMiXSwibmFtZXMiOlsiUGFja2FnZU1hbmlmZXN0SXRlbSIsImlkIiwiaHJlZiIsIm1lZGlhVHlwZSIsIm9wdGlvbnMiLCJvcGZMb2NhdGlvbiIsImF0dHIiLCJPYmplY3QiLCJhc3NpZ24iLCJmYWxsYmFjayIsInVuZGVmaW5lZCIsInByb3BlcnRpZXMiLCJfb3BmTG9jYXRpb24iLCJsb2NhdGlvbkluRXB1YiIsIkZpbGVNYW5hZ2VyIiwicmVzb2x2ZUlyaVRvRXB1YkxvY2F0aW9uIiwiUGFja2FnZUVsZW1lbnQiXSwibWFwcGluZ3MiOiJ1R0FBQTtBQUNBLDJFOztBQUVxQkEsbUI7QUFDbkIsK0JBQVlDLEVBQVosRUFBZ0JDLElBQWhCLEVBQXNCQyxTQUF0QixFQUFpRSxlQUFoQ0MsT0FBZ0MsdUVBQXRCLEVBQXNCLEtBQWxCQyxXQUFrQix1RUFBSixFQUFJO0FBQy9ELFFBQU1DLElBQUksR0FBR0MsTUFBTSxDQUFDQyxNQUFQO0FBQ1g7QUFDRVAsTUFBQUEsRUFBRSxFQUFFQSxFQUROO0FBRUVDLE1BQUFBLElBQUksRUFBRUEsSUFGUjtBQUdFLG9CQUFjQyxTQUhoQjtBQUlFTSxNQUFBQSxRQUFRLEVBQUVDLFNBSlo7QUFLRSx1QkFBaUJBLFNBTG5CO0FBTUVDLE1BQUFBLFVBQVUsRUFBRUQsU0FOZCxFQURXOztBQVNYTixJQUFBQSxPQVRXLENBQWI7O0FBV0EsOEJBQU0sTUFBTixFQUFjTSxTQUFkLEVBQXlCSixJQUF6Qjs7QUFFQSxVQUFLTSxZQUFMLEdBQW9CUCxXQUFwQixDQWQrRDtBQWVoRSxHOztBQUVlUSxJQUFBQSxjLEVBQWdCO0FBQzlCLFdBQUtELFlBQUwsR0FBb0JDLGNBQXBCO0FBQ0QsSzs7QUFFaUI7QUFDaEIsYUFBTyxLQUFLRCxZQUFaO0FBQ0Q7O0FBRUQ7OztBQUdlO0FBQ2IsYUFBT0Usd0JBQVlDLHdCQUFaLENBQXFDLEtBQUtiLElBQTFDLEVBQWdELEtBQUtVLFlBQXJELENBQVA7QUFDRCxLLGtDQS9COENJLDBCIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IEZpbGVNYW5hZ2VyIGZyb20gXCIuL2ZpbGUtbWFuYWdlclwiO1xuaW1wb3J0IFBhY2thZ2VFbGVtZW50IGZyb20gXCIuL3BhY2thZ2UtZWxlbWVudFwiO1xuXG5leHBvcnQgZGVmYXVsdCBjbGFzcyBQYWNrYWdlTWFuaWZlc3RJdGVtIGV4dGVuZHMgUGFja2FnZUVsZW1lbnQge1xuICBjb25zdHJ1Y3RvcihpZCwgaHJlZiwgbWVkaWFUeXBlLCBvcHRpb25zID0ge30sIG9wZkxvY2F0aW9uID0gXCJcIikge1xuICAgIGNvbnN0IGF0dHIgPSBPYmplY3QuYXNzaWduKFxuICAgICAge1xuICAgICAgICBpZDogaWQsXG4gICAgICAgIGhyZWY6IGhyZWYsXG4gICAgICAgIFwibWVkaWEtdHlwZVwiOiBtZWRpYVR5cGUsXG4gICAgICAgIGZhbGxiYWNrOiB1bmRlZmluZWQsXG4gICAgICAgIFwibWVkaWEtb3ZlcmxheVwiOiB1bmRlZmluZWQsXG4gICAgICAgIHByb3BlcnRpZXM6IHVuZGVmaW5lZCxcbiAgICAgIH0sXG4gICAgICBvcHRpb25zXG4gICAgKTtcbiAgICBzdXBlcihcIml0ZW1cIiwgdW5kZWZpbmVkLCBhdHRyKTtcblxuICAgIHRoaXMuX29wZkxvY2F0aW9uID0gb3BmTG9jYXRpb247XG4gIH1cblxuICBzZXQgb3BmTG9jYXRpb24obG9jYXRpb25JbkVwdWIpIHtcbiAgICB0aGlzLl9vcGZMb2NhdGlvbiA9IGxvY2F0aW9uSW5FcHViO1xuICB9XG5cbiAgZ2V0IG9wZkxvY2F0aW9uKCkge1xuICAgIHJldHVybiB0aGlzLl9vcGZMb2NhdGlvbjtcbiAgfVxuXG4gIC8qKlxuICAgKiBJZiBocmVmIGlzIHJlbGF0aXZlLCBnZXQncyB0aGUgaHJlZiBsb2NhdGlvbiBhcyByZWxhdGl2ZSB0byB0aGUgZXB1YidzIHJvb3QuXG4gICAqL1xuICBnZXQgbG9jYXRpb24oKSB7XG4gICAgcmV0dXJuIEZpbGVNYW5hZ2VyLnJlc29sdmVJcmlUb0VwdWJMb2NhdGlvbih0aGlzLmhyZWYsIHRoaXMuX29wZkxvY2F0aW9uKTtcbiAgfVxufVxuIl19
