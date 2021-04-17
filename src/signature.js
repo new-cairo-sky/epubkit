@@ -6,7 +6,12 @@ import FileManager from "./file-manager";
 import SignatureManifest from "./signature-manifest";
 import SignatureSignedInfo from "./signature-signed-info";
 import SignatureValue from "./signature-value";
+import { parseXml } from "./utils/xml";
 
+/**
+ * This class manages the Signature node within the parent signatures.xml > signature node.
+ * Note: the signature w3 spec uses snake case on names and attributes
+ */
 export default class Signature extends DataElement {
   constructor(epubLocation = "", id = "sig") {
     // Note that the Signature and children tags need to be capitalized
@@ -77,7 +82,18 @@ export default class Signature extends DataElement {
       ],
     };
     await signer.Sign(algorithm, privateKey, xmlData, options);
-    console.log("Sign result", signer.toString());
+
+    // TODO find better allternative to this is hacky way to interoperate between xml2js and xmlsigjs's own xml lib.
+    const xmlsigjsXml = signer.toString();
+    const reparsedXmlData = await parseXml(xmlsigjsXml);
+
+    const signatureValueData = reparsedXmlData['ds:signature']['ds:signaturevalue'];
+    const keyInfoData = reparsedXmlData['ds:signature']['ds:keyinfo'];
+
+    this.signatureValue = await this.parseXmlObj({SignatureValue: signatureValueData});
+    this.keyInfo = await this.parseXmlObj({KeyInfo: keyInfoData});
+
+    console.log("Sign result", this.getXml(true));
   }
 
   /**
