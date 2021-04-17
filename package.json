@@ -1,6 +1,5 @@
 {
   "name": "epubkit.js",
-  "type": "module",
   "version": "1.0.0",
   "description": "A universal js library for parsing and editing epubs.",
   "main": "dist/index.js",

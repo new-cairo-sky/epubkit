@@ -1,6 +1,6 @@
 import xml2js from "xml2js";
 import { promisify } from "es6-promisify";
-import DataElement from "../data-element.ts";
+import DataElement from "../data-element";
 
 const parseOptions = {
   attrkey: "attr",
