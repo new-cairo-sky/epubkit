@@ -1,5 +1,4 @@
-export default Epubkit;
-declare class Epubkit {
+export default class Epubkit {
     constructor(environment?: string);
     _environment: string;
     _pathToSource: string | undefined;

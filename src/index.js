@@ -1,9 +1,9 @@
-import Epubkit from "./epubkit.js";
+
 import {
   fontObfuscation,
   idpfFontObfuscation,
   adobeFontObfuscation,
 } from "./epub-font-obfuscator.js";
 
-export default Epubkit;
+export {default as Epubkit} from "./epubkit.js";
 export { fontObfuscation, idpfFontObfuscation, adobeFontObfuscation };

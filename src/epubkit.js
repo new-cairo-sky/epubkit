@@ -4,7 +4,7 @@ import PackageManager from "./package-manager";
 import NcxManager from "./ncx-manager";
 import FileManager from "./file-manager";
 
-class Epubkit {
+export default class Epubkit {
   constructor(environment = "auto") {
     if (environment === "auto") {
       this._environment = typeof window === "undefined" ? "node" : "browser";
@@ -198,4 +198,3 @@ class Epubkit {
   }
 }
 
-export default Epubkit;
