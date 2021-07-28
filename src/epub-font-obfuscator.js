@@ -34,7 +34,7 @@ export async function fontObfuscation(
   const packageUniqueIdName = parsedOpfXml.package.attr["unique-identifier"];
   const uniqueIdEl = parsedOpfXml.package.metadata[0]["dc:identifier"].find(
     (idEl) => {
-      return idEl.attr.id === packageUniqueIdName;
+      return idEl?.attr?.id === packageUniqueIdName;
     }
   );
   const uniqueId = uniqueIdEl.val;
