@@ -3,6 +3,7 @@ import ContainerManager from "./container-manager";
 import PackageManager from "./package-manager";
 import NcxManager from "./ncx-manager";
 import FileManager from "./file-manager";
+import uniqWith from "lodash/uniqWith";
 
 export default class Epubkit {
   constructor(environment = "auto") {
@@ -17,7 +18,7 @@ export default class Epubkit {
 
     this._loaded = false;
 
-    /* paths to epub's internal files */
+    /* paths to epub's internal files - all paths should be relative to the epub root */
     this._containerPath = undefined;
     this._opfFilePath = undefined;
     this._navigationFilePath = undefined;
@@ -32,23 +33,12 @@ export default class Epubkit {
 
   /**
    * Load an epub archive file or directory
-   * @param {string} location
+   * @param {string} location - path to the epub file or directory
    */
   async load(location) {
     this._pathToSource = path.resolve(location);
 
     console.log("pathToSource", this._pathToSource);
-
-    // check if epub is an archive or a directory.
-    // if (FileManager.isEpubArchive(this._pathToSource)) {
-    //   this._pathToEpubDir = await FileManager.prepareEpubArchive(
-    //     this._pathToSource
-    //   );
-    // } else {
-    //   this._pathToEpubDir = await FileManager.prepareEpubDir(
-    //     this._pathToSource
-    //   );
-    // }
 
     this._pathToEpubDir = await FileManager.loadEpub(this._pathToSource);
 
@@ -76,6 +66,8 @@ export default class Epubkit {
       console.error("Error reading container.xml file.");
       return;
     }
+
+    this._containerPath = containerFilePath;
 
     const rootPath = this._containerManager.rootFilePath;
 
@@ -107,6 +99,10 @@ export default class Epubkit {
 
     try {
       const opfData = await FileManager.readFile(this._opfFilePath);
+      this._packageManager.location = FileManager.absolutePathToEpubLocation(
+        this._pathToEpubDir,
+        this._opfFilePath
+      );
       await this._packageManager.loadXml(opfData);
     } catch (e) {
       this._packageManager = undefined;
@@ -117,13 +113,13 @@ export default class Epubkit {
      * If ncx file exists, initialize the NCX manager
      */
     if (this._packageManager) {
-      const tocPath = this._packageManager.findNavigationFilePath();
-      if (tocPath) {
-        this._navigationFilePath = path.join(
-          path.dirname(this._opfFilePath),
-          tocPath
+      const tocLocation = this._packageManager.findNavigationFileLocation();
+      if (tocLocation) {
+        this._navigationFilePath = FileManager.epubLocationToAbsolutePath(
+          this._pathToEpubDir,
+          tocLocation
         );
-        if (path.extname(tocPath) === ".ncx") {
+        if (path.extname(this._navigationFilePath) === ".ncx") {
           this._ncxFilePath = this._navigationFilePath;
         }
       }
@@ -132,13 +128,11 @@ export default class Epubkit {
     // ncx is not listed in the TOC in the opf. look for ncx specifically.
     if (!this._ncxFilePath) {
       try {
-        this._ncxFilePath = this._packageManager.findNcxFilePath();
-        if (this._ncxFilePath) {
-          this._ncxFilePath = path.join(
-            path.dirname(this._opfFilePath),
-            this._ncxFilePath
-          );
-        }
+        const ncxLocation = this._packageManager.findNcxFileLocation();
+        this._ncxFilePath = FileManager.epubLocationToAbsolutePath(
+          this._pathToEpubDir,
+          ncxLocation
+        );
       } catch (e) {
         // epub may not have an ncx file.
         this._ncxFilePath = undefined;
@@ -157,8 +151,82 @@ export default class Epubkit {
     this._loaded = true;
   }
 
+  /**
+   * SaveAs the epub archive
+   * @param {Promise<string>} location save epub at the give location
+   */
   async saveAs(location) {
     await FileManager.saveEpubArchive(this._pathToEpubDir, location);
+  }
+
+  /**
+   * Find all resources in the epub, excluding the epub's internal files.
+   * This finds all files in the epub's root directory and subdirectories.
+   * As well as all files listed in the manifest.
+   * If a file is missing, the location will be undefined.
+   * If a manifest item is missing, the id, href, mediaType, fallback, and mediaOverlay will be undefined.
+   * @returns{Promise<{
+   *  location: string|undefined,
+   *  id: string|undefined,
+   *  href: string|undefined,
+   *  mediaType: string|undefined,
+   *  fallback: string|undefined,
+   *  mediaOverlay: string|undefined
+   * }[]>}
+   */
+  async findAllResources() {
+    // find all files in the epub
+    const allFiles = await FileManager.findAllFiles(this._pathToEpubDir);
+    // filter out the epub's internal files
+    const internalFiles = [
+      this._containerPath,
+      this._opfFilePath,
+      this._ncxFilePath,
+      this._navPath,
+    ];
+    const resources = allFiles.filter((file) => {
+      return internalFiles.indexOf(file) === -1;
+    });
+
+    const resourceData = resources.map((resource) => {
+      const location = FileManager.absolutePathToEpubLocation(
+        this._pathToEpubDir,
+        resource
+      );
+      const opfLocation = FileManager.absolutePathToEpubLocation(
+        this._pathToEpubDir,
+        this._opfFilePath
+      );
+      const iri = FileManager.resolveEpubLocationToIri(location, opfLocation);
+
+      const manifestItem = this._packageManager.manifest.findItemWithHref(iri);
+      const data = {
+        location,
+        id: manifestItem?.id,
+        href: manifestItem?.href,
+        mediaType: manifestItem?.["media-type"],
+        fallback: manifestItem?.fallback,
+        mediaOverlay: manifestItem?.["media-overlay"],
+      };
+      return data;
+    });
+    const manifestData = this._packageManager.manifest.items.map((item) => {
+      const data = {
+        location: item.location,
+        id: item.id,
+        href: item.href,
+        mediaType: item["media-type"],
+        fallback: item.fallback,
+        mediaOverlay: item["media-overlay"],
+      };
+      return data;
+    });
+
+    const allData = uniqWith(resourceData.concat(manifestData), (a, b) => {
+      return a.location === b.location && a.id === b.id;
+    });
+
+    return allData;
   }
 
   /**
@@ -197,4 +265,3 @@ export default class Epubkit {
     return this._ncxFilePath;
   }
 }
-

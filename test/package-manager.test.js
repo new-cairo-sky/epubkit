@@ -84,7 +84,7 @@ test("can find ncx file path", async () => {
 
   await packageHandler.loadXml(data);
 
-  expect(packageHandler.findNcxFilePath()).toBe("3174/toc.ncx");
+  expect(packageHandler.findNcxFileLocation()).toBe("3174/toc.ncx");
 });
 
 test("can find navigation file path", async () => {
@@ -94,7 +94,7 @@ test("can find navigation file path", async () => {
 
   await packageHandler.loadXml(data);
 
-  expect(packageHandler.findNavigationFilePath()).toBe("OPS/toc.xhtml");
+  expect(packageHandler.findNavigationFileLocation()).toBe("OPS/toc.xhtml");
 });
 
 test("can generate valid xml without source xml file", async () => {

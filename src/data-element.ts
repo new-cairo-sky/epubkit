@@ -23,7 +23,7 @@ export default class DataElement {
     // organizes children data-elements by element type
     this._children = {};
 
-    // organizes flat list of children by absolut order
+    // organizes flat list of children by absolute order
     this._orderedChildren = [];
 
     if (attributes) {

@@ -128,8 +128,8 @@ export function adobeFontObfuscation(fontData, identifier) {
 
 /**
  * Converts the OPF UID into binary buffer array used by the adobe font obfuscation spec.
- * Unfortunetly this requires the node Buffer module. For browser support epubkit relies
- * on the Buffer polyfill proided by BrowserFS (see the webpack config).
+ * Unfortunately this requires the node Buffer module. For browser support epubkit relies
+ * on the Buffer polyfill provided by BrowserFS (see the webpack config).
  *
  * @param {string} id - the UUID identified in the epub's opf
  * @returns {Buffer}

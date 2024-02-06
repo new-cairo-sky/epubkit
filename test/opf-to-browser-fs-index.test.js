@@ -1,6 +1,5 @@
 import path from "path";
 import FileManager from "../src/file-manager";
-import OpfManager from "../src/opf-manager";
 import PackageManager from "../src/package-manager";
 
 import {

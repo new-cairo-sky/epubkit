@@ -73,7 +73,7 @@ export default class PackageManager extends PackageElement {
   }
 
   /**
-   * Find the epub unique-identifer value
+   * Find the epub unique-identifier value
    */
   findUniqueIdentifier() {
     const metadataId = this.attributes["unique-identifier"];
@@ -90,32 +90,35 @@ export default class PackageManager extends PackageElement {
 
   /**
    * Legacy Epub 2.0 specification states that a spine element with the 'toc' attribute
-   * identifies the idref of the NCX file in the manifest
-   * TODO - handle relative and absolute urls. resolve path
+   * identifies the idref of the NCX file in the manifest.
+   * This finds the relative location of the file in the epub.
+   * @returns {string|undefined} - relative location of the ncx file in the epub
    */
-  findNcxFilePath() {
+  findNcxFileLocation() {
     const tocId = this.spine.toc;
     if (tocId) {
       const ncxItem = this.manifest.findItemWithId(tocId);
       if (ncxItem) {
-        return FileManager.resolveIriToEpubLocation(
+        const location = FileManager.resolveIriToEpubLocation(
           ncxItem.href,
           this.location
         );
+        return location;
       }
     }
     return;
   }
 
   /**
-   * Find the href of the manifest item with properties="nav" attribute
+   * Find the location of the manifest item with properties="nav" attribute.
+   * The location is the file path relative to the epub root.
    * https://www.w3.org/publishing/epub32/epub-packages.html#sec-package-nav
-   * TODO - handle relative and absolute urls. resolve path
+   * @returns {string|undefined} - the relative location of the navigation file in the epub
    */
-  findNavigationFilePath() {
+  findNavigationFileLocation() {
     const spineItem = this.manifest.findNav();
     if (spineItem) {
-      return FileManager.resolveIriToEpubLocation(
+      const location = FileManager.resolveIriToEpubLocation(
         spineItem.href,
         this.location
       );

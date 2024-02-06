@@ -1,6 +1,6 @@
 import fs from "fs";
 import os from "os";
-import path from "path";
+import path, { isAbsolute } from "path";
 import FileSaver from "file-saver"; //"../node_modules/file-saver/src/FileSaver.js";
 // NOTE: we cannot use the native fs promises because BrowserFS does not support them yet.
 import { promisify } from "es6-promisify";
@@ -272,7 +272,7 @@ class FileManager {
   }
 
   /**
-   * Loads and unarchives an .epub file to a tmp working directory
+   * Loads and un-archives an .epub file to a tmp working directory
    * When in browser client, BrowserFS will unzip the archive to the virtual path `${FileManager.virtualPath}/zip`
    *
    * @param {string} location - the url or path to an .epub file
@@ -355,7 +355,7 @@ class FileManager {
   }
 
   /**
-   * A wrapepr for the fs.stat method
+   * A wrapper for the fs.stat method
    * @param {string} location
    * @returns {object} - stats object
    */
@@ -444,11 +444,11 @@ class FileManager {
   }
 
   /**
-   * Recursively searches a directory and returns a flat array of all files
+   * Recursively searches a directory and returns a flat array of all files.
    *
    * @param {string} directoryName - the base directory to search
    * @param {array} _results - private. holds _results for recursive search
-   * @returns {array} - an array of file path strings
+   * @returns {array} - an array of file path strings relative to the epub root
    */
   static async findAllFiles(directoryName, _results = []) {
     let files;
@@ -624,6 +624,14 @@ class FileManager {
     }
   }
 
+  /**
+   * Converts an OPF resource path to a relative epub location.
+   * The OPF resource paths are relative to the OPF file's location - this find the
+   * path relative to the referencePath (typically the OPF file location).
+   * @param {string} iri - OPF resource path
+   * @param {string} referencePath - reference path to resolve the iri against (typically the OPF file location)
+   * @returns {string} - the resolved path
+   */
   static resolveIriToEpubLocation(iri, referencePath) {
     if (iri.indexOf("http") === 0) {
       return iri;
@@ -632,12 +640,39 @@ class FileManager {
     }
   }
 
+  /**
+   * Convert the location of a resource in the epub to an IRI
+   * e.g. convert the resource path to a to path relative to the opf file
+   * @param {string} resourceLocation - resource location in the epub (relative to epub root)
+   * @param {string} referencePath - the path to resolve the resource location against (usually, the OPF file location)
+   * @returns {string} - the resolved path
+   */
+  static resolveEpubLocationToIri(resourceLocation, referencePath) {
+    if (isAbsolute(referencePath)) {
+      throw new Error("referencePath must be a relative to the epub root");
+    }
+    return path.relative(path.dirname(referencePath), resourceLocation);
+  }
+
+  /**
+   * Convert an absolute epub resource path to a relative path
+   * using the epub dir as the root.
+   * @param {string} epubPath - file path to unzipped epub directory
+   * @param {string} resourcePath - file path to resource in the epub
+   * @returns {string} - the relative path
+   */
   static absolutePathToEpubLocation(epubPath, resourcePath) {
     return path.relative(epubPath, resourcePath);
   }
 
+  /**
+   * Convert a relative epub internal resource path to an absolute file path
+   * @param {string} epubPath - file path to unzipped epub directory
+   * @param {string} resourcePath - file path to resource in the epub
+   * @returns {string} - the absolute path
+   */
   static epubLocationToAbsolutePath(epubPath, resourcePath) {
-    return path.join(path.dirname, epubPath, resourcePath);
+    return path.join(epubPath, resourcePath);
   }
 }
 

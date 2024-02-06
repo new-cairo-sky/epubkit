@@ -1,5 +1,7 @@
 import path from "path";
 
+// WARNING! This file has been replaced by the Package Manager.
+
 /**
  * Manager for the opf file
  * https://www.w3.org/publishing/epub32/epub-packages.html
@@ -566,8 +568,8 @@ class OpfManager {
   /**
    * Get the spine's array of itemref elements. Each itemref has an idref attribute.
    * The idref references a manifest item id.
-   * The order of this array determines the order of repesentation of the manifest items.
-   * the linear attribute indicates if the itemref is in linear representation order
+   * The order of this array determines the order of representation of the manifest items.
+   * the `linear` attribute indicates if the itemref is in linear representation order
    * or is auxiliary content.
    * see: http://idpf.org/epub/20/spec/OPF_2.0.1_draft.htm#Section2.4
    */

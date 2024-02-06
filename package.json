@@ -36,6 +36,7 @@
     "jssha": "^3.2.0",
     "jszip": "^3.5.0",
     "lodash.isequal": "^4.5.0",
+    "lodash.uniqwith": "^4.5.0",
     "utf8": "^3.0.0",
     "uuid": "^8.2.0",
     "xml2js": "^0.4.23",

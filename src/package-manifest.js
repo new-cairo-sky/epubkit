@@ -87,6 +87,11 @@ export default class PackageManifest extends PackageElement {
     newNav.addAttributes({ properties: "nav" });
   }
 
+  /**
+   * Find a manifest item with the provided href
+   * @param {string} href
+   * @returns {PackageManifestItem | undefined}
+   */
   findItemWithHref(href) {
     return this.items.find((item) => {
       return item.href === href;

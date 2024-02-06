@@ -25,7 +25,7 @@ class ContainerManager extends DataElement {
   }
 
   /**
-   * Inititialize a new empty container
+   * Initialize a new empty container
    * @param {string} opfLocation - path the opf file
    */
   create(opfLocation = "package.opf") {
